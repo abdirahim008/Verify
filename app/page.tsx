@@ -239,9 +239,11 @@ export default function LandingPage() {
 function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 backdrop-blur bg-paper/85 border-b border-border">
-      <div className="mx-auto max-w-6xl flex items-center justify-between px-5 sm:px-10 h-[60px]">
+      <div className="mx-auto max-w-6xl flex items-center justify-between px-5 sm:px-10 h-[60px] gap-4">
         <Link href="/" aria-label="Sahan home"><SahanMark /></Link>
-        <nav className="hidden md:flex items-center gap-6 text-[13px] text-ink-soft">
+        {/* Marketing nav stays inline at lg+ only — at md (tablet portrait)
+            the 5-item link row + CTAs would overflow the content area. */}
+        <nav className="hidden lg:flex items-center gap-6 text-[13px] text-ink-soft">
           <Link href="/signup?type=individual" className="hover:text-ink">For individuals</Link>
           <Link href="/signup?type=company" className="hover:text-ink">For organisations</Link>
           <Link href="#verification" className="hover:text-ink">Verification</Link>

@@ -16,12 +16,21 @@
     font-family: var(--font-sans), "Source Sans 3", system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    /* Stop overscroll bounce from white-flashing the page background on iOS. */
+    overscroll-behavior-y: none;
   }
   /* Inputs inherit by default so forms feel like editorial text, not browser chrome. */
   input, textarea, select, button { font: inherit; color: inherit; }
-  /* Sticky header is 60px; offset anchored scrolls so the section heading
-     isn't tucked under it. */
+  /* Sticky header is 60px on phones (with another ~40px nav row), 60px on
+     lg+. Anchored scrolls leave breathing room beneath the header. */
   [id] { scroll-margin-top: 80px; }
+}
+
+@layer utilities {
+  /* Hide the visual scrollbar on horizontally-scrollable nav rows etc.
+     The element is still scrollable — keyboard / touch still work. */
+  .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
 }
 
 @layer components {

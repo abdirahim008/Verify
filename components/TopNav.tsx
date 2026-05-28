@@ -36,9 +36,12 @@ export function TopNav({ accountType, displayName, isAdmin }: Props) {
   return (
     <header className="border-b border-border bg-paper">
       <div className="mx-auto max-w-6xl px-4 sm:px-8 h-[60px] flex items-center justify-between gap-4">
-        <div className="flex items-center gap-6 sm:gap-11">
+        <div className="flex items-center gap-6 lg:gap-11">
           <Link href="/home" aria-label="Sahan home"><SahanMark size={22} /></Link>
-          <nav className="hidden md:flex items-center gap-7">
+          {/* Inline desktop nav. Pushed up from md→lg so tablet portrait
+              (768–1023px) uses the mobile bottom-bar pattern instead of
+              cramming 4–6 links + avatar across a 700px content area. */}
+          <nav className="hidden lg:flex items-center gap-7">
             {ITEMS.map((it) => {
               const active = pathname === it.href || pathname.startsWith(it.href + "/");
               return (
@@ -57,7 +60,7 @@ export function TopNav({ accountType, displayName, isAdmin }: Props) {
             {isAdmin && (
               <>
                 <Link href="/admin" className={cn("text-[13.5px] pb-[3px] border-b-[1.5px] transition",
-                  pathname === "/admin" || pathname.startsWith("/admin/") && !pathname.startsWith("/admin/feed") ? "text-ink font-semibold border-sienna" : "text-muted border-transparent hover:text-ink")}>
+                  (pathname === "/admin" || (pathname.startsWith("/admin/") && !pathname.startsWith("/admin/feed"))) ? "text-ink font-semibold border-sienna" : "text-muted border-transparent hover:text-ink")}>
                   Admin
                 </Link>
                 <Link href="/admin/feed" className={cn("text-[13.5px] pb-[3px] border-b-[1.5px] transition",
@@ -102,22 +105,35 @@ export function TopNav({ accountType, displayName, isAdmin }: Props) {
         </div>
       </div>
 
-      {/* Mobile nav row */}
-      <nav className="md:hidden border-t border-border-soft px-4 py-2 flex gap-5 overflow-x-auto">
+      {/* Mobile / tablet-portrait nav row. Horizontally scrollable so any
+          number of items fits regardless of viewport width. `scrollbar-hide`
+          + smooth-scrolling CSS lives in globals.css. */}
+      <nav className="lg:hidden border-t border-border-soft px-4 py-2 flex gap-5 overflow-x-auto scrollbar-hide -mx-px">
         {ITEMS.map((it) => {
           const active = pathname === it.href || pathname.startsWith(it.href + "/");
           return (
             <Link
               key={it.href}
               href={it.href}
-              className={cn("text-[13px] whitespace-nowrap py-1 border-b-[1.5px]",
+              className={cn("text-[13px] whitespace-nowrap py-1.5 px-0.5 border-b-[1.5px] min-h-[36px] inline-flex items-center",
                 active ? "text-ink font-semibold border-sienna" : "text-muted border-transparent")}
             >
               {it.label}
             </Link>
           );
         })}
-        {isAdmin && <Link href="/admin" className="text-[13px] whitespace-nowrap py-1 text-muted">Admin</Link>}
+        {isAdmin && (
+          <>
+            <Link href="/admin" className={cn("text-[13px] whitespace-nowrap py-1.5 px-0.5 border-b-[1.5px] min-h-[36px] inline-flex items-center",
+              (pathname === "/admin" || (pathname.startsWith("/admin/") && !pathname.startsWith("/admin/feed"))) ? "text-ink font-semibold border-sienna" : "text-muted border-transparent")}>
+              Admin
+            </Link>
+            <Link href="/admin/feed" className={cn("text-[13px] whitespace-nowrap py-1.5 px-0.5 border-b-[1.5px] min-h-[36px] inline-flex items-center",
+              pathname.startsWith("/admin/feed") ? "text-ink font-semibold border-sienna" : "text-muted border-transparent")}>
+              Feed
+            </Link>
+          </>
+        )}
       </nav>
     </header>
   );

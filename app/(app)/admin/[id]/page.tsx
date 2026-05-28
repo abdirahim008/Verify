@@ -31,21 +31,23 @@ export default async function AdminRequestDetailPage({ params }: { params: { id:
 
       <section className="mt-6 card">
         <p className="section-eyebrow text-sienna">Contact the requester</p>
-        <dl className="mt-3 grid gap-3 sm:grid-cols-[140px_1fr] text-[14px]">
+        {/* Label column shrinks/wraps below sm — the 140px reservation was
+            eating the value column on narrow viewports. */}
+        <dl className="mt-3 grid gap-x-3 gap-y-2 sm:grid-cols-[110px_minmax(0,1fr)] text-[14px]">
           {r.contact_phone && (
             <>
-              <dt className="text-muted text-[12px] uppercase tracking-[0.08em] font-medium">Phone (preferred)</dt>
-              <dd className="text-ink"><a href={`tel:${r.contact_phone}`} className="text-sienna font-medium hover:underline">{r.contact_phone}</a></dd>
+              <dt className="text-muted text-[12px] uppercase tracking-[0.08em] font-medium">Phone</dt>
+              <dd className="text-ink break-words"><a href={`tel:${r.contact_phone}`} className="text-sienna font-medium hover:underline">{r.contact_phone}</a></dd>
             </>
           )}
           {requesterAuthEmail && (
             <>
               <dt className="text-muted text-[12px] uppercase tracking-[0.08em] font-medium">Email</dt>
-              <dd><a href={`mailto:${requesterAuthEmail}`} className="text-sienna hover:underline">{requesterAuthEmail}</a></dd>
+              <dd className="break-words"><a href={`mailto:${requesterAuthEmail}`} className="text-sienna hover:underline">{requesterAuthEmail}</a></dd>
             </>
           )}
           {!r.contact_phone && !requesterAuthEmail && (
-            <dd className="text-muted">No contact info captured — open the requester&apos;s profile.</dd>
+            <dd className="text-muted sm:col-span-2">No contact info captured — open the requester&apos;s profile.</dd>
           )}
         </dl>
         <p className="mt-3 text-[12.5px] text-muted">
@@ -114,7 +116,7 @@ function ClaimSummary({ targetType, target }: { targetType: string; target: Reco
   switch (targetType) {
     case "experience":
       return (
-        <dl className="mt-2 grid gap-2 text-[13.5px] sm:grid-cols-[140px_1fr]">
+        <dl className="mt-2 grid gap-2 text-[13.5px] sm:grid-cols-[110px_minmax(0,1fr)]">
           <Row k="Title" v={t.title as string} />
           <Row k="Organisation" v={t.organization as string} />
           <Row k="Location" v={t.location as string} />
@@ -124,7 +126,7 @@ function ClaimSummary({ targetType, target }: { targetType: string; target: Reco
       );
     case "education":
       return (
-        <dl className="mt-2 grid gap-2 text-[13.5px] sm:grid-cols-[140px_1fr]">
+        <dl className="mt-2 grid gap-2 text-[13.5px] sm:grid-cols-[110px_minmax(0,1fr)]">
           <Row k="Institution" v={t.institution as string} />
           <Row k="Qualification" v={t.qualification_level as string} />
           <Row k="Field" v={t.field_of_study as string} />
@@ -133,7 +135,7 @@ function ClaimSummary({ targetType, target }: { targetType: string; target: Reco
       );
     case "project":
       return (
-        <dl className="mt-2 grid gap-2 text-[13.5px] sm:grid-cols-[140px_1fr]">
+        <dl className="mt-2 grid gap-2 text-[13.5px] sm:grid-cols-[110px_minmax(0,1fr)]">
           <Row k="Project" v={t.project_name as string} />
           <Row k="Client" v={t.client_name as string} />
           <Row k="Sector" v={t.sector as string} />
@@ -144,7 +146,7 @@ function ClaimSummary({ targetType, target }: { targetType: string; target: Reco
       );
     case "certification":
       return (
-        <dl className="mt-2 grid gap-2 text-[13.5px] sm:grid-cols-[140px_1fr]">
+        <dl className="mt-2 grid gap-2 text-[13.5px] sm:grid-cols-[110px_minmax(0,1fr)]">
           <Row k="Name" v={t.name as string} />
           <Row k="Issuer" v={t.issuer as string} />
           <Row k="Year" v={t.year as number} />

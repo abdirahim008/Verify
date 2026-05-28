@@ -68,7 +68,7 @@ export function VisibilityForm({
                       disabled={disabled}
                       onClick={() => setLevel(s.key, level)}
                       className={cn(
-                        "rounded-full px-3 py-1 text-[12.5px] font-medium transition",
+                        "rounded-full px-3.5 py-2 text-[12.5px] font-medium transition min-h-[36px]",
                         selected ? "bg-ink text-paper" : "text-ink-soft hover:text-ink",
                         disabled && "opacity-40 cursor-not-allowed",
                       )}

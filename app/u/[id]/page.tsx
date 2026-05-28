@@ -61,15 +61,15 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
 function IndividualProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublicProfile>>, { kind: "individual" }> }) {
   return (
     <article>
-      <h1 className="font-serif text-[40px] sm:text-[52px] tracking-[-0.025em] leading-[1.05]">{p.fullName}</h1>
-      {p.headline && <p className="font-serif italic text-[18px] text-ink-soft mt-2">{p.headline}</p>}
-      <div className="mt-2 text-[13px] text-muted">
+      <h1 className="font-serif text-[32px] sm:text-[44px] lg:text-[52px] tracking-[-0.025em] leading-[1.05] break-words">{p.fullName}</h1>
+      {p.headline && <p className="font-serif italic text-[16px] sm:text-[18px] text-ink-soft mt-2 break-words">{p.headline}</p>}
+      <div className="mt-2 text-[13px] text-muted break-words">
         {[p.location, p.email, p.phone].filter(Boolean).join(" · ")}
       </div>
 
       {p.summary && (
         <section className="mt-8">
-          <p className="text-[15px] leading-relaxed text-ink-soft max-w-2xl">{p.summary}</p>
+          <p className="text-[15px] leading-relaxed text-ink-soft max-w-2xl whitespace-pre-line">{p.summary}</p>
         </section>
       )}
 
@@ -138,14 +138,14 @@ function IndividualProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPub
 function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublicProfile>>, { kind: "company" }> }) {
   return (
     <article>
-      <h1 className="font-serif text-[40px] sm:text-[52px] tracking-[-0.025em] leading-[1.05]">{p.name}</h1>
-      <div className="mt-2 text-[13px] text-muted">
+      <h1 className="font-serif text-[32px] sm:text-[44px] lg:text-[52px] tracking-[-0.025em] leading-[1.05] break-words">{p.name}</h1>
+      <div className="mt-2 text-[13px] text-muted break-words">
         {[p.country, p.foundedYear && `Founded ${p.foundedYear}`, p.website, p.email].filter(Boolean).join(" · ")}
       </div>
 
       {p.about && (
         <Section title="About">
-          <p className="text-[15px] leading-relaxed text-ink-soft max-w-2xl whitespace-pre-line">{p.about}</p>
+          <p className="text-[15px] leading-relaxed text-ink-soft max-w-2xl whitespace-pre-line break-words">{p.about}</p>
         </Section>
       )}
 

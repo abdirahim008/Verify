@@ -71,7 +71,9 @@ export function RequestVerificationModal({ open, onClose, target }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" role="dialog" aria-modal>
       <button aria-label="Close" onClick={done ? closeAndRefresh : onClose} className="absolute inset-0 bg-ink/60 backdrop-blur-sm" />
-      <div className="relative w-full sm:max-w-lg bg-paper rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto">
+      {/* `dvh` so the modal respects iOS Safari's collapsing toolbar.
+          Falls back to `vh` on older browsers automatically. */}
+      <div className="relative w-full sm:max-w-lg bg-paper rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[92vh] sm:max-h-[90dvh] overflow-y-auto">
         <header className="px-6 pt-6 pb-4 border-b border-border-soft">
           <p className="section-eyebrow text-sienna">Request verification &middot; {TARGET_LABELS[target.type]}</p>
           <h2 className="font-serif text-[22px] tracking-tightish mt-2">{target.label}</h2>

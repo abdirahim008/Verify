@@ -13,7 +13,7 @@ export function MarkPaidButton({ requestId }: { requestId: string }) {
   const [pending, startTransition] = useTransition();
   return (
     <Button
-      kind="quiet" size="sm" disabled={pending}
+      kind="quiet" size="md" disabled={pending}
       onClick={() => {
         startTransition(async () => {
           try {

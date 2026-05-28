@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Source_Sans_3, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 
@@ -31,6 +31,16 @@ export const metadata: Metadata = {
     description: "Build a structured profile and download a beautiful CV or company profile.",
     type: "website",
   },
+};
+
+// Next 14 inserts a default viewport tag, but we set it explicitly so
+// the maximum-scale isn't capped (a11y), and so iOS Safari respects the
+// safe-area insets we may use later.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#f3f2ef",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

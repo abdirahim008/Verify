@@ -29,13 +29,14 @@ export function FeedQueueActions({ id, approved }: { id: string; approved: boole
 
   return (
     <div className="shrink-0">
+      {/* `md` size on these so finger-targets clear ~40px on touch. */}
       <div className="flex gap-2">
         {!approved && (
-          <Button kind="sienna" size="sm" onClick={() => go("approve")} disabled={pending}>
+          <Button kind="sienna" size="md" onClick={() => go("approve")} disabled={pending}>
             {pending ? "..." : "Approve"}
           </Button>
         )}
-        <Button kind="danger" size="sm" onClick={() => go("reject")} disabled={pending}>
+        <Button kind="danger" size="md" onClick={() => go("reject")} disabled={pending}>
           {pending ? "..." : approved ? "Remove" : "Reject"}
         </Button>
       </div>
