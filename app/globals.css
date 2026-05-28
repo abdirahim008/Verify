@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  html, body {
+    background-color: #f3f2ef;
+    color: #1c1c1c;
+    font-feature-settings: "ss01";
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-sans), "Source Sans 3", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* Inputs inherit by default so forms feel like editorial text, not browser chrome. */
+  input, textarea, select, button { font: inherit; color: inherit; }
+  /* Sticky header is 60px; offset anchored scrolls so the section heading
+     isn't tucked under it. */
+  [id] { scroll-margin-top: 80px; }
+}
+
+@layer components {
+  .field {
+    @apply w-full rounded-md border border-border bg-paper px-3 py-2 text-[14px] outline-none transition;
+    @apply focus:border-sienna focus:ring-2 focus:ring-sienna/15;
+  }
+  .label {
+    @apply block text-[12.5px] font-medium text-ink-soft mb-1.5;
+  }
+  .helper {
+    @apply text-[12px] text-muted mt-1;
+  }
+  .section-eyebrow {
+    @apply text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted;
+  }
+  .card {
+    @apply bg-paper border border-border rounded-[10px] p-6;
+  }
+}

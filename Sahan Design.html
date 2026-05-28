@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Sahan — Verified Professional Profiles</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300..700;1,300..700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300..700;1,8..60,300..700&family=Public+Sans:ital,wght@0,300..800;1,300..800&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=Archivo:wght@400..700&family=IBM+Plex+Sans:wght@400..600&family=IBM+Plex+Serif:wght@400..600&family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400..600&display=swap" rel="stylesheet" />
+
+<style>
+  html, body { margin: 0; padding: 0; background: #f0eee9; font-family: 'Source Sans 3', -apple-system, system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="brand.jsx"></script>
+<script type="text/babel" src="screens/signup.jsx"></script>
+<script type="text/babel" src="screens/dashboard.jsx"></script>
+<script type="text/babel" src="screens/individual-builder.jsx"></script>
+<script type="text/babel" src="screens/company-builder.jsx"></script>
+<script type="text/babel" src="screens/templates-and-verify.jsx"></script>
+<script type="text/babel" src="screens/settings.jsx"></script>
+<script type="text/babel" src="screens/mobile.jsx"></script>
+<script type="text/babel" src="pdfs/cv-editorial.jsx"></script>
+<script type="text/babel" src="pdfs/cv-sidebar.jsx"></script>
+<script type="text/babel" src="pdfs/cv-mono.jsx"></script>
+<script type="text/babel" src="pdfs/company-profile.jsx"></script>
+<script type="text/babel" src="pdfs/company-profile-annual.jsx"></script>
+<script type="text/babel" src="pdfs/company-profile-minimal.jsx"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="env,react">
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+function App() {
+  return (
+    <DesignCanvas
+      projectTitle="Sahan"
+      projectSubtitle="Verified Professional Profiles — design exploration · East Africa humanitarian sector"
+    >
+      {/* ——— 1. PDF TEMPLATES — the wow ——— */}
+      <DCSection id="pdf-templates" title="PDF templates — the wow moment"
+        subtitle="The CV / company profile users download. This is the hook. Fonts embedded, A4, verified badges inline.">
+        <DCArtboard id="cv-editorial" label="CV · Editorial · Fraunces + Newsreader" width={794} height={1123}>
+          <CVEditorial />
+        </DCArtboard>
+        <DCArtboard id="cv-sidebar" label="CV · Sidebar · Archivo + Plex" width={794} height={1123}>
+          <CVSidebar />
+        </DCArtboard>
+        <DCArtboard id="cv-mono" label="CV · Mono · Space Grotesk + Plex" width={794} height={1123}>
+          <CVMono />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="company-pdf" title="Company profile · Template 01 — Editorial"
+        subtitle="Deep-navy cover with topographic linework + wax-seal verified mark. Source Serif 4 display, Public Sans labels.">
+        <DCArtboard id="cp-cover" label="01 · Editorial · Cover" width={794} height={1123}>
+          <CompanyCover />
+        </DCArtboard>
+        <DCArtboard id="cp-about" label="01 · Editorial · About / Mission / Sectors" width={794} height={1123}>
+          <CompanyAbout />
+        </DCArtboard>
+        <DCArtboard id="cp-projects" label="01 · Editorial · Selected projects (verified)" width={794} height={1123}>
+          <CompanyProjects />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="company-pdf-annual" title="Company profile · Template 02 — Annual Report"
+        subtitle="Navy banner + photography slot for a signature site image. Annual-report register, structured metric grid.">
+        <DCArtboard id="cp2-cover" label="02 · Annual · Cover" width={794} height={1123}>
+          <CompanyCoverAnnual />
+        </DCArtboard>
+        <DCArtboard id="cp2-about" label="02 · Annual · About / Mission / Sectors" width={794} height={1123}>
+          <CompanyAboutAnnual />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="company-pdf-minimal" title="Company profile · Template 03 — Minimalist"
+        subtitle="Almost all white. Massive serif statement, hairline rules, single restrained navy accent — boutique consultancy register.">
+        <DCArtboard id="cp3-cover" label="03 · Minimalist · Cover" width={794} height={1123}>
+          <CompanyCoverMinimal />
+        </DCArtboard>
+        <DCArtboard id="cp3-about" label="03 · Minimalist · About / Mission" width={794} height={1123}>
+          <CompanyAboutMinimal />
+        </DCArtboard>
+      </DCSection>
+
+      {/* ——— 2. APP UI — desktop ——— */}
+      <DCSection id="onboarding" title="Onboarding"
+        subtitle="The fork between individual and company. Editorial register from the first screen.">
+        <DCArtboard id="signup" label="Signup · Pick account type" width={1280} height={820}>
+          <Signup />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="app-home" title="Logged-in homepage"
+        subtitle="Own activity above the fold (the engagement driver). Curated sector feed below — RSS-only, attribution mandatory.">
+        <DCArtboard id="dashboard" label="Dashboard · ReliefWeb / World Bank / UNICEF feed + verification approved" width={1440} height={920}>
+          <Dashboard />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="builder" title="Profile builders — structured, live-previewed"
+        subtitle="Structured sections, completeness sidebar, live CV preview on the right. The 'minimum core' fast-path is already passed in these examples.">
+        <DCArtboard id="individual" label="Individual · Experience section being edited" width={1440} height={980}>
+          <IndividualBuilder />
+        </DCArtboard>
+        <DCArtboard id="company" label="Company · Selected projects (verification target)" width={1440} height={980}>
+          <CompanyBuilder />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="templates-verify" title="Template picker + verification moment"
+        subtitle="Where the user chooses a template, and where the paid verification request flows.">
+        <DCArtboard id="templates" label="Templates · 3 CVs side-by-side" width={1440} height={980}>
+          <TemplatesPicker />
+        </DCArtboard>
+        <DCArtboard id="verify" label="Verification · request modal, payment stub" width={1440} height={980}>
+          <VerificationFlow />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="settings" title="Privacy & visibility"
+        subtitle="§10 of the spec made visible. Locked rows (referees, evidence) are explicitly un-toggleable.">
+        <DCArtboard id="privacy" label="Settings · per-section visibility + hard rules" width={1440} height={980}>
+          <PrivacySettings />
+        </DCArtboard>
+      </DCSection>
+
+      {/* ——— 3. MOBILE ——— */}
+      <DCSection id="mobile" title="Mobile — many users are on phones"
+        subtitle="iPhone-width responsive views of the three primary moments.">
+        <DCArtboard id="m-dashboard" label="Mobile · Dashboard" width={390} height={780}>
+          <MobileDashboard />
+        </DCArtboard>
+        <DCArtboard id="m-builder" label="Mobile · Add experience" width={390} height={780}>
+          <MobileBuilder />
+        </DCArtboard>
+        <DCArtboard id="m-cv" label="Mobile · CV preview + template swap" width={390} height={780}>
+          <MobileCVPreview />
+        </DCArtboard>
+      </DCSection>
+
+      <DCPostIt top={120} left={40} rotate={-3} width={220}>
+        Cover-led PDFs first — the user said the WOW factor lives there. Three CV registers + one company profile.
+      </DCPostIt>
+      <DCPostIt top={120} right={40} rotate={2.5} width={220}>
+        Verified badge is per-claim, never global. It shows beside the specific experience/project it attests to.
+      </DCPostIt>
+    </DesignCanvas>
+  );
+}
+
+// Wait a tick for all babel scripts to load
+const interval = setInterval(() => {
+  if (window.CVEditorial && window.CVSidebar && window.CVMono &&
+      window.CompanyCover && window.CompanyAbout && window.CompanyProjects &&
+      window.CompanyCoverAnnual && window.CompanyAboutAnnual &&
+      window.CompanyCoverMinimal && window.CompanyAboutMinimal &&
+      window.Signup && window.Dashboard && window.IndividualBuilder &&
+      window.CompanyBuilder && window.TemplatesPicker && window.VerificationFlow &&
+      window.PrivacySettings && window.MobileDashboard && window.MobileBuilder && window.MobileCVPreview) {
+    clearInterval(interval);
+    root.render(<App />);
+  }
+}, 50);
+</script>
+</body>
+</html>

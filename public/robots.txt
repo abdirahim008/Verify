@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Allow: /u/
+
+# Don't crawl auth flow or any in-app routes — visibility is enforced on
+# /u/ pages, and the rest live behind auth anyway.
+Disallow: /home
+Disallow: /profile
+Disallow: /settings
+Disallow: /templates
+Disallow: /verification
+Disallow: /admin
+Disallow: /api/
+Disallow: /auth/
+
+Sitemap: /sitemap.xml
