@@ -61,10 +61,18 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
 function IndividualProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublicProfile>>, { kind: "individual" }> }) {
   return (
     <article>
-      <h1 className="font-serif text-[32px] sm:text-[44px] lg:text-[52px] tracking-[-0.025em] leading-[1.05] break-words">{p.fullName}</h1>
-      {p.headline && <p className="font-serif italic text-[16px] sm:text-[18px] text-ink-soft mt-2 break-words">{p.headline}</p>}
-      <div className="mt-2 text-[13px] text-muted break-words">
-        {[p.location, p.email, p.phone].filter(Boolean).join(" · ")}
+      <div className="flex items-start gap-5 sm:gap-7">
+        {p.photoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={p.photoUrl} alt="" className="w-20 h-20 sm:w-28 sm:h-28 rounded-full object-cover border border-border shrink-0" />
+        )}
+        <div className="min-w-0">
+          <h1 className="font-serif text-[32px] sm:text-[44px] lg:text-[52px] tracking-[-0.025em] leading-[1.05] break-words">{p.fullName}</h1>
+          {p.headline && <p className="font-serif italic text-[16px] sm:text-[18px] text-ink-soft mt-2 break-words">{p.headline}</p>}
+          <div className="mt-2 text-[13px] text-muted break-words">
+            {[p.location, p.email, p.phone].filter(Boolean).join(" · ")}
+          </div>
+        </div>
       </div>
 
       {p.summary && (
@@ -138,9 +146,17 @@ function IndividualProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPub
 function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublicProfile>>, { kind: "company" }> }) {
   return (
     <article>
-      <h1 className="font-serif text-[32px] sm:text-[44px] lg:text-[52px] tracking-[-0.025em] leading-[1.05] break-words">{p.name}</h1>
-      <div className="mt-2 text-[13px] text-muted break-words">
-        {[p.country, p.foundedYear && `Founded ${p.foundedYear}`, p.website, p.email].filter(Boolean).join(" · ")}
+      <div className="flex items-start gap-5 sm:gap-7">
+        {p.logoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={p.logoUrl} alt="" className="w-20 h-20 sm:w-28 sm:h-28 rounded-lg object-contain bg-cream border border-border p-2 shrink-0" />
+        )}
+        <div className="min-w-0">
+          <h1 className="font-serif text-[32px] sm:text-[44px] lg:text-[52px] tracking-[-0.025em] leading-[1.05] break-words">{p.name}</h1>
+          <div className="mt-2 text-[13px] text-muted break-words">
+            {[p.country, p.foundedYear && `Founded ${p.foundedYear}`, p.website, p.email].filter(Boolean).join(" · ")}
+          </div>
+        </div>
       </div>
 
       {p.about && (

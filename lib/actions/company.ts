@@ -49,6 +49,19 @@ export async function saveCompanyBasics(values: CompanyBasicsValues) {
   bust();
 }
 
+// ─── logo URL (company) ────────────────────────────────────────────
+// Separate action so the uploader can persist independently of the
+// rest of the basics form. URL is null on remove.
+export async function setCompanyLogoUrl(url: string | null) {
+  const v = url === null ? null : String(url).trim().slice(0, 600);
+  const { supabase, userId } = await authedClient();
+  const { error } = await supabase
+    .from("company_details")
+    .upsert({ profile_id: userId, logo_url: v }, { onConflict: "profile_id" });
+  if (error) throw new Error(error.message);
+  bust();
+}
+
 // ─── about / mission / vision ──────────────────────────────────────
 export async function saveCompanyAbout(values: CompanyAboutValues) {
   const v = companyAboutSchema.parse(values);

@@ -34,6 +34,7 @@ export interface CVData {
   location: string;
   email: string;
   phone: string;
+  photoUrl: string;
   languages: string[];
   experiences: CVExperience[];
   educations: CVEducation[];
@@ -70,6 +71,7 @@ export async function loadCVData(userId: string): Promise<CVData | null> {
     location: basics.location ?? "",
     email: basics.email ?? "",
     phone: basics.phone ?? "",
+    photoUrl: basics.photo_url ?? "",
     languages: basics.languages ?? [],
     skills: (skillRes.data ?? []).map((s) => s.name),
     experiences: (expRes.data ?? []).map((e) => ({

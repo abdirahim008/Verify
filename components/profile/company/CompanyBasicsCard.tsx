@@ -5,8 +5,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/Button";
 import { SectionCard, Field } from "../SectionCard";
+import { MediaUploader } from "../MediaUploader";
 import { companyBasicsSchema, type CompanyBasicsValues } from "@/lib/schemas";
-import { saveCompanyBasics } from "@/lib/actions/company";
+import { saveCompanyBasics, setCompanyLogoUrl } from "@/lib/actions/company";
 
 interface Props { initial: CompanyBasicsValues & { hasRow: boolean } }
 
@@ -45,6 +46,11 @@ export function CompanyBasicsCard({ initial }: Props) {
       required
       defaultOpen={!initial.hasRow || !initial.company_name}
     >
+      <div className="mb-5">
+        <p className="label">Company logo</p>
+        <MediaUploader kind="logo" currentUrl={initial.logo_url || null} onSave={setCompanyLogoUrl} />
+      </div>
+
       {!editing ? (
         <Display initial={initial} onEdit={() => setEditing(true)} />
       ) : (
@@ -69,9 +75,10 @@ export function CompanyBasicsCard({ initial }: Props) {
           <Field label="Website" error={errors.website?.message}>
             <input className="field" placeholder="example.so" {...register("website")} />
           </Field>
-          <Field label="Logo URL (optional)" error={errors.logo_url?.message}>
-            <input className="field" placeholder="https://..." {...register("logo_url")} />
-          </Field>
+          {/* logo_url is hidden — the uploader above is the canonical
+              way to set it. The hidden input keeps the form values
+              shape consistent with the schema. */}
+          <input type="hidden" {...register("logo_url")} />
           <Field label="Public email" error={errors.email?.message}>
             <input type="email" className="field" {...register("email")} />
           </Field>

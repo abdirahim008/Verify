@@ -17,6 +17,7 @@ export interface PublicIndividual {
   kind: "individual";
   fullName: string;
   headline: string;
+  photoUrl: string | null;
   visible: Set<string>;          // section keys this viewer can see
   summary: string | null;
   location: string | null;
@@ -31,6 +32,7 @@ export interface PublicIndividual {
 export interface PublicCompany {
   kind: "company";
   name: string;
+  logoUrl: string | null;
   about: string | null;
   mission: string | null;
   vision: string | null;
@@ -84,6 +86,7 @@ export async function loadPublicProfile(
     return {
       kind: "company",
       name: b.company_name,
+      logoUrl: b.logo_url ?? null,
       about: visible.has("summary") ? b.about ?? null : null,
       mission: visible.has("summary") ? b.mission ?? null : null,
       vision: visible.has("summary") ? b.vision ?? null : null,
@@ -125,6 +128,7 @@ export async function loadPublicProfile(
     kind: "individual",
     fullName: b.full_name,
     headline: b.headline ?? "",
+    photoUrl: b.photo_url ?? null,
     summary: visible.has("summary") ? b.summary ?? null : null,
     location: visible.has("location") ? b.location ?? null : null,
     email: visible.has("contact") ? b.email ?? null : null,

@@ -22,7 +22,7 @@ const COLORS = {
 
 export function SidebarCV({ data }: { data: CVData }) {
   const { fullName, headline, summary, location, email, phone, languages,
-          experiences, educations, certifications, skills, year } = data;
+          experiences, educations, certifications, skills, year, photoUrl } = data;
 
   // Right-column skills cap. The Mono variant shows everything; Sidebar's
   // narrow sidebar can't fit more than ~8 without breaking the rhythm.
@@ -35,7 +35,15 @@ export function SidebarCV({ data }: { data: CVData }) {
       <style dangerouslySetInnerHTML={{ __html: STYLES }} />
       <section className="page">
         <aside className="sb">
-          <div className="sb-monogram">{initials(fullName)}</div>
+          {/* Show the uploaded photo if we have one; otherwise fall back
+              to the existing initials monogram. Both render at the same
+              17mm circle so the rest of the sidebar rhythm is unchanged. */}
+          {photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={photoUrl} alt="" className="sb-photo" />
+          ) : (
+            <div className="sb-monogram">{initials(fullName)}</div>
+          )}
           <h1 className="sb-name">{toLines(fullName).map((l, i) => <span key={i}>{l.toUpperCase()}<br /></span>)}</h1>
           {(hLeft || hRight) && (
             <p className="sb-headline">
@@ -227,6 +235,13 @@ const STYLES = `
   font-family: "Public Sans", "Source Sans 3", system-ui, sans-serif;
   font-weight: 700; font-size: 17pt; letter-spacing: -0.02em;
   margin-bottom: 6mm;
+}
+.sb-photo {
+  width: 17mm; height: 17mm; border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid ${COLORS.sand}44;
+  margin-bottom: 6mm;
+  display: block;
 }
 .sb-name {
   font-family: "Public Sans", "Source Sans 3", system-ui, sans-serif;

@@ -57,6 +57,19 @@ export async function saveBasics(values: BasicsValues) {
   bust();
 }
 
+// ─── avatar URL (individual photo) ──────────────────────────────────────
+// Separate action from saveBasics so the uploader can persist in one shot
+// without rebuilding the rest of the form. URL is null on remove.
+export async function setAvatarUrl(url: string | null) {
+  const v = url === null ? null : String(url).trim().slice(0, 600);
+  const { supabase, userId } = await authedClient();
+  const { error } = await supabase
+    .from("individual_details")
+    .upsert({ profile_id: userId, photo_url: v }, { onConflict: "profile_id" });
+  if (error) throw new Error(error.message);
+  bust();
+}
+
 // ─── languages (lives on individual_details.languages array) ────────────
 export async function saveLanguages(values: { languages: string[] }) {
   const v = languagesSchema.parse(values);

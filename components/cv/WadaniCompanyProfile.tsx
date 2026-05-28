@@ -53,7 +53,14 @@ function Cover({ data }: { data: CompanyData }) {
         <span>Edition {data.year} &middot; I</span>
       </div>
 
-      <div className="cover-mono">{mono || "·"}<span style={{ fontStyle: "italic" }}>.</span></div>
+      {/* Logo wins if uploaded; otherwise fall back to the existing
+          monogram circle so old/empty profiles still look intentional. */}
+      {data.logoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={data.logoUrl} alt="" className="cover-logo" />
+      ) : (
+        <div className="cover-mono">{mono || "·"}<span style={{ fontStyle: "italic" }}>.</span></div>
+      )}
 
       <div className="cover-seal">
         <svg width="16" height="16" viewBox="0 0 11 11" aria-hidden>
@@ -333,6 +340,14 @@ const STYLES = `
   font-family: "Source Serif 4", "Source Serif Pro", Georgia, serif;
   font-size: 22pt; font-weight: 350; color: ${COLORS.sand2};
   letter-spacing: -0.02em;
+}
+.cover-logo {
+  position: absolute; top: 36mm; left: 18mm;
+  width: 24mm; height: 24mm;
+  object-fit: contain;
+  background: rgba(255,255,255,0.92);
+  border-radius: 4mm;
+  padding: 2mm;
 }
 .cover-seal {
   position: absolute; top: 36mm; right: 18mm;

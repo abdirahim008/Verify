@@ -5,8 +5,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/Button";
 import { SectionCard, Field } from "../SectionCard";
+import { MediaUploader } from "../MediaUploader";
 import { basicsSchema, type BasicsValues } from "@/lib/schemas";
-import { saveBasics } from "@/lib/actions/profile";
+import { saveBasics, setAvatarUrl } from "@/lib/actions/profile";
 
 interface Props {
   initial: BasicsValues & { hasRow: boolean };
@@ -45,6 +46,13 @@ export function BasicsCard({ initial }: Props) {
       required
       defaultOpen={!initial.hasRow || !initial.full_name}
     >
+      {/* Photo uploader sits above the form regardless of edit mode — it
+          saves independently from the basics form via its own action. */}
+      <div className="mb-5">
+        <p className="label">Profile photo</p>
+        <MediaUploader kind="avatar" currentUrl={initial.photo_url || null} onSave={setAvatarUrl} />
+      </div>
+
       {!editing ? (
         <Display initial={initial} onEdit={() => setEditing(true)} />
       ) : (
@@ -64,9 +72,10 @@ export function BasicsCard({ initial }: Props) {
           <Field label="Phone (for CV)" error={errors.phone?.message}>
             <input type="tel" className="field" autoComplete="tel" {...register("phone")} />
           </Field>
-          <Field label="Photo URL (optional)" error={errors.photo_url?.message} hint="Paste a public link for now — uploads come later">
-            <input className="field" {...register("photo_url")} />
-          </Field>
+          {/* photo_url is hidden — the uploader above is the canonical
+              way to set it. Keep the registered field so the form's
+              shape stays stable. */}
+          <input type="hidden" {...register("photo_url")} />
           <div className="sm:col-span-2">
             <Field label="Short summary" error={errors.summary?.message} hint="2–4 sentences. Quantify if you can.">
               <textarea rows={4} className="field" {...register("summary")} />

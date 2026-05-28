@@ -22,6 +22,7 @@ export interface CompanyCert {
 
 export interface CompanyData {
   name: string; tagline: string;
+  logoUrl: string;
   about: string; mission: string; vision: string;
   country: string; registrationNumber: string;
   foundedYear: string; website: string; email: string; phone: string;
@@ -64,6 +65,7 @@ export async function loadCompanyDataForPdf(userId: string): Promise<CompanyData
   return {
     name: b.company_name,
     tagline: "", // future: a dedicated tagline field. For now keep blank.
+    logoUrl: b.logo_url ?? "",
     about: b.about ?? "",
     mission: b.mission ?? "",
     vision: b.vision ?? "",
