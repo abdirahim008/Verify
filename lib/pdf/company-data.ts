@@ -8,6 +8,7 @@ import { yearRange } from "@/lib/format";
 
 export interface CompanyProject {
   name: string; client: string; sector: string; value: string;
+  valueAmount: number | null;   // raw numeric — cover-page stat tiles sum it
   yearRange: string; scope: string;
   verified: boolean; verifiedNote: string;
 }
@@ -82,6 +83,7 @@ export async function loadCompanyDataForPdf(userId: string): Promise<CompanyData
       client: p.client_name ?? "",
       sector: p.sector ?? "",
       value: formatValue(p.value_amount, p.currency),
+      valueAmount: p.value_amount != null ? Number(p.value_amount) : null,
       yearRange: yearRange(p.year_start, p.year_end),
       scope: p.scope ?? "",
       verified: !!p.verified,

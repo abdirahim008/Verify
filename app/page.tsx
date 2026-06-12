@@ -148,7 +148,7 @@ export default function LandingPage() {
             <div>
               <p className="section-eyebrow text-sienna">Templates</p>
               <h2 className="font-serif text-[28px] sm:text-[40px] tracking-[-0.02em] mt-2 max-w-2xl leading-[1.15]">
-                Four templates, designed with intent.
+                Six templates, designed with intent.
               </h2>
               <p className="mt-2 text-[14.5px] text-ink-soft max-w-xl leading-relaxed">
                 Same structured data, different register. Switch any time — your changes flow into every template.

@@ -121,21 +121,86 @@ function CompanyTemplates({ minCore }: { minCore: boolean }) {
         <div>
           <p className="section-eyebrow text-sienna">Templates</p>
           <h1 className="font-serif text-[32px] sm:text-[44px] tracking-[-0.025em] mt-2 max-w-2xl">
-            A bid-ready company profile.
+            Three bid-ready company profiles.
           </h1>
           <p className="mt-2 text-[14.5px] text-ink-soft max-w-xl leading-relaxed">
-            One template to start — cover, about, mission &amp; vision, sectors, services, and selected projects. Verified projects render with a green check.
+            Same structured data, three registers — cover, about, mission &amp; vision, sectors, services, and selected projects. Verified projects render with a green check on every one.
           </p>
         </div>
       </div>
 
       <div className="mt-8 grid gap-5 lg:grid-cols-3">
-        <TemplateCard name="Wadani" kind="Company" tagline="Cover · about · selected projects. Dark teal cover." pairing="Source Serif 4 · Public Sans" status={minCore ? "ready" : "locked"} href="/api/company/wadani" />
-        <TemplateCard name="Compact" kind="Company" tagline="A single-page condensed profile." pairing="—" status="coming-soon" />
-        <TemplateCard name="Capability" kind="Company" tagline="Pitch-style, with key metrics up front." pairing="—" status="coming-soon" />
+        <TemplateCard name="Wadani" kind="Company" tagline="Dark teal gradient cover. Topographic ornament." pairing="Source Serif 4 · Public Sans" status={minCore ? "ready" : "locked"} href="/api/company/wadani" preview={<WadaniPreview />} />
+        <TemplateCard name="Annual" kind="Company" tagline="Annual-report register. Navy band, stat tiles." pairing="Source Serif 4 · Public Sans" status={minCore ? "ready" : "locked"} href="/api/company/annual" preview={<AnnualPreview />} />
+        <TemplateCard name="Minimal" kind="Company" tagline="Massive type, hairlines, one blue accent." pairing="Source Serif 4 · Public Sans" status={minCore ? "ready" : "locked"} href="/api/company/minimal" preview={<MinimalPreview />} />
       </div>
 
       {!minCore && <LockedBanner href="/profile" company />}
+    </div>
+  );
+}
+
+// Company template mini-previews — small static mockups mirroring each
+// register so the cards read at a glance.
+function WadaniPreview() {
+  return (
+    <div className="w-[120px] h-[170px] shadow text-[#e8edf3] p-2.5 relative overflow-hidden" style={{ background: "linear-gradient(165deg, #0a1a2e 0%, #0e2a4a 55%, #0c1f38 100%)", fontFamily: "system-ui, sans-serif" }}>
+      <div className="text-[4px] uppercase tracking-[0.2em] opacity-70">— Company profile</div>
+      <div className="mt-7 leading-[0.92]" style={{ fontSize: 14, fontWeight: 300, letterSpacing: "-0.04em", fontFamily: "Source Serif 4, Georgia, serif" }}>
+        Wadani<br />Engineering<br /><em className="opacity-70">Group.</em>
+      </div>
+      <div className="absolute bottom-2 left-2.5 right-2.5 pt-1.5 border-t border-white/20 text-[3.5px] uppercase tracking-wider opacity-70">
+        Founded · Registration · HQ · Web
+      </div>
+    </div>
+  );
+}
+function AnnualPreview() {
+  return (
+    <div className="w-[120px] h-[170px] shadow bg-[#fafaf7] relative overflow-hidden" style={{ fontFamily: "system-ui, sans-serif" }}>
+      <div className="h-12 relative" style={{ background: "linear-gradient(180deg, #0d3b66, #072044)" }}>
+        <div className="absolute bottom-1 left-2 text-white leading-[1.0]" style={{ fontSize: 9, fontWeight: 350, fontFamily: "Source Serif 4, Georgia, serif" }}>
+          Wadani Engineering<br /><em className="text-[#b6c4d6]">Group.</em>
+        </div>
+      </div>
+      <div className="mx-2 -mt-1.5 h-9 rounded-[2px] border border-[#d8dde3] relative" style={{ background: "repeating-linear-gradient(45deg, #d3dae3 0px, #d3dae3 1px, #e3e8ef 1px, #e3e8ef 6px)" }} />
+      <div className="px-2 mt-1.5 text-[3.5px] uppercase tracking-[0.2em] text-[#0d3b66] font-bold">Established Mogadishu, 2012</div>
+      <div className="px-2 mt-0.5 text-[5px] italic text-[#072044] leading-snug" style={{ fontFamily: "Source Serif 4, Georgia, serif" }}>
+        Civil infrastructure for the Horn of Africa.
+      </div>
+      <div className="absolute bottom-2 left-2 right-2 pt-1 border-t border-[#d8dde3] grid grid-cols-4 gap-1">
+        {["14", "$22M", "23", "9"].map((n, i) => (
+          <div key={i}>
+            <div className="text-[7px] text-[#072044]" style={{ fontFamily: "Source Serif 4, Georgia, serif" }}>{n}</div>
+            <div className="text-[3px] uppercase tracking-wider text-[#0d3b66] font-bold">Stat</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+function MinimalPreview() {
+  return (
+    <div className="w-[120px] h-[170px] shadow bg-[#fbfbfa] p-2.5 relative overflow-hidden text-[#0e1116]" style={{ fontFamily: "system-ui, sans-serif" }}>
+      <div className="flex justify-between text-[3.5px] uppercase tracking-[0.2em] text-[#6e7480] font-semibold">
+        <span>Wadani Engineering</span><span>MMXXVI</span>
+      </div>
+      <div className="mt-1.5 flex items-center gap-1">
+        <em className="text-[6px] text-[#0a5cad]" style={{ fontFamily: "Source Serif 4, Georgia, serif" }}>W.E.G</em>
+        <span className="w-2 h-px bg-[#0e1116]" />
+        <span className="text-[3.5px] uppercase tracking-wider text-[#6e7480] font-semibold">Est. 2012</span>
+      </div>
+      <div className="mt-6 leading-[0.88]" style={{ fontSize: 17, fontWeight: 250, letterSpacing: "-0.05em", fontFamily: "Source Serif 4, Georgia, serif" }}>
+        Wadani<br />Engineering<br /><em className="text-[#0a5cad]">Group.</em>
+      </div>
+      <div className="absolute bottom-2 left-2.5 right-2.5 pt-1 border-t-[1.5px] border-[#0e1116] grid grid-cols-3 gap-1">
+        {["Founded", "HQ", "Web"].map((k, i) => (
+          <div key={i}>
+            <div className="text-[3px] uppercase tracking-wider text-[#6e7480] font-bold">{k}</div>
+            <div className="text-[4.5px]" style={{ fontFamily: "Source Serif 4, Georgia, serif" }}>—</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

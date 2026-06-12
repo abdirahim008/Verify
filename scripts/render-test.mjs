@@ -100,31 +100,85 @@ if (ctCount[0].n === 0) {
 }
 await pg.end();
 
-// ── 2. mint a session ───────────────────────────────────────────────
+// ── 1b. dedicated COMPANY test account (created once, reused) ───────
+// The company PDF routes require account_type='company', so we keep a
+// separate synthetic user rather than flipping the real account's type.
+const COMPANY_EMAIL = "render-test-company@sahan.dev";
 const admin = createClient(SUPA_URL, SERVICE, { auth: { persistSession: false } });
-const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({ type: "magiclink", email });
-if (linkErr) { console.error("generateLink:", linkErr.message); process.exit(1); }
-const tokenHash = linkData.properties.hashed_token;
 
-const anon = createClient(SUPA_URL, ANON, { auth: { persistSession: false } });
-const { data: otpData, error: otpErr } = await anon.auth.verifyOtp({ type: "email", token_hash: tokenHash });
-if (otpErr || !otpData.session) { console.error("verifyOtp:", otpErr?.message); process.exit(1); }
-const session = otpData.session;
-console.log("Session minted.");
-
-// @supabase/ssr cookie format: "base64-" + base64url(JSON), chunked at
-// 3180 chars (sb-<ref>-auth-token.0, .1, ... when over the limit).
-const raw = "base64-" + Buffer.from(JSON.stringify(session)).toString("base64url");
-const CHUNK = 3180;
-const cookies = [];
-if (raw.length <= CHUNK) {
-  cookies.push(`sb-${REF}-auth-token=${raw}`);
+const pg2 = new Client({ connectionString: DB_URL, ssl: { rejectUnauthorized: false } });
+await pg2.connect();
+let { rows: cu } = await pg2.query("select id from auth.users where email=$1", [COMPANY_EMAIL]);
+let companyUid;
+if (!cu.length) {
+  const { data: created, error: cErr } = await admin.auth.admin.createUser({
+    email: COMPANY_EMAIL,
+    email_confirm: true,
+    user_metadata: { account_type: "company", display_name: "Wadani Engineering Group" },
+  });
+  if (cErr) { console.error("createUser:", cErr.message); process.exit(1); }
+  companyUid = created.user.id;
+  console.log("Created company test user.");
 } else {
-  for (let i = 0; i * CHUNK < raw.length; i++) {
-    cookies.push(`sb-${REF}-auth-token.${i}=${raw.slice(i * CHUNK, (i + 1) * CHUNK)}`);
-  }
+  companyUid = cu[0].id;
 }
-const cookieHeader = cookies.join("; ");
+
+const { rows: cdet } = await pg2.query("select company_name from public.company_details where profile_id=$1", [companyUid]);
+if (!cdet.length || !cdet[0].company_name) {
+  await pg2.query(`insert into public.company_details
+    (profile_id, company_name, about, mission, vision, country, registration_number, founded_year, website, email, sectors, core_services)
+    values ($1,'Wadani Engineering Group',
+    'Wadani Engineering Group is a Somali civil-engineering and project-management firm founded in 2012. We deliver donor-funded infrastructure — roads, water, healthcare and education facilities — across south-central Somalia and the Federal Member States. Our staff are Somali engineers, surveyors and community-engagement specialists who live and work in the regions we serve.',
+    'To build infrastructure that withstands the climate, the politics, and the next generation.',
+    'A Horn of Africa where every region''s public infrastructure is built and maintained by its own people.',
+    'Somalia','MOG-2012-04419',2012,'wadani-eg.so','info@wadani-eg.so',
+    array['Roads & bridges','Water & sanitation','Health facilities','Education facilities','Renewable energy'],
+    array['Design & feasibility studies','Construction supervision','Turnkey delivery','Climate-resilient retrofits'])
+    on conflict (profile_id) do update set company_name=excluded.company_name, about=excluded.about,
+      mission=excluded.mission, vision=excluded.vision, country=excluded.country,
+      registration_number=excluded.registration_number, founded_year=excluded.founded_year,
+      website=excluded.website, sectors=excluded.sectors, core_services=excluded.core_services`, [companyUid]);
+  await pg2.query(`insert into public.company_projects
+    (profile_id, project_name, client_name, sector, value_amount, currency, year_start, year_end, scope, verified, verified_note, verified_at) values
+    ($1,'Banadir Rural Road Programme — Phase II','World Bank / FGS','Roads',8200000,'USD',2022,2024,
+     'Rehabilitation of 47km of feeder roads connecting nine villages to the Afgooye corridor; community-employment model delivered 312 jobs.',true,'World Bank Mogadishu Office',now()),
+    ($1,'Hirshabelle Health Posts (12 facilities)','UNICEF Somalia','Health',3600000,'USD',2021,2023,
+     'Design and construction of twelve climate-resilient primary-health posts across Middle Shabelle and Hiran, including solar power and water-harvesting systems.',true,'UNICEF Somalia',now()),
+    ($1,'Galmudug Boreholes (24 sites)','UNHCR','Water',2100000,'USD',2020,2022,
+     'Solar-pumped boreholes serving displaced and host populations; full O&M handover to the Galmudug Ministry of Water.',false,null,null)`, [companyUid]);
+  await pg2.query(`insert into public.company_clients (profile_id, client_name, display_public) values
+    ($1,'World Bank',true),($1,'UNICEF',true),($1,'UNHCR',true),($1,'FCDO',true)`, [companyUid]);
+  await pg2.query(`insert into public.company_team (profile_id, person_name, role) values
+    ($1,'Eng. Abdirahman Yusuf','Managing Director'),
+    ($1,'Eng. Hodan Mohamed','Director of Operations'),
+    ($1,'Khadija Abdullahi','Head of Finance')`, [companyUid]);
+  await pg2.query(`insert into public.company_certifications (profile_id, name, issuer, year, verified, verified_note, verified_at) values
+    ($1,'ISO 9001:2015','Bureau Veritas',2023,true,'Bureau Veritas',now()),
+    ($1,'FIDIC Member Firm','FIDIC',2021,false,null,null)`, [companyUid]);
+  console.log("Seeded company profile.");
+}
+await pg2.end();
+
+// ── 2. mint sessions ────────────────────────────────────────────────
+async function mintCookie(userEmail) {
+  const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({ type: "magiclink", email: userEmail });
+  if (linkErr) { console.error("generateLink:", linkErr.message); process.exit(1); }
+  const anon = createClient(SUPA_URL, ANON, { auth: { persistSession: false } });
+  const { data: otpData, error: otpErr } = await anon.auth.verifyOtp({ type: "email", token_hash: linkData.properties.hashed_token });
+  if (otpErr || !otpData.session) { console.error("verifyOtp:", otpErr?.message); process.exit(1); }
+  // @supabase/ssr cookie format: "base64-" + base64url(JSON), chunked at
+  // 3180 chars (sb-<ref>-auth-token.0, .1, ... when over the limit).
+  const raw = "base64-" + Buffer.from(JSON.stringify(otpData.session)).toString("base64url");
+  const CHUNK = 3180;
+  const parts = [];
+  if (raw.length <= CHUNK) parts.push(`sb-${REF}-auth-token=${raw}`);
+  else for (let i = 0; i * CHUNK < raw.length; i++) parts.push(`sb-${REF}-auth-token.${i}=${raw.slice(i * CHUNK, (i + 1) * CHUNK)}`);
+  return parts.join("; ");
+}
+
+const cookieHeader = await mintCookie(email);
+const companyCookie = await mintCookie(COMPANY_EMAIL);
+console.log("Sessions minted.");
 
 // ── 3. render the three PDFs ────────────────────────────────────────
 mkdirSync("test-output", { recursive: true });
@@ -140,24 +194,33 @@ const CHECK_FONTS = {
 const BANNED_FONTS = ["Consolas", "CambriaMath", "SegoeUI", "ArialMT", "TimesNewRoman"];
 
 let allOk = true;
-for (const t of ["editorial", "sidebar", "mono"]) {
-  process.stdout.write(`→ /api/cv/${t} ... `);
-  const res = await fetch(`${APP}/api/cv/${t}`, { headers: { cookie: cookieHeader } });
+async function renderAndCheck(path, outName, cookie, requiredFonts, minPages) {
+  process.stdout.write(`→ ${path} ... `);
+  const res = await fetch(`${APP}${path}`, { headers: { cookie } });
   if (!res.ok) {
     console.log(`HTTP ${res.status}`);
     console.error("  ", (await res.text()).slice(0, 300));
-    allOk = false; continue;
+    allOk = false; return;
   }
   const buf = Buffer.from(await res.arrayBuffer());
   const isPdf = buf.subarray(0, 5).toString() === "%PDF-";
   const text = buf.toString("latin1");
   const pages = (text.match(/\/Type\s*\/Page[^s]/g) || []).length;
-  const fonts = CHECK_FONTS[t].map((f) => `${f}:${text.includes(f) ? "✓" : "✗"}`).join(" ");
+  const fonts = requiredFonts.map((f) => `${f}:${text.includes(f) ? "✓" : "✗"}`).join(" ");
   const banned = BANNED_FONTS.filter((f) => text.includes(f));
-  const ok = isPdf && pages >= 1 && CHECK_FONTS[t].every((f) => text.includes(f)) && banned.length === 0;
+  const ok = isPdf && pages >= minPages && requiredFonts.every((f) => text.includes(f)) && banned.length === 0;
   if (!ok) allOk = false;
-  writeFileSync(`test-output/cv-${t}.pdf`, buf);
+  writeFileSync(`test-output/${outName}.pdf`, buf);
   console.log(`${ok ? "OK" : "PROBLEM"} — ${(buf.length / 1024).toFixed(0)}KB, ${pages} page(s), fonts: ${fonts}${banned.length ? `, system fallbacks: ${banned.join(",")}` : ""}`);
+}
+
+for (const t of ["editorial", "sidebar", "mono"]) {
+  await renderAndCheck(`/api/cv/${t}`, `cv-${t}`, cookieHeader, CHECK_FONTS[t], 1);
+}
+// Company templates render 3 fixed pages each; all share Serif 4 + Public
+// Sans (Type 3 subsets embed hyphenated family names).
+for (const t of ["wadani", "annual", "minimal"]) {
+  await renderAndCheck(`/api/company/${t}`, `company-${t}`, companyCookie, ["Source-Serif-4", "Public-Sans"], 3);
 }
 
 console.log(allOk ? "\nAll templates rendered with intended fonts. PDFs in test-output/." : "\nSomething's off — see above.");
