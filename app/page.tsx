@@ -193,6 +193,44 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── Simple + mobile + satisfying output (the niche pitch) ──── */}
+      <section id="how" className="bg-paper border-y border-border">
+        <div className="mx-auto max-w-6xl px-5 sm:px-10 py-14 sm:py-20">
+          <div className="max-w-2xl">
+            <p className="section-eyebrow text-sienna">Simple in, beautiful out</p>
+            <h2 className="font-serif text-[28px] sm:text-[40px] tracking-[-0.02em] mt-3 leading-[1.13]">
+              Not another design tool you fight with.
+            </h2>
+            <p className="mt-4 text-[15px] sm:text-[16px] text-ink-soft leading-relaxed">
+              You shouldn&apos;t need design skills, a laptop, or an afternoon to produce a professional CV or company profile. With Sahan you fill in plain fields — once — and download a genuinely elegant PDF. Update anything later and regenerate in a tap. The hard part is done for you.
+            </p>
+          </div>
+
+          <div className="mt-9 grid gap-5 md:grid-cols-3">
+            <Pillar
+              icon={<PhoneIcon />}
+              title="Built for your phone"
+              body="Most people here build their profile on a phone, so that's how Sahan is built — no app to install, no desktop required. Fill in, preview the real PDF on-screen, download."
+            />
+            <Pillar
+              icon={<BoltIcon />}
+              title="Minutes, not afternoons"
+              body="Reach the minimum core — name, one experience, one skill — and your CV is ready to download. Enrich it whenever you like; nothing is ever re-typed."
+            />
+            <Pillar
+              icon={<SparkIcon />}
+              title="Output that looks designed"
+              body="A4, embedded fonts, print-clean, with curated colour themes. Recruiters and tender panels see a polished document — not a form someone filled in."
+            />
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <Link href="/signup?type=individual"><Button kind="primary" size="md">Start your CV — free</Button></Link>
+            <Link href="/guides" className="text-[13.5px] text-sienna font-medium hover:underline">Read the guides →</Link>
+          </div>
+        </div>
+      </section>
+
       {/* ── About (anchor target) ──────────────────────────────────── */}
       <section id="about" className="bg-cream">
         <div className="mx-auto max-w-6xl px-5 sm:px-10 py-14 sm:py-20">
@@ -248,7 +286,7 @@ function SiteHeader() {
           <Link href="/signup?type=company" className="hover:text-ink">For organisations</Link>
           <Link href="#verification" className="hover:text-ink">Verification</Link>
           <Link href="#templates" className="hover:text-ink">Templates</Link>
-          <Link href="#about" className="hover:text-ink">About</Link>
+          <Link href="/guides" className="hover:text-ink">Guides</Link>
         </nav>
         <div className="flex items-center gap-2 sm:gap-3">
           <Link href="#signin" className="text-[13px] text-ink-soft hover:text-ink hidden sm:inline-flex">Sign in</Link>
@@ -262,20 +300,62 @@ function SiteHeader() {
 }
 
 function SiteFooter() {
+  // Guide links here do double duty: useful navigation + internal links
+  // that help search engines discover and rank the long-tail pages.
+  const cvGuides = [
+    ["Humanitarian CV template", "/guides/humanitarian-cv-template"],
+    ["NGO CV template", "/guides/ngo-cv-template"],
+    ["M&E / MEAL CV", "/guides/monitoring-evaluation-cv"],
+    ["CV format · Somalia", "/guides/cv-format-somalia"],
+    ["Make a CV on your phone", "/guides/make-cv-on-phone"],
+  ] as const;
+  const coGuides = [
+    ["Company profile for tenders", "/guides/company-profile-for-tender"],
+    ["Construction company profile", "/guides/construction-company-profile"],
+    ["NGO organizational profile", "/guides/ngo-organizational-profile"],
+    ["Consultancy profile", "/guides/consultancy-company-profile"],
+  ] as const;
+
   return (
     <footer className="bg-paper border-t border-border">
-      <div className="mx-auto max-w-6xl px-5 sm:px-10 py-6 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-[12.5px] text-muted">
-        <div className="flex items-center gap-3">
-          <SahanMark size={16} />
-          <span>&copy; {new Date().getFullYear()} Sahan &middot; Mogadishu &middot; Nairobi</span>
+      <div className="mx-auto max-w-6xl px-5 sm:px-10 py-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 text-[13px]">
+        <div>
+          <SahanMark size={18} />
+          <p className="mt-3 text-muted max-w-[22ch] leading-relaxed">
+            Verified profiles, elegant CVs and company profiles — built for Somalia &amp; East Africa.
+          </p>
         </div>
-        <ul className="sm:ml-auto flex flex-wrap gap-x-6 gap-y-1">
-          <li><Link href="#about" className="hover:text-ink">About</Link></li>
-          <li><Link href="#verification" className="hover:text-ink">Verification policy</Link></li>
-          <li><Link href="#privacy" className="hover:text-ink">Privacy</Link></li>
-          <li><Link href="#terms" className="hover:text-ink">Terms</Link></li>
-          <li><Link href="#contact" className="hover:text-ink">Contact</Link></li>
-        </ul>
+        <div>
+          <p className="section-eyebrow">Guides · CVs</p>
+          <ul className="mt-3 space-y-1.5 text-ink-soft">
+            {cvGuides.map(([label, href]) => (
+              <li key={href}><Link href={href} className="hover:text-ink">{label}</Link></li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <p className="section-eyebrow">Guides · Companies</p>
+          <ul className="mt-3 space-y-1.5 text-ink-soft">
+            {coGuides.map(([label, href]) => (
+              <li key={href}><Link href={href} className="hover:text-ink">{label}</Link></li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <p className="section-eyebrow">Product</p>
+          <ul className="mt-3 space-y-1.5 text-ink-soft">
+            <li><Link href="/signup?type=individual" className="hover:text-ink">Build a CV</Link></li>
+            <li><Link href="/signup?type=company" className="hover:text-ink">Build a company profile</Link></li>
+            <li><Link href="/guides" className="hover:text-ink">All guides</Link></li>
+            <li><Link href="/login" className="hover:text-ink">Sign in</Link></li>
+          </ul>
+        </div>
+      </div>
+      <div className="border-t border-border">
+        <div className="mx-auto max-w-6xl px-5 sm:px-10 py-4 flex flex-col sm:flex-row sm:items-center gap-2 text-[12px] text-muted">
+          <span>&copy; {new Date().getFullYear()} Sahan &middot; Mogadishu &middot; Nairobi</span>
+          <span className="sm:ml-auto">Made with restraint, for the Horn of Africa.</span>
+        </div>
       </div>
     </footer>
   );
@@ -463,6 +543,27 @@ function BuildingIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h.01M15 17h.01" />
+    </svg>
+  );
+}
+function PhoneIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="6" y="2" width="12" height="20" rx="2.5" /><path d="M11 18h2" />
+    </svg>
+  );
+}
+function BoltIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
+    </svg>
+  );
+}
+function SparkIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18" />
     </svg>
   );
 }

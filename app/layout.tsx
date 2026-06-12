@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Source_Sans_3, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
+import { JsonLd } from "@/components/JsonLd";
+import { SITE, organizationLd, webSiteLd, softwareAppLd } from "@/lib/seo";
 
 // Self-host the brand fonts via next/font (subset, optimised, no runtime
 // CDN call). Replaces the earlier <link> tag and resolves the build-time
@@ -20,17 +22,33 @@ const sourceSerif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Sahan — Verified professional profiles", template: "%s · Sahan" },
-  description:
-    "Build a structured profile and download a beautiful CV or company profile. Verified claims, designed for the East Africa humanitarian sector.",
-  metadataBase: process.env.NEXT_PUBLIC_SITE_URL
-    ? new URL(process.env.NEXT_PUBLIC_SITE_URL)
-    : undefined,
+  title: {
+    default: "Sahan — Free CV & company-profile maker for East Africa",
+    template: "%s · Sahan",
+  },
+  description: SITE.description,
+  metadataBase: new URL(SITE.url),
+  applicationName: SITE.name,
+  keywords: [
+    "humanitarian CV template", "NGO CV maker", "CV format Somalia",
+    "CV format Kenya", "company profile template for tender",
+    "make CV on phone", "free CV maker East Africa", "verified CV",
+  ],
+  alternates: { canonical: "/" },
   openGraph: {
-    title: "Sahan — Verified professional profiles",
-    description: "Build a structured profile and download a beautiful CV or company profile.",
+    title: "Sahan — Free CV & company-profile maker for East Africa",
+    description: SITE.description,
+    url: SITE.url,
+    siteName: SITE.name,
+    locale: "en",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Sahan — Free CV & company-profile maker for East Africa",
+    description: "Build a structured profile and generate an elegant CV or company profile — free, on any phone.",
+  },
+  robots: { index: true, follow: true },
 };
 
 // Next 14 inserts a default viewport tag, but we set it explicitly so
@@ -46,6 +64,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${sourceSans.variable} ${sourceSerif.variable}`}>
+      <head>
+        {/* Site-wide structured data — identifies the brand + app to
+            search engines and AI answer engines. */}
+        <JsonLd data={[organizationLd(), webSiteLd(), softwareAppLd()]} />
+      </head>
       <body className="min-h-screen bg-cream text-ink">{children}</body>
     </html>
   );
