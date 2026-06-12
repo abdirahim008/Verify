@@ -26,3 +26,6 @@ Thumbs.db
 
 # pdf render-test artifacts
 /test-output
+
+# pdf.js worker — copied from node_modules on postinstall
+/public/pdf.worker.min.mjs

@@ -34,7 +34,8 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Everything except static assets + favicon. Internal API routes are
-    // still guarded inline.
-    "/((?!_next/static|_next/image|favicon.ico|fonts/|images/).*)",
+    // still guarded inline. pdf.worker.min.mjs is the PDF.js worker served
+    // from /public — pure static, must not bounce to /login.
+    "/((?!_next/static|_next/image|favicon.ico|fonts/|images/|pdf.worker.min.mjs|robots.txt).*)",
   ],
 };

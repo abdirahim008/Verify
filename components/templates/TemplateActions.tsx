@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/Button";
 import { cn } from "@/lib/cn";
+import { PdfPreview } from "./PdfPreview";
 import type { PdfTheme } from "@/lib/pdf/themes";
 
 interface Props {
@@ -22,7 +23,6 @@ export function TemplateActions({ href, storageKey, templateName, themes }: Prop
   const lsKey = `sahan-theme:${storageKey}`;
   const [themeId, setThemeId] = useState(themes[0]?.id ?? "");
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewLoading, setPreviewLoading] = useState(true);
 
   // Restore the saved palette after mount (not in the initializer — the
   // server render must match the first client render or React complains).
@@ -68,7 +68,7 @@ export function TemplateActions({ href, storageKey, templateName, themes }: Prop
       )}
 
       <div className="mt-3 flex gap-2">
-        <Button kind="secondary" size="md" className="flex-1" onClick={() => { setPreviewLoading(true); setPreviewOpen(true); }}>
+        <Button kind="secondary" size="md" className="flex-1" onClick={() => setPreviewOpen(true)}>
           Preview
         </Button>
         <a href={`${href}${qs}`} download className="flex-1">
@@ -91,23 +91,11 @@ export function TemplateActions({ href, storageKey, templateName, themes }: Prop
                 <button onClick={() => setPreviewOpen(false)} aria-label="Close" className="w-8 h-8 rounded-full hover:bg-border-soft text-muted text-[18px] leading-none">×</button>
               </div>
             </header>
-            <div className="relative flex-1 bg-cream">
-              {previewLoading && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted">
-                  <span className="w-8 h-8 rounded-full border-2 border-border border-t-sienna animate-spin" aria-hidden />
-                  <span className="text-[13px]">Rendering your PDF…</span>
-                </div>
-              )}
-              {/* The REAL route, rendered inline — what you see is exactly
-                  the file you download. Keyed by theme so re-picking a
-                  swatch mid-preview re-renders. */}
-              <iframe
-                key={themeId}
-                src={`${href}${qs}&preview=1`}
-                title={`${templateName} preview`}
-                className="w-full h-full"
-                onLoad={() => setPreviewLoading(false)}
-              />
+            <div className="relative flex-1 min-h-0">
+              {/* The REAL PDF, fetched and rasterised client-side via
+                  PDF.js — works on iOS/Android where iframed PDFs don't.
+                  Keyed by theme so re-picking a swatch re-renders. */}
+              <PdfPreview key={themeId} src={`${href}${qs}&preview=1`} />
             </div>
           </div>
         </div>
