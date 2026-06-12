@@ -164,7 +164,7 @@ export default function LandingPage() {
               name="Editorial"
               kind="CV"
               tagline="Magazine register. Drop cap. Cream paper."
-              pairing="Source Serif 4 · IBM Plex Sans"
+              pairing="Fraunces · Newsreader"
               ready
               mini={<EditorialMini />}
             />
@@ -179,7 +179,7 @@ export default function LandingPage() {
               name="Mono"
               kind="CV"
               tagline="Minimalist, technical, single accent."
-              pairing="Space Grotesk · IBM Plex Sans"
+              pairing="Space Grotesk · IBM Plex Mono"
               mini={<MonoMini />}
             />
             <TemplateCard

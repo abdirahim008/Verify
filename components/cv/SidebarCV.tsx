@@ -1,33 +1,33 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
 
-// Sidebar CV — A4 portrait, two-column dark-teal executive register.
-// Public Sans for display, IBM Plex Sans for body. Verified pill is
-// outlined (transparent fill) so it reads as a quiet stamp on the dark
-// teal main column.
-//
-// Ported from verify/pdfs/cv-sidebar.jsx — converted to print units (mm)
-// so it pages out cleanly to A4 instead of overflowing the 1123-px box.
+// Sidebar CV — A4 portrait, two-column executive register.
+// Archivo (display) + IBM Plex Sans (body) — the §12 prototype pairing.
+// Deep navy sidebar, teal main column, sand accents, outlined verified
+// pill that reads as a quiet stamp on the dark ground.
 
-const COLORS = {
+const C = {
   teal: "#0e2a4a",         // main column
   tealDark: "#091e36",     // left sidebar
-  cream: "#e6ecf3",        // primary text on dark
-  dim: "#9aa6b3",          // labels / muted on dark
-  sand: "#bfcad6",         // accent / org names
-  rule: "#1d3b5e",         // section underline
-  verified: "#6fcf9c",     // verified outline + text
+  cream: "#eaf0f6",        // primary text on dark
+  dim: "#92a0af",          // labels / muted on dark
+  sand: "#c3cedb",         // accent / org names
+  rule: "#21436b",         // section underline on main
+  ruleSb: "#1b3354",       // hairlines in sidebar
+  verified: "#74d3a0",     // verified outline + text
   verifiedInk: "#0a2a2a",  // verified tick stroke
 };
+
+const DISPLAY = `"Archivo", "Public Sans", system-ui, sans-serif`;
+const BODY = `"IBM Plex Sans", system-ui, sans-serif`;
 
 export function SidebarCV({ data }: { data: CVData }) {
   const { fullName, headline, summary, location, email, phone, languages,
           experiences, educations, certifications, skills, year, photoUrl } = data;
 
-  // Right-column skills cap. The Mono variant shows everything; Sidebar's
-  // narrow sidebar can't fit more than ~8 without breaking the rhythm.
-  const sidebarSkills = skills.slice(0, 8);
-  // Two-line headline parsing — "Senior Health Coordinator — Maternal & Child Health".
+  // Sidebar fits ~9 skills before the rhythm breaks; the rest are implied
+  // by the experience entries.
+  const sidebarSkills = skills.slice(0, 9);
   const [hLeft, hRight] = splitHeadline(headline);
 
   return (
@@ -35,16 +35,15 @@ export function SidebarCV({ data }: { data: CVData }) {
       <style dangerouslySetInnerHTML={{ __html: STYLES }} />
       <section className="page">
         <aside className="sb">
-          {/* Show the uploaded photo if we have one; otherwise fall back
-              to the existing initials monogram. Both render at the same
-              17mm circle so the rest of the sidebar rhythm is unchanged. */}
           {photoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={photoUrl} alt="" className="sb-photo" />
           ) : (
             <div className="sb-monogram">{initials(fullName)}</div>
           )}
+
           <h1 className="sb-name">{toLines(fullName).map((l, i) => <span key={i}>{l.toUpperCase()}<br /></span>)}</h1>
+          <span className="sb-name-rule" />
           {(hLeft || hRight) && (
             <p className="sb-headline">
               {hLeft}{hRight && (<><br />{hRight}</>)}
@@ -100,21 +99,21 @@ export function SidebarCV({ data }: { data: CVData }) {
         <main className="mn">
           {summary && (
             <>
-              <SbMainHead>Profile</SbMainHead>
+              <MnHead>Profile</MnHead>
               <p className="mn-summary">{summary}</p>
             </>
           )}
 
           {experiences.length > 0 && (
             <>
-              <SbMainHead>Experience</SbMainHead>
+              <MnHead>Experience</MnHead>
               {experiences.map((e, i) => (
                 <article key={i} className="mn-exp">
                   <span className="mn-exp-dot" />
                   <div className="mn-exp-head">
                     <div className="mn-exp-title-row">
                       <span className="mn-exp-title">{e.title}</span>
-                      {e.verified && <SbVerifiedPill note={e.verifiedNote} />}
+                      {e.verified && <MnVerified note={e.verifiedNote} />}
                     </div>
                     {e.dateRange && <div className="mn-exp-dates">{e.dateRange.toUpperCase()}</div>}
                   </div>
@@ -129,7 +128,7 @@ export function SidebarCV({ data }: { data: CVData }) {
 
           {educations.length > 0 && (
             <>
-              <SbMainHead>Education</SbMainHead>
+              <MnHead>Education</MnHead>
               {educations.map((e, i) => (
                 <div key={i} className="mn-edu">
                   <div className="mn-edu-head">
@@ -150,11 +149,11 @@ export function SidebarCV({ data }: { data: CVData }) {
   );
 }
 
-// ── inline pieces ───────────────────────────────────────────────────
+// ── pieces ──────────────────────────────────────────────────────────
 function SbHead({ children }: { children: React.ReactNode }) {
-  return <div className="sb-head">{children}</div>;
+  return <div className="sb-head"><span className="sb-head-tick" />{children}</div>;
 }
-function SbMainHead({ children }: { children: React.ReactNode }) {
+function MnHead({ children }: { children: React.ReactNode }) {
   return <div className="mn-head">{children}</div>;
 }
 function SbField({ l, v }: { l: string; v: string }) {
@@ -168,12 +167,12 @@ function SbField({ l, v }: { l: string; v: string }) {
 function SbTick() {
   return (
     <svg width="9" height="9" viewBox="0 0 11 11" aria-hidden>
-      <circle cx="5.5" cy="5.5" r="5.5" fill={COLORS.verified} />
-      <path d="M3 5.5 L4.7 7.2 L8 4" stroke={COLORS.verifiedInk} strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <circle cx="5.5" cy="5.5" r="5.5" fill={C.verified} />
+      <path d="M3 5.5 L4.7 7.2 L8 4" stroke={C.verifiedInk} strokeWidth="1.5" fill="none" strokeLinecap="round" />
     </svg>
   );
 }
-function SbVerifiedPill({ note }: { note: string }) {
+function MnVerified({ note }: { note: string }) {
   return (
     <span className="vbadge">
       <SbTick />
@@ -190,18 +189,12 @@ function initials(name: string): string {
   return (tokens[0][0] + tokens[tokens.length - 1][0]).toUpperCase();
 }
 
-// "Ifrah Hassan Abdi" → ["Ifrah", "Hassan", "Abdi"]. Up to 3 lines on the
-// monogram block so long Somali compound names lay out cleanly instead of
-// shrinking. Falls back to a single token for short names.
+// Up to 3 name lines so long Somali compound names stack cleanly.
 function toLines(name: string): string[] {
-  const tokens = name.trim().split(/\s+/).filter(Boolean);
-  return tokens.slice(0, 3);
+  return name.trim().split(/\s+/).filter(Boolean).slice(0, 3);
 }
 
-// "Senior Health Coordinator — Maternal & Child Health"
-//   → ["Senior Health Coordinator", "Maternal & Child Health"]
-// A dash/colon/pipe means "second line". Otherwise the whole thing
-// occupies the first line.
+// Em-dash / colon / pipe splits the headline onto two sidebar lines.
 function splitHeadline(h: string): [string, string] {
   const m = h.match(/^(.+?)\s*[—–\-|:·]\s*(.+)$/);
   return m ? [m[1], m[2]] : [h, ""];
@@ -214,142 +207,158 @@ const STYLES = `
   width: 210mm;
   min-height: 297mm;
   display: grid;
-  grid-template-columns: 78mm 1fr;
-  color: ${COLORS.cream};
-  font-family: "IBM Plex Sans", "Public Sans", "Source Sans 3", system-ui, sans-serif;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
+  grid-template-columns: 76mm 1fr;
+  color: ${C.cream};
+  font-family: ${BODY};
+  font-kerning: normal;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ── Sidebar (left, dark teal) ─────────────────────────────────── */
+/* ── Sidebar ───────────────────────────────────────────────────── */
 .sb {
-  background: ${COLORS.tealDark};
-  padding: 16mm 9mm 18mm;
-  color: ${COLORS.cream};
+  background: ${C.tealDark};
+  padding: 15mm 9mm 18mm;
   position: relative;
 }
 .sb-monogram {
-  width: 17mm; height: 17mm; border-radius: 50%;
-  background: ${COLORS.sand}; color: ${COLORS.tealDark};
+  width: 19mm; height: 19mm; border-radius: 50%;
+  background: ${C.sand}; color: ${C.tealDark};
   display: flex; align-items: center; justify-content: center;
-  font-family: "Public Sans", "Source Sans 3", system-ui, sans-serif;
-  font-weight: 700; font-size: 17pt; letter-spacing: -0.02em;
+  font-family: ${DISPLAY};
+  font-weight: 800; font-size: 16pt; letter-spacing: 0;
   margin-bottom: 6mm;
 }
 .sb-photo {
-  width: 17mm; height: 17mm; border-radius: 50%;
+  width: 19mm; height: 19mm; border-radius: 50%;
   object-fit: cover;
-  border: 1px solid ${COLORS.sand}44;
+  border: 0.6mm solid ${C.sand}55;
   margin-bottom: 6mm;
   display: block;
 }
 .sb-name {
-  font-family: "Public Sans", "Source Sans 3", system-ui, sans-serif;
-  font-weight: 700; font-size: 21pt;
-  line-height: 1; letter-spacing: -0.015em;
-  color: ${COLORS.cream}; margin: 0;
+  font-family: ${DISPLAY};
+  font-weight: 800; font-size: 19pt;
+  line-height: 1.04; letter-spacing: 0.005em;
+  color: #ffffff; margin: 0;
+}
+.sb-name-rule {
+  display: block; width: 10mm; height: 0.7mm;
+  background: ${C.sand}; margin-top: 3.5mm;
 }
 .sb-headline {
-  margin-top: 3mm; font-size: 9.5pt; color: ${COLORS.dim};
-  letter-spacing: 0.04em; line-height: 1.55;
+  margin-top: 3mm; font-size: 9pt; color: ${C.dim};
+  letter-spacing: 0.03em; line-height: 1.6;
 }
 .sb-head {
-  font-family: "Public Sans", "Source Sans 3", system-ui, sans-serif;
-  font-weight: 700; font-size: 8pt; letter-spacing: 0.18em;
-  color: ${COLORS.sand}; text-transform: uppercase;
-  margin-top: 7mm; margin-bottom: 2.5mm;
+  font-family: ${DISPLAY};
+  font-weight: 700; font-size: 7.5pt; letter-spacing: 0.24em;
+  color: ${C.sand}; text-transform: uppercase;
+  margin-top: 8mm; margin-bottom: 3mm;
+  display: flex; align-items: center; gap: 2mm;
 }
-.sb-field { margin-bottom: 2.5mm; }
-.sb-field-l { font-size: 7pt; color: ${COLORS.dim}; letter-spacing: 0.08em; text-transform: uppercase; }
-.sb-field-v { font-size: 9.5pt; color: ${COLORS.cream}; margin-top: 0.5mm; line-height: 1.4; word-break: break-word; }
-.sb-lang { font-size: 9.5pt; color: ${COLORS.cream}; margin-bottom: 1.2mm; }
-.sb-skills { display: flex; flex-direction: column; gap: 1.8mm; }
+.sb-head-tick { width: 3.5mm; height: 1px; background: ${C.sand}88; display: inline-block; }
+.sb-field { margin-bottom: 2.8mm; }
+.sb-field-l {
+  font-family: ${DISPLAY};
+  font-size: 6.5pt; font-weight: 600; color: ${C.dim};
+  letter-spacing: 0.14em; text-transform: uppercase;
+}
+.sb-field-v { font-size: 9.5pt; color: ${C.cream}; margin-top: 0.6mm; line-height: 1.45; word-break: break-word; }
+.sb-lang { font-size: 9.5pt; color: ${C.cream}; margin-bottom: 1.4mm; }
+.sb-skills { display: flex; flex-direction: column; gap: 1.9mm; }
 .sb-skill {
-  font-size: 9.5pt; color: ${COLORS.cream};
+  font-size: 9pt; color: ${C.cream};
   display: flex; align-items: center; gap: 2.5mm;
+  line-height: 1.35;
 }
 .sb-skill-dot {
-  width: 1.2mm; height: 1.2mm; border-radius: 99px;
-  background: ${COLORS.sand}; flex-shrink: 0;
+  width: 1.3mm; height: 1.3mm;
+  background: ${C.sand}; flex-shrink: 0;
 }
-.sb-cert { margin-bottom: 2.5mm; }
+.sb-cert { margin-bottom: 2.8mm; }
 .sb-cert-name {
-  font-size: 9pt; color: ${COLORS.cream}; font-weight: 500;
-  display: flex; gap: 1.5mm; align-items: center; flex-wrap: wrap;
+  font-size: 9pt; color: ${C.cream}; font-weight: 600;
+  display: flex; gap: 1.6mm; align-items: center; flex-wrap: wrap;
+  line-height: 1.4;
 }
-.sb-cert-meta { font-size: 8pt; color: ${COLORS.dim}; margin-top: 0.5mm; }
+.sb-cert-meta { font-size: 7.5pt; color: ${C.dim}; margin-top: 0.5mm; }
 .sb-foot {
   position: absolute; bottom: 9mm; left: 9mm; right: 9mm;
-  font-size: 7pt; color: ${COLORS.dim};
-  letter-spacing: 0.12em; text-transform: uppercase;
+  padding-top: 2.5mm; border-top: 1px solid ${C.ruleSb};
+  font-family: ${DISPLAY};
+  font-size: 6.5pt; font-weight: 600; color: ${C.dim};
+  letter-spacing: 0.18em; text-transform: uppercase;
 }
 
-/* ── Main column (right, teal) ─────────────────────────────────── */
+/* ── Main ──────────────────────────────────────────────────────── */
 .mn {
-  background: ${COLORS.teal};
-  background-image: radial-gradient(circle at 90% 0%, rgba(10, 92, 173, 0.16), transparent 50%);
-  padding: 16mm 13mm 18mm;
+  background: ${C.teal};
+  background-image: radial-gradient(circle at 92% 0%, rgba(10, 92, 173, 0.20), transparent 52%);
+  padding: 15mm 13mm 18mm;
 }
 .mn-head {
-  font-family: "Public Sans", "Source Sans 3", system-ui, sans-serif;
-  font-weight: 700; font-size: 9.5pt;
-  letter-spacing: 0.2em; color: ${COLORS.sand};
+  font-family: ${DISPLAY};
+  font-weight: 700; font-size: 9pt;
+  letter-spacing: 0.24em; color: ${C.sand};
   text-transform: uppercase;
-  margin-top: 5mm; margin-bottom: 4mm;
-  padding-bottom: 2mm; border-bottom: 1px solid ${COLORS.rule};
+  margin-top: 6.5mm; margin-bottom: 4.5mm;
+  padding-bottom: 2mm; border-bottom: 1px solid ${C.rule};
 }
 .mn-head:first-child { margin-top: 0; }
 .mn-summary {
-  font-size: 10pt; line-height: 1.65;
-  color: ${COLORS.cream}; margin: 0 0 4mm;
+  font-size: 10pt; line-height: 1.68;
+  color: ${C.cream}; margin: 0 0 3mm;
 }
-.mn-exp { margin-bottom: 6mm; position: relative; break-inside: avoid; page-break-inside: avoid; }
+.mn-exp { margin-bottom: 6.5mm; position: relative; break-inside: avoid; page-break-inside: avoid; }
 .mn-exp-dot {
-  position: absolute; left: -5.5mm; top: 2.5mm;
+  position: absolute; left: -5.8mm; top: 2.4mm;
   width: 2mm; height: 2mm; border-radius: 50%;
-  background: ${COLORS.sand};
+  background: ${C.sand};
 }
-.mn-exp-head {
-  display: flex; justify-content: space-between; align-items: baseline; gap: 4mm;
-}
-.mn-exp-title-row { display: flex; align-items: center; gap: 2mm; flex-wrap: wrap; }
+.mn-exp-head { display: flex; justify-content: space-between; align-items: baseline; gap: 4mm; }
+.mn-exp-title-row { display: flex; align-items: center; gap: 2.2mm; flex-wrap: wrap; }
 .mn-exp-title {
-  font-family: "Public Sans", "Source Sans 3", system-ui, sans-serif;
-  font-weight: 600; font-size: 11.5pt;
-  color: ${COLORS.cream}; letter-spacing: -0.005em;
+  font-family: ${DISPLAY};
+  font-weight: 700; font-size: 11.5pt;
+  color: #ffffff; letter-spacing: -0.005em;
 }
 .mn-exp-dates {
-  font-size: 8pt; color: ${COLORS.dim};
-  letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap;
+  font-family: ${DISPLAY};
+  font-size: 7pt; font-weight: 600; color: ${C.dim};
+  letter-spacing: 0.12em; white-space: nowrap;
+  font-feature-settings: "tnum";
 }
 .mn-exp-meta {
-  font-size: 9.5pt; color: ${COLORS.sand};
-  font-weight: 500; margin-top: 0.5mm; letter-spacing: 0.01em;
+  font-size: 9.5pt; color: ${C.sand};
+  font-weight: 600; margin-top: 0.8mm; letter-spacing: 0.015em;
 }
 .mn-exp-desc {
-  font-size: 9.5pt; line-height: 1.6;
-  color: ${COLORS.cream}; margin: 1.8mm 0 0;
+  font-size: 9.5pt; line-height: 1.62;
+  color: ${C.cream}; margin: 2mm 0 0;
 }
 
-.mn-edu { margin-bottom: 3.5mm; }
+.mn-edu { margin-bottom: 4mm; }
 .mn-edu-head { display: flex; justify-content: space-between; align-items: baseline; gap: 3mm; }
 .mn-edu-qual {
-  font-family: "Public Sans", "Source Sans 3", system-ui, sans-serif;
-  font-weight: 600; font-size: 10pt; color: ${COLORS.cream};
+  font-family: ${DISPLAY};
+  font-weight: 700; font-size: 10pt; color: #ffffff;
   display: flex; align-items: center; gap: 2mm;
 }
 .mn-edu-dates {
-  font-size: 8pt; color: ${COLORS.dim};
-  letter-spacing: 0.04em; white-space: nowrap;
+  font-family: ${DISPLAY};
+  font-size: 7pt; font-weight: 600; color: ${C.dim};
+  letter-spacing: 0.1em; white-space: nowrap;
+  font-feature-settings: "tnum";
 }
-.mn-edu-inst { font-size: 9pt; color: ${COLORS.sand}; margin-top: 0.5mm; }
+.mn-edu-inst { font-size: 9pt; color: ${C.sand}; margin-top: 0.6mm; }
 
 .vbadge {
-  display: inline-flex; align-items: center; gap: 1mm;
-  font-size: 7pt; font-weight: 500; color: ${COLORS.verified};
-  border: 1px solid ${COLORS.verified}55;
-  padding: 0.4mm 2mm 0.4mm 1.5mm;
-  border-radius: 99px; letter-spacing: 0.01em; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 1.2mm;
+  font-family: ${BODY};
+  font-size: 6.8pt; font-weight: 600; color: ${C.verified};
+  border: 1px solid ${C.verified}55;
+  padding: 0.5mm 2mm 0.5mm 1.4mm;
+  border-radius: 99px; letter-spacing: 0.02em; white-space: nowrap;
 }
 .vbadge svg { display: inline-block; vertical-align: middle; }
 `;

@@ -23,3 +23,6 @@ Thumbs.db
 
 # vercel
 .vercel
+
+# pdf render-test artifacts
+/test-output

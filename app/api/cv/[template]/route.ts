@@ -14,24 +14,27 @@ export const runtime = "nodejs";
 // edit. No static caching.
 export const dynamic = "force-dynamic";
 
-// Per-template font URLs. Editorial leans on serif; Sidebar is grotesque
-// sans; Mono pairs sans + mono. Loading only what each template actually
+// Per-template font URLs — the §12 prototype pairings. Variable-font
+// ranges (opsz + wght) so Fraunces' optical sizing and the in-between
+// weights (e.g. 540) resolve exactly. Loading only what each template
 // uses keeps headless Chromium's fetches tight.
 const EDITORIAL_FONTS =
   "https://fonts.googleapis.com/css2" +
-  "?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;1,8..60,300;1,8..60,400" +
-  "&family=IBM+Plex+Sans:wght@400;500;600" +
+  "?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600" +
+  "&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600" +
+  "&family=IBM+Plex+Sans:wght@400;500;600;700" +
   "&display=swap";
 
 const SIDEBAR_FONTS =
   "https://fonts.googleapis.com/css2" +
-  "?family=Public+Sans:wght@400;500;600;700" +
+  "?family=Archivo:wght@400..800" +
   "&family=IBM+Plex+Sans:wght@400;500;600" +
   "&display=swap";
 
 const MONO_FONTS =
   "https://fonts.googleapis.com/css2" +
-  "?family=IBM+Plex+Sans:wght@400;500;600;700" +
+  "?family=Space+Grotesk:wght@400..700" +
+  "&family=IBM+Plex+Sans:wght@400;500;600" +
   "&family=IBM+Plex+Mono:wght@400;500" +
   "&display=swap";
 
@@ -78,21 +81,26 @@ export async function GET(
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 
-  const filename = sanitiseFilename(`${data.fullName} — CV (${t.name}).pdf`);
   // NextResponse's BodyInit typing in v14 doesn't include Node's Buffer
   // directly — wrap in Uint8Array (Buffer extends it) so the cast is safe.
   const body = new Uint8Array(pdf);
   return new NextResponse(body, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Disposition": contentDisposition(`${data.fullName} - CV (${t.name}).pdf`),
       "Content-Length": String(body.byteLength),
       "Cache-Control": "private, no-store",
     },
   });
 }
 
-function sanitiseFilename(name: string) {
-  // Strip anything that breaks a Content-Disposition header / filesystem.
-  return name.replace(/[\\/:*?"<>|\r\n]+/g, "_");
+// HTTP headers are ByteStrings — anything above Latin-1 (em-dashes, Somali
+// names with diacritics, Arabic script) throws at Response construction.
+// Send an ASCII fallback in `filename` and the real UTF-8 name via the
+// RFC 5987 `filename*` parameter, which every modern browser prefers.
+function contentDisposition(name: string) {
+  const cleaned = name.replace(/[\\/:*?"<>|\r\n]+/g, "_").trim();
+  const ascii = cleaned.replace(/[^\x20-\x7E]/g, "-") || "cv.pdf";
+  const utf8 = encodeURIComponent(cleaned).replace(/['()*]/g, (c) => "%" + c.charCodeAt(0).toString(16).toUpperCase());
+  return `attachment; filename="${ascii}"; filename*=UTF-8''${utf8}`;
 }

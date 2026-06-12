@@ -58,18 +58,23 @@ export async function GET(
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 
-  const filename = sanitiseFilename(`${data.name} — Company Profile.pdf`);
   const body = new Uint8Array(pdf);
   return new NextResponse(body, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Disposition": contentDisposition(`${data.name} - Company Profile.pdf`),
       "Content-Length": String(body.byteLength),
       "Cache-Control": "private, no-store",
     },
   });
 }
 
-function sanitiseFilename(name: string) {
-  return name.replace(/[\\/:*?"<>|\r\n]+/g, "_");
+// HTTP headers are ByteStrings — non-Latin-1 characters (em-dashes, Somali
+// or Arabic company names) throw at Response construction. ASCII fallback
+// in `filename`, real UTF-8 name via RFC 5987 `filename*`.
+function contentDisposition(name: string) {
+  const cleaned = name.replace(/[\\/:*?"<>|\r\n]+/g, "_").trim();
+  const ascii = cleaned.replace(/[^\x20-\x7E]/g, "-") || "company-profile.pdf";
+  const utf8 = encodeURIComponent(cleaned).replace(/['()*]/g, (c) => "%" + c.charCodeAt(0).toString(16).toUpperCase());
+  return `attachment; filename="${ascii}"; filename*=UTF-8''${utf8}`;
 }

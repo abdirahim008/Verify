@@ -59,7 +59,12 @@ const DEFAULT_FONTS =
 const RESET_CSS = `
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
-body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures;
+}
 @page { size: A4; margin: 0; }
 `;
 

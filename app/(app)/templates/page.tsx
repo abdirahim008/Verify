@@ -43,9 +43,9 @@ function IndividualTemplates({ minCore }: { minCore: boolean }) {
       </div>
 
       <div className="mt-8 grid gap-5 lg:grid-cols-3">
-        <TemplateCard name="Editorial" kind="CV" tagline="Magazine register. Drop cap. Cream paper." pairing="Source Serif 4 · IBM Plex Sans" status={status} href="/api/cv/editorial" preview={<EditorialPreview />} />
-        <TemplateCard name="Sidebar" kind="CV" tagline="Two columns. Built for executives." pairing="Public Sans · IBM Plex Sans" status={status} href="/api/cv/sidebar" preview={<SidebarPreview />} />
-        <TemplateCard name="Mono" kind="CV" tagline="Minimalist, technical, single accent." pairing="IBM Plex Sans · IBM Plex Mono" status={status} href="/api/cv/mono" preview={<MonoPreview />} />
+        <TemplateCard name="Editorial" kind="CV" tagline="Magazine register. Drop cap. Cream paper." pairing="Fraunces · Newsreader" status={status} href="/api/cv/editorial" preview={<EditorialPreview />} />
+        <TemplateCard name="Sidebar" kind="CV" tagline="Two columns. Built for executives." pairing="Archivo · IBM Plex Sans" status={status} href="/api/cv/sidebar" preview={<SidebarPreview />} />
+        <TemplateCard name="Mono" kind="CV" tagline="Minimalist, technical, single accent." pairing="Space Grotesk · IBM Plex Mono" status={status} href="/api/cv/mono" preview={<MonoPreview />} />
       </div>
 
       {!minCore && <LockedBanner href="/profile" />}
