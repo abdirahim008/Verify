@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseRouteClient } from "@/lib/supabase/route";
 import { loadCompanyDataForPdf } from "@/lib/pdf/company-data";
 import { renderPdf } from "@/lib/pdf/render";
+import { resolveThemeOverrides } from "@/lib/pdf/themes";
 import { WadaniCompanyProfile } from "@/components/cv/WadaniCompanyProfile";
 import { AnnualCompanyProfile } from "@/components/cv/AnnualCompanyProfile";
 import { MinimalCompanyProfile } from "@/components/cv/MinimalCompanyProfile";
@@ -27,13 +28,18 @@ const PROFILE_FONTS =
   "&display=swap";
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { template: string } },
 ) {
   const t = TEMPLATES[params.template as keyof typeof TEMPLATES];
   if (!t) {
     return NextResponse.json({ error: "Unknown template" }, { status: 404 });
   }
+  // ?theme=<id> picks a curated palette (unknown ids → default).
+  // ?preview=1 serves inline so the templates page can iframe the PDF.
+  const url = new URL(req.url);
+  const theme = resolveThemeOverrides("company", params.template, url.searchParams.get("theme"));
+  const inline = url.searchParams.get("preview") === "1";
 
   const supabase = createSupabaseRouteClient();
   if (!supabase) return NextResponse.json({ error: "Supabase not configured" }, { status: 500 });
@@ -56,7 +62,7 @@ export async function GET(
   const Template = t.component;
   let pdf: Buffer;
   try {
-    pdf = await renderPdf(createElement(Template, { data }), {
+    pdf = await renderPdf(createElement(Template, { data, theme }), {
       pageTitle: `${data.name} — Company Profile`,
       fonts: PROFILE_FONTS,
     });
@@ -69,7 +75,7 @@ export async function GET(
   return new NextResponse(body, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": contentDisposition(`${data.name} - Company Profile.pdf`),
+      "Content-Disposition": contentDisposition(`${data.name} - Company Profile (${t.name}).pdf`, inline),
       "Content-Length": String(body.byteLength),
       "Cache-Control": "private, no-store",
     },
@@ -79,9 +85,9 @@ export async function GET(
 // HTTP headers are ByteStrings — non-Latin-1 characters (em-dashes, Somali
 // or Arabic company names) throw at Response construction. ASCII fallback
 // in `filename`, real UTF-8 name via RFC 5987 `filename*`.
-function contentDisposition(name: string) {
+function contentDisposition(name: string, inline = false) {
   const cleaned = name.replace(/[\\/:*?"<>|\r\n]+/g, "_").trim();
   const ascii = cleaned.replace(/[^\x20-\x7E]/g, "-") || "company-profile.pdf";
   const utf8 = encodeURIComponent(cleaned).replace(/['()*]/g, (c) => "%" + c.charCodeAt(0).toString(16).toUpperCase());
-  return `attachment; filename="${ascii}"; filename*=UTF-8''${utf8}`;
+  return `${inline ? "inline" : "attachment"}; filename="${ascii}"; filename*=UTF-8''${utf8}`;
 }

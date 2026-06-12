@@ -10,7 +10,9 @@ import type { CompanyData } from "@/lib/pdf/company-data";
 // panel: the uploaded logo when present, otherwise a serif monogram on
 // the same blueprint-stripe texture.
 
-const C = {
+// Base palette. Curated themes (lib/pdf/themes.ts) swap the navy family;
+// paper + verified greens stay constant.
+const BASE = {
   navy: "#0d3b66",
   navyDeep: "#072044",
   cream: "#fafaf7",
@@ -22,16 +24,18 @@ const C = {
   verifiedBg: "#dcebe2",
   verifiedFg: "#1d6647",
 };
+type Palette = typeof BASE;
 
 const SERIF = `"Source Serif 4", Georgia, serif`;
 const SANS = `"Public Sans", "Source Sans 3", system-ui, sans-serif`;
 const MONO = `"IBM Plex Mono", ui-monospace, monospace`;
 
-export function AnnualCompanyProfile({ data }: { data: CompanyData }) {
+export function AnnualCompanyProfile({ data, theme }: { data: CompanyData; theme?: Record<string, string> }) {
+  const C: Palette = { ...BASE, ...theme };
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: STYLES }} />
-      <Cover data={data} />
+      <style dangerouslySetInnerHTML={{ __html: styles(C) }} />
+      <Cover data={data} C={C} />
       <About data={data} />
       <Projects data={data} />
     </>
@@ -39,7 +43,7 @@ export function AnnualCompanyProfile({ data }: { data: CompanyData }) {
 }
 
 // ── Page 1 · Cover ──────────────────────────────────────────────────
-function Cover({ data }: { data: CompanyData }) {
+function Cover({ data, C }: { data: CompanyData; C: Palette }) {
   const stats = computeStats(data);
   return (
     <section className="page cover">
@@ -103,6 +107,7 @@ function Cover({ data }: { data: CompanyData }) {
         </svg>
         Verified on Sahan
       </div>
+      {/* C threads in from the parent so the seal follows the theme. */}
     </section>
   );
 }
@@ -258,7 +263,7 @@ function VerifiedPill({ note, small }: { note: string; small?: boolean }) {
   return (
     <span className={small ? "vbadge vbadge-sm" : "vbadge"}>
       <svg width={small ? "8" : "9"} height={small ? "8" : "9"} viewBox="0 0 11 11" aria-hidden>
-        <circle cx="5.5" cy="5.5" r="5.5" fill={C.verifiedFg} />
+        <circle cx="5.5" cy="5.5" r="5.5" fill={BASE.verifiedFg} />
         <path d="M3 5.5 L4.7 7.2 L8 4" stroke="#fff" strokeWidth="1.4" fill="none" strokeLinecap="round" />
       </svg>
       {note ? `Verified · ${note}` : "Verified"}
@@ -313,7 +318,7 @@ function romanize(n: number): string {
   return out;
 }
 
-const STYLES = `
+const styles = (C: Palette) => `
 @page { size: A4; margin: 0; }
 
 .page {

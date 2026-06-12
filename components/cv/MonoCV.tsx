@@ -6,7 +6,9 @@ import type { CVData } from "@/lib/pdf/data";
 // §12 prototype pairing. Single signal-blue accent, timeline grid for
 // experience, engineered whitespace.
 
-const C = {
+// Base palette. Curated themes (lib/pdf/themes.ts) swap the single accent;
+// everything else is fixed — Mono's whole register is one signal colour.
+const BASE = {
   bg: "#fbfaf6",
   ink: "#131311",
   sub: "#52524e",
@@ -17,14 +19,16 @@ const C = {
   verifiedBg: "#e0efe7",
   verifiedFg: "#1d6647",
 };
+type Palette = typeof BASE;
 
 const DISPLAY = `"Space Grotesk", "IBM Plex Sans", system-ui, sans-serif`;
 const BODY = `"IBM Plex Sans", system-ui, sans-serif`;
 const MONO = `"IBM Plex Mono", "Source Code Pro", ui-monospace, monospace`;
 
-export function MonoCV({ data }: { data: CVData }) {
+export function MonoCV({ data, theme }: { data: CVData; theme?: Record<string, string> }) {
   const { fullName, headline, summary, location, email, phone, languages,
           experiences, educations, certifications, skills, year } = data;
+  const C: Palette = { ...BASE, ...theme };
 
   const slug = makeSlug(fullName);
   const today = new Date();
@@ -34,7 +38,7 @@ export function MonoCV({ data }: { data: CVData }) {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: STYLES }} />
+      <style dangerouslySetInnerHTML={{ __html: styles(C) }} />
       <section className="page">
         {/* Meta strip */}
         <div className="top">
@@ -180,7 +184,7 @@ function MonoVerified({ note }: { note: string }) {
 function MonoTick({ small }: { small?: boolean }) {
   return (
     <svg width={small ? "8" : "9"} height={small ? "8" : "9"} viewBox="0 0 11 11" aria-hidden>
-      <circle cx="5.5" cy="5.5" r="5.5" fill={C.verifiedFg} />
+      <circle cx="5.5" cy="5.5" r="5.5" fill={BASE.verifiedFg} />
       <path d="M3 5.5 L4.7 7.2 L8 4" stroke="#fff" strokeWidth="1.5" fill="none" strokeLinecap="round" />
     </svg>
   );
@@ -220,7 +224,7 @@ function yearOf(range: string, which: "start" | "end"): string {
   return m ? m[1].slice(2) : "";
 }
 
-const STYLES = `
+const styles = (C: Palette) => `
 @page { size: A4; margin: 0; }
 
 .page {

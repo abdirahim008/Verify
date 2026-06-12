@@ -10,7 +10,9 @@ import type { CompanyData } from "@/lib/pdf/company-data";
 // line, auto-scaled so the longest word fills the measure, the final
 // word italicised in the accent with a terminal period.
 
-const C = {
+// Base palette. Curated themes (lib/pdf/themes.ts) swap the single accent;
+// the architectural register keeps everything else fixed.
+const BASE = {
   ink: "#0e1116",
   accent: "#0a5cad",
   muted: "#6e7480",
@@ -19,16 +21,18 @@ const C = {
   verifiedBg: "#dcebe2",
   verifiedFg: "#1d6647",
 };
+type Palette = typeof BASE;
 
 const SERIF = `"Source Serif 4", Georgia, serif`;
 const SANS = `"Public Sans", "Source Sans 3", system-ui, sans-serif`;
 const MONO = `"IBM Plex Mono", ui-monospace, monospace`;
 
-export function MinimalCompanyProfile({ data }: { data: CompanyData }) {
+export function MinimalCompanyProfile({ data, theme }: { data: CompanyData; theme?: Record<string, string> }) {
+  const C: Palette = { ...BASE, ...theme };
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: STYLES }} />
-      <Cover data={data} />
+      <style dangerouslySetInnerHTML={{ __html: styles(C) }} />
+      <Cover data={data} C={C} />
       <Firm data={data} />
       <Work data={data} />
     </>
@@ -36,7 +40,7 @@ export function MinimalCompanyProfile({ data }: { data: CompanyData }) {
 }
 
 // ── Page 1 · Cover ──────────────────────────────────────────────────
-function Cover({ data }: { data: CompanyData }) {
+function Cover({ data, C }: { data: CompanyData; C: Palette }) {
   const lines = nameLines(data.name);
   const sizePt = fitSize(lines);
   const facts = coverFacts(data);
@@ -230,7 +234,7 @@ function VerifiedPill({ note, small }: { note: string; small?: boolean }) {
   return (
     <span className={small ? "vbadge vbadge-sm" : "vbadge"}>
       <svg width={small ? "8" : "9"} height={small ? "8" : "9"} viewBox="0 0 11 11" aria-hidden>
-        <circle cx="5.5" cy="5.5" r="5.5" fill={C.verifiedFg} />
+        <circle cx="5.5" cy="5.5" r="5.5" fill={BASE.verifiedFg} />
         <path d="M3 5.5 L4.7 7.2 L8 4" stroke="#fff" strokeWidth="1.4" fill="none" strokeLinecap="round" />
       </svg>
       {note ? `Verified · ${note}` : "Verified"}
@@ -283,7 +287,7 @@ function romanize(n: number): string {
   return out;
 }
 
-const STYLES = `
+const styles = (C: Palette) => `
 @page { size: A4; margin: 0; }
 
 .page {

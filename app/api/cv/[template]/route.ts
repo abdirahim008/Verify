@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseRouteClient } from "@/lib/supabase/route";
 import { loadCVData } from "@/lib/pdf/data";
 import { renderPdf } from "@/lib/pdf/render";
+import { resolveThemeOverrides } from "@/lib/pdf/themes";
 import { EditorialCV } from "@/components/cv/EditorialCV";
 import { SidebarCV } from "@/components/cv/SidebarCV";
 import { MonoCV } from "@/components/cv/MonoCV";
@@ -45,13 +46,18 @@ const TEMPLATES = {
 } as const;
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { template: string } },
 ) {
   const t = TEMPLATES[params.template as keyof typeof TEMPLATES];
   if (!t) {
     return NextResponse.json({ error: "Unknown template" }, { status: 404 });
   }
+  // ?theme=<id> picks a curated palette (unknown ids → default).
+  // ?preview=1 serves inline so the templates page can iframe the PDF.
+  const url = new URL(req.url);
+  const theme = resolveThemeOverrides("cv", params.template, url.searchParams.get("theme"));
+  const inline = url.searchParams.get("preview") === "1";
 
   const supabase = createSupabaseRouteClient();
   if (!supabase) {
@@ -72,7 +78,7 @@ export async function GET(
   const Template = t.component;
   let pdf: Buffer;
   try {
-    pdf = await renderPdf(createElement(Template, { data }), {
+    pdf = await renderPdf(createElement(Template, { data, theme }), {
       pageTitle: `${data.fullName} — CV`,
       fonts: t.fonts,
     });
@@ -87,7 +93,7 @@ export async function GET(
   return new NextResponse(body, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": contentDisposition(`${data.fullName} - CV (${t.name}).pdf`),
+      "Content-Disposition": contentDisposition(`${data.fullName} - CV (${t.name}).pdf`, inline),
       "Content-Length": String(body.byteLength),
       "Cache-Control": "private, no-store",
     },
@@ -98,9 +104,9 @@ export async function GET(
 // names with diacritics, Arabic script) throws at Response construction.
 // Send an ASCII fallback in `filename` and the real UTF-8 name via the
 // RFC 5987 `filename*` parameter, which every modern browser prefers.
-function contentDisposition(name: string) {
+function contentDisposition(name: string, inline = false) {
   const cleaned = name.replace(/[\\/:*?"<>|\r\n]+/g, "_").trim();
   const ascii = cleaned.replace(/[^\x20-\x7E]/g, "-") || "cv.pdf";
   const utf8 = encodeURIComponent(cleaned).replace(/['()*]/g, (c) => "%" + c.charCodeAt(0).toString(16).toUpperCase());
-  return `attachment; filename="${ascii}"; filename*=UTF-8''${utf8}`;
+  return `${inline ? "inline" : "attachment"}; filename="${ascii}"; filename*=UTF-8''${utf8}`;
 }

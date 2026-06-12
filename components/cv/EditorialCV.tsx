@@ -12,7 +12,9 @@ import type { CVData } from "@/lib/pdf/data";
 //  · hanging right-aligned dates with tabular figures
 //  · oldstyle numerals in running text ("onum")
 
-const C = {
+// Base palette. A curated theme (lib/pdf/themes.ts) may override a safe
+// subset of these (accent + paper + rule); verified greens stay constant.
+const BASE = {
   cream: "#f7f3eb",
   ink: "#191915",
   inkSoft: "#3b3b38",
@@ -23,24 +25,26 @@ const C = {
   verifiedBg: "#dcebe2",
   verifiedFg: "#1d6647",
 };
+type Palette = typeof BASE;
 
 const SANS = `"IBM Plex Sans", system-ui, sans-serif`;
 const DISPLAY = `"Fraunces", "Source Serif 4", Georgia, serif`;
 const BODY = `"Newsreader", "Source Serif 4", Georgia, serif`;
 
-export function EditorialCV({ data }: { data: CVData }) {
+export function EditorialCV({ data, theme }: { data: CVData; theme?: Record<string, string> }) {
   const { fullName, headline, summary, location, email, phone, languages,
           experiences, educations, certifications, skills, year } = data;
+  const C: Palette = { ...BASE, ...theme };
 
-  // "First Middle / Last." — surname italicised in navy with a terminal
-  // period, the prototype's signature.
+  // "First Middle / Last." — surname italicised in the accent with a
+  // terminal period, the prototype's signature.
   const nameParts = fullName.trim().split(/\s+/);
   const last = nameParts.length > 1 ? nameParts.pop()! : null;
   const head = last ? nameParts.join(" ") : fullName;
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: STYLES }} />
+      <style dangerouslySetInnerHTML={{ __html: styles(C) }} />
       <div className="cv">
         {/* Folio */}
         <div className="folio">
@@ -187,7 +191,7 @@ function VerifiedPill({ note, small }: { note: string; small?: boolean }) {
   return (
     <span className={small ? "vbadge vbadge-sm" : "vbadge"}>
       <svg width={small ? "8" : "9"} height={small ? "8" : "9"} viewBox="0 0 11 11" aria-hidden>
-        <circle cx="5.5" cy="5.5" r="5.5" fill={C.verifiedFg} />
+        <circle cx="5.5" cy="5.5" r="5.5" fill={BASE.verifiedFg} />
         <path d="M3 5.5 L4.7 7.2 L8 4" stroke="#fff" strokeWidth="1.4" fill="none" strokeLinecap="round" />
       </svg>
       {note ? `Verified · ${note}` : "Verified"}
@@ -195,7 +199,7 @@ function VerifiedPill({ note, small }: { note: string; small?: boolean }) {
   );
 }
 
-const STYLES = `
+const styles = (C: Palette) => `
 @page { size: A4; margin: 0; }
 
 .cv {

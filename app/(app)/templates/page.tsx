@@ -4,6 +4,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { loadIndividualProfile, hasMinimumCore } from "@/lib/profile-data";
 import { loadCompanyProfile, hasCompanyMinimumCore } from "@/lib/company-data";
 import { Button } from "@/components/Button";
+import { TemplateActions } from "@/components/templates/TemplateActions";
+import { CV_THEMES, COMPANY_THEMES, type PdfTheme } from "@/lib/pdf/themes";
 
 export const metadata = { title: "Templates" };
 
@@ -43,9 +45,9 @@ function IndividualTemplates({ minCore }: { minCore: boolean }) {
       </div>
 
       <div className="mt-8 grid gap-5 lg:grid-cols-3">
-        <TemplateCard name="Editorial" kind="CV" tagline="Magazine register. Drop cap. Cream paper." pairing="Fraunces · Newsreader" status={status} href="/api/cv/editorial" preview={<EditorialPreview />} />
-        <TemplateCard name="Sidebar" kind="CV" tagline="Two columns. Built for executives." pairing="Archivo · IBM Plex Sans" status={status} href="/api/cv/sidebar" preview={<SidebarPreview />} />
-        <TemplateCard name="Mono" kind="CV" tagline="Minimalist, technical, single accent." pairing="Space Grotesk · IBM Plex Mono" status={status} href="/api/cv/mono" preview={<MonoPreview />} />
+        <TemplateCard name="Editorial" kind="CV" tagline="Magazine register. Drop cap. Cream paper." pairing="Fraunces · Newsreader" status={status} href="/api/cv/editorial" preview={<EditorialPreview />} themes={CV_THEMES.editorial} storageKey="cv:editorial" />
+        <TemplateCard name="Sidebar" kind="CV" tagline="Two columns. Built for executives." pairing="Archivo · IBM Plex Sans" status={status} href="/api/cv/sidebar" preview={<SidebarPreview />} themes={CV_THEMES.sidebar} storageKey="cv:sidebar" />
+        <TemplateCard name="Mono" kind="CV" tagline="Minimalist, technical, single accent." pairing="Space Grotesk · IBM Plex Mono" status={status} href="/api/cv/mono" preview={<MonoPreview />} themes={CV_THEMES.mono} storageKey="cv:mono" />
       </div>
 
       {!minCore && <LockedBanner href="/profile" />}
@@ -130,9 +132,9 @@ function CompanyTemplates({ minCore }: { minCore: boolean }) {
       </div>
 
       <div className="mt-8 grid gap-5 lg:grid-cols-3">
-        <TemplateCard name="Wadani" kind="Company" tagline="Dark teal gradient cover. Topographic ornament." pairing="Source Serif 4 · Public Sans" status={minCore ? "ready" : "locked"} href="/api/company/wadani" preview={<WadaniPreview />} />
-        <TemplateCard name="Annual" kind="Company" tagline="Annual-report register. Navy band, stat tiles." pairing="Source Serif 4 · Public Sans" status={minCore ? "ready" : "locked"} href="/api/company/annual" preview={<AnnualPreview />} />
-        <TemplateCard name="Minimal" kind="Company" tagline="Massive type, hairlines, one blue accent." pairing="Source Serif 4 · Public Sans" status={minCore ? "ready" : "locked"} href="/api/company/minimal" preview={<MinimalPreview />} />
+        <TemplateCard name="Wadani" kind="Company" tagline="Dark teal gradient cover. Topographic ornament." pairing="Source Serif 4 · Public Sans" status={minCore ? "ready" : "locked"} href="/api/company/wadani" preview={<WadaniPreview />} themes={COMPANY_THEMES.wadani} storageKey="company:wadani" />
+        <TemplateCard name="Annual" kind="Company" tagline="Annual-report register. Navy band, stat tiles." pairing="Source Serif 4 · Public Sans" status={minCore ? "ready" : "locked"} href="/api/company/annual" preview={<AnnualPreview />} themes={COMPANY_THEMES.annual} storageKey="company:annual" />
+        <TemplateCard name="Minimal" kind="Company" tagline="Massive type, hairlines, one accent." pairing="Source Serif 4 · Public Sans" status={minCore ? "ready" : "locked"} href="/api/company/minimal" preview={<MinimalPreview />} themes={COMPANY_THEMES.minimal} storageKey="company:minimal" />
       </div>
 
       {!minCore && <LockedBanner href="/profile" company />}
@@ -217,10 +219,11 @@ function LockedBanner({ href, company }: { href: string; company?: boolean }) {
 }
 
 function TemplateCard({
-  name, kind, tagline, pairing, status, href, preview,
+  name, kind, tagline, pairing, status, href, preview, themes, storageKey,
 }: {
   name: string; kind: "CV" | "Company"; tagline: string; pairing: string;
   status: "ready" | "locked" | "coming-soon"; href?: string; preview?: React.ReactNode;
+  themes?: PdfTheme[]; storageKey?: string;
 }) {
   return (
     <article className="card p-0 overflow-hidden flex flex-col">
@@ -236,7 +239,10 @@ function TemplateCard({
         <p className="text-[11.5px] text-muted mt-2">{pairing}</p>
 
         <div className="mt-auto pt-4">
-          {status === "ready" && href && (
+          {status === "ready" && href && themes && storageKey && (
+            <TemplateActions href={href} storageKey={storageKey} templateName={name} themes={themes} />
+          )}
+          {status === "ready" && href && !(themes && storageKey) && (
             <a href={href} download>
               <Button kind="primary" size="md" className="w-full">Download PDF</Button>
             </a>

@@ -6,7 +6,10 @@ import type { CVData } from "@/lib/pdf/data";
 // Deep navy sidebar, teal main column, sand accents, outlined verified
 // pill that reads as a quiet stamp on the dark ground.
 
-const C = {
+// Base palette. Curated themes (lib/pdf/themes.ts) swap the column hues
+// and sand accent; the verified mint stays constant — it reads on all of
+// the curated dark grounds.
+const BASE = {
   teal: "#0e2a4a",         // main column
   tealDark: "#091e36",     // left sidebar
   cream: "#eaf0f6",        // primary text on dark
@@ -17,13 +20,15 @@ const C = {
   verified: "#74d3a0",     // verified outline + text
   verifiedInk: "#0a2a2a",  // verified tick stroke
 };
+type Palette = typeof BASE;
 
 const DISPLAY = `"Archivo", "Public Sans", system-ui, sans-serif`;
 const BODY = `"IBM Plex Sans", system-ui, sans-serif`;
 
-export function SidebarCV({ data }: { data: CVData }) {
+export function SidebarCV({ data, theme }: { data: CVData; theme?: Record<string, string> }) {
   const { fullName, headline, summary, location, email, phone, languages,
           experiences, educations, certifications, skills, year, photoUrl } = data;
+  const C: Palette = { ...BASE, ...theme };
 
   // Sidebar fits ~9 skills before the rhythm breaks; the rest are implied
   // by the experience entries.
@@ -32,7 +37,7 @@ export function SidebarCV({ data }: { data: CVData }) {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: STYLES }} />
+      <style dangerouslySetInnerHTML={{ __html: styles(C) }} />
       <section className="page">
         <aside className="sb">
           {photoUrl ? (
@@ -167,8 +172,8 @@ function SbField({ l, v }: { l: string; v: string }) {
 function SbTick() {
   return (
     <svg width="9" height="9" viewBox="0 0 11 11" aria-hidden>
-      <circle cx="5.5" cy="5.5" r="5.5" fill={C.verified} />
-      <path d="M3 5.5 L4.7 7.2 L8 4" stroke={C.verifiedInk} strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <circle cx="5.5" cy="5.5" r="5.5" fill={BASE.verified} />
+      <path d="M3 5.5 L4.7 7.2 L8 4" stroke={BASE.verifiedInk} strokeWidth="1.5" fill="none" strokeLinecap="round" />
     </svg>
   );
 }
@@ -200,7 +205,7 @@ function splitHeadline(h: string): [string, string] {
   return m ? [m[1], m[2]] : [h, ""];
 }
 
-const STYLES = `
+const styles = (C: Palette) => `
 @page { size: A4; margin: 0; }
 
 .page {

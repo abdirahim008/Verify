@@ -210,7 +210,10 @@ async function renderAndCheck(path, outName, cookie, requiredFonts, minPages) {
   const banned = BANNED_FONTS.filter((f) => text.includes(f));
   const ok = isPdf && pages >= minPages && requiredFonts.every((f) => text.includes(f)) && banned.length === 0;
   if (!ok) allOk = false;
-  writeFileSync(`test-output/${outName}.pdf`, buf);
+  // EBUSY = the previous artifact is open in a PDF viewer — skip the write,
+  // the assertions above are what matter.
+  try { writeFileSync(`test-output/${outName}.pdf`, buf); }
+  catch { process.stdout.write("(viewer holds old file — write skipped) "); }
   console.log(`${ok ? "OK" : "PROBLEM"} — ${(buf.length / 1024).toFixed(0)}KB, ${pages} page(s), fonts: ${fonts}${banned.length ? `, system fallbacks: ${banned.join(",")}` : ""}`);
 }
 
@@ -221,6 +224,21 @@ for (const t of ["editorial", "sidebar", "mono"]) {
 // Sans (Type 3 subsets embed hyphenated family names).
 for (const t of ["wadani", "annual", "minimal"]) {
   await renderAndCheck(`/api/company/${t}`, `company-${t}`, companyCookie, ["Source-Serif-4", "Public-Sans"], 3);
+}
+
+// Themed + preview spot-checks: a non-default palette per kind must
+// render, and ?preview=1 must serve inline (for the iframe preview).
+for (const [path, cookie] of [
+  ["/api/cv/editorial?theme=forest&preview=1", cookieHeader],
+  ["/api/company/annual?theme=burgundy&preview=1", companyCookie],
+]) {
+  process.stdout.write(`→ ${path} ... `);
+  const res = await fetch(`${APP}${path}`, { headers: { cookie } });
+  const buf = Buffer.from(await res.arrayBuffer());
+  const disp = res.headers.get("content-disposition") || "";
+  const ok = res.ok && buf.subarray(0, 5).toString() === "%PDF-" && disp.startsWith("inline");
+  if (!ok) { allOk = false; console.log(`PROBLEM — HTTP ${res.status}, disposition: ${disp}`); }
+  else console.log(`OK — themed, inline`);
 }
 
 console.log(allOk ? "\nAll templates rendered with intended fonts. PDFs in test-output/." : "\nSomething's off — see above.");
