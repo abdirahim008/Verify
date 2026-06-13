@@ -45,6 +45,8 @@ export function EditorialCV({ data, theme }: { data: CVData; theme?: Record<stri
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: styles(C) }} />
+      {/* Full-bleed paper layer — see .paper in styles(). */}
+      <div className="paper" />
       <div className="cv">
         {/* Folio */}
         <div className="folio">
@@ -200,20 +202,26 @@ function VerifiedPill({ note, small }: { note: string; small?: boolean }) {
 }
 
 const styles = (C: Palette) => `
-/* Real page margins (not .cv padding) so the bottom margin is honoured on
-   EVERY page, including where content breaks onto a second page. Chromium
-   respects these because the PDF is rendered with preferCSSPageSize. */
+/* Real page margins (not .cv padding) so the text margin is honoured on EVERY
+   page, including where content breaks onto a second page. Chromium respects
+   these because the PDF is rendered with preferCSSPageSize. */
 @page { size: A4; margin: 16mm 19mm; }
 
-/* Paint the cream on the root element, not on .cv. In print the root
-   background is propagated across the whole canvas of every page (incl. the
-   @page margin area and any overflow page), so the paper colour fills the
-   sheet edge-to-edge instead of stopping where the content ends and leaving
-   the rest white. */
-html { background: ${C.cream}; }
+/* Full-bleed paper. Chromium won't paint element backgrounds into the @page
+   margin band (and a root background doesn't reach it either), so a background
+   on .cv/html stops at the text margin and leaves a white frame around the
+   sheet. Instead lay down a position:fixed layer — which repeats on every page
+   in print — pushed OUT past the page area into the margin band via negative
+   insets equal to the @page margins. The cream then fills the whole sheet on
+   every page while the @page margins still give real per-page text margins. */
+.paper {
+  position: fixed;
+  top: -16mm; bottom: -16mm; left: -19mm; right: -19mm;
+  background: ${C.cream};
+  z-index: -1;
+}
 
 .cv {
-  background: ${C.cream};
   color: ${C.ink};
   font-family: ${BODY};
   font-kerning: normal;
