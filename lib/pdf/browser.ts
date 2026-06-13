@@ -1,6 +1,5 @@
 import "server-only";
 import { existsSync } from "node:fs";
-import { dirname } from "node:path";
 import type { Browser } from "puppeteer-core";
 
 // Lazy import of puppeteer-core/chromium-min — they're large and we only
@@ -24,6 +23,16 @@ export async function getBrowser(): Promise<Browser> {
     if (!remote) {
       throw new Error("CHROMIUM_REMOTE_EXEC_PATH is required in serverless environments.");
     }
+    // chromium-min only extracts its bundled nss/nspr libraries (libnss3.so,
+    // libnspr4.so) and configures LD_LIBRARY_PATH when it detects an AWS Lambda
+    // runtime — which it does by sniffing AWS_LAMBDA_JS_RUNTIME / AWS_EXECUTION_ENV
+    // AT IMPORT TIME. Vercel runs on Lambda but doesn't expose those vars, so the
+    // package skips the extraction and Chromium dies with "libnss3.so: cannot open
+    // shared object file". Vercel's Node 20 runtime IS Amazon Linux 2023, so set
+    // the flag *before* the dynamic import (the import is what triggers detection)
+    // to make the package unpack the AL2023 libs to /tmp/al2023/lib and wire up the
+    // loader path itself. `??=` so a real Vercel/Lambda value always wins.
+    process.env.AWS_LAMBDA_JS_RUNTIME ??= "nodejs20.x";
     const chromium = (await import("@sparticuz/chromium-min")).default;
     const puppeteer = (await import("puppeteer-core")).default;
     // Disable the GPU/graphics stack. On Vercel's Hobby plan a function gets
@@ -32,22 +41,10 @@ export async function getBrowser(): Promise<Browser> {
     // ("site wasn't available") rather than a clean error. We only rasterise
     // static HTML to a PDF, so we never need it.
     chromium.setGraphicsMode = false;
-    const executablePath = await chromium.executablePath(remote);
-    // Vercel's Node 20/22 runtime is Amazon Linux 2023, which no longer ships
-    // the nss/nspr system libraries Chromium needs (libnss3.so, libnspr4.so).
-    // chromium-min unpacks its bundled copies next to the binary in /tmp, but
-    // the dynamic linker doesn't search there by default — so launch fails with
-    // "error while loading shared libraries: libnss3.so". Point LD_LIBRARY_PATH
-    // at that directory so they resolve. This is the actual fix for the failed
-    // PDF downloads; the Node 20 pin alone can't help (both 20.x and 22.x are
-    // AL2023 and equally lack nss).
-    process.env.LD_LIBRARY_PATH = [dirname(executablePath), process.env.LD_LIBRARY_PATH]
-      .filter(Boolean)
-      .join(":");
     cachedBrowser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath,
+      executablePath: await chromium.executablePath(remote),
       headless: chromium.headless,
     });
     return cachedBrowser!;
