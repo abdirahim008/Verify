@@ -68,7 +68,10 @@ export default async function HomePage() {
 
           {feed.length === 0 ? (
             <div className="card mt-4">
-              <p className="text-[13.5px] text-muted">No items yet — your admin hasn&apos;t approved any. Hit <Link href="/admin/feed" className="text-sienna hover:underline">/admin/feed</Link> if you have the role.</p>
+              <p className="text-[13.5px] text-ink-soft">
+                Sector news from approved humanitarian sources will appear here. In the meantime, the most valuable thing you can do is{" "}
+                <Link href="/profile" className="text-sienna font-medium hover:underline">finish your profile</Link> so your {isCompany ? "company profile" : "CV"} is ready to share.
+              </p>
             </div>
           ) : (
             <ul className="mt-4 space-y-3">

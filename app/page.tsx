@@ -37,15 +37,15 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Social proof. NOTE: the headcount below is a marketing
-                placeholder copied from the agreed landing comp — replace
-                with a real number once we have one, or drop the digit. */}
-            <div className="mt-6 flex items-center gap-3">
-              <AvatarStack />
-              <p className="text-[12.5px] text-muted">
-                <span className="text-ink font-medium">4,200+ professionals</span> across Somalia, Kenya, Ethiopia &amp; South Sudan
-              </p>
-            </div>
+            {/* Honest trust signals — real product facts, not a fabricated
+                headcount. Restore a usage number here once it's genuinely
+                true. */}
+            <ul className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12.5px] text-muted">
+              <Check>Free CV &amp; profile</Check>
+              <Check>Works on any phone</Check>
+              <Check>A4, print-clean PDF</Check>
+              <Check>No ads, no spam</Check>
+            </ul>
           </div>
 
           <div className="lg:pl-4 lg:-mt-2"><HeroLoginForm /></div>
@@ -379,22 +379,6 @@ function Step({ n, title, body }: { n: string; title: string; body: string }) {
       <span className="text-[11.5px] text-muted font-medium tracking-wide">{n}</span>
       <h3 className="font-serif text-[16.5px] tracking-tightish mt-1">{title}</h3>
       <p className="mt-2 text-[12.5px] text-ink-soft leading-relaxed">{body}</p>
-    </div>
-  );
-}
-
-function AvatarStack() {
-  const colors = ["#0a5cad", "#067a5e", "#a04020", "#5e3c8a", "#073563"];
-  return (
-    <div className="flex -space-x-2">
-      {colors.map((c, i) => (
-        <span
-          key={i}
-          className="inline-block w-7 h-7 rounded-full border-2 border-paper"
-          style={{ background: c }}
-          aria-hidden
-        />
-      ))}
     </div>
   );
 }

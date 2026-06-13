@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Source_Sans_3, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { JsonLd } from "@/components/JsonLd";
 import { SITE, organizationLd, webSiteLd, softwareAppLd } from "@/lib/seo";
 
@@ -69,7 +71,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             search engines and AI answer engines. */}
         <JsonLd data={[organizationLd(), webSiteLd(), softwareAppLd()]} />
       </head>
-      <body className="min-h-screen bg-cream text-ink">{children}</body>
+      <body className="min-h-screen bg-cream text-ink">
+        {children}
+        {/* Privacy-friendly, cookieless analytics + Core Web Vitals.
+            No-ops outside Vercel; collects once deployed. */}
+        <Analytics />
+        <SpeedInsights />
+      </body>
     </html>
   );
 }

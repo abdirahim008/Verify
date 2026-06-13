@@ -18,7 +18,10 @@ export async function middleware(request: NextRequest) {
     path === "/sitemap.xml" ||
     path.startsWith("/_next") ||
     path.startsWith("/guides") ||
-    path.startsWith("/u/");
+    path.startsWith("/u/") ||
+    // Generated social-card images (root + per-route) must be crawlable.
+    path.endsWith("/opengraph-image") ||
+    path.endsWith("/twitter-image");
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
