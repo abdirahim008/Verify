@@ -87,6 +87,10 @@ export async function GET(
       fonts: t.fonts,
     });
   } catch (e) {
+    // Surface the real failure in Vercel Runtime Logs — the JSON body only
+    // carries the message, but chromium crashes (OOM, launch failure) carry
+    // the diagnostic detail in the stack.
+    console.error(`[cv pdf] render failed for template=${params.template}`, e);
     const msg = e instanceof Error ? e.message : "PDF generation failed";
     return NextResponse.json({ error: msg }, { status: 500 });
   }

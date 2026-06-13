@@ -34,10 +34,18 @@ export async function renderPdf(
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
-    await page.setContent(html, { waitUntil: "networkidle0" });
-    // Wait for fonts to load — networkidle0 is necessary but not always
-    // sufficient if a `@font-face` swap is still pending.
-    await page.evaluateHandle("document.fonts.ready");
+    // Bound the font fetch. `networkidle0` normally settles once the Google
+    // Fonts CSS + files arrive, but a slow or blocked request would otherwise
+    // hold the whole serverless invocation up to the 60s ceiling and surface
+    // as "site wasn't available". Cap the wait at 25s; the DOM is already set
+    // by then, so we proceed — worst case the PDF falls back to system fonts
+    // instead of failing the download outright.
+    await page.setContent(html, { waitUntil: "networkidle0", timeout: 25000 }).catch(() => {});
+    // Give pending `@font-face` swaps a final, bounded moment to settle.
+    await Promise.race([
+      page.evaluateHandle("document.fonts.ready"),
+      new Promise((resolve) => setTimeout(resolve, 5000)),
+    ]);
     const pdf = await page.pdf({
       format: "A4",
       printBackground: true,

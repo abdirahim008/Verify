@@ -25,6 +25,12 @@ export async function getBrowser(): Promise<Browser> {
     }
     const chromium = (await import("@sparticuz/chromium-min")).default;
     const puppeteer = (await import("puppeteer-core")).default;
+    // Disable the GPU/graphics stack. On Vercel's Hobby plan a function gets
+    // ~1024 MB; Chromium with graphics mode on can spike past that and get
+    // OOM-killed mid-render, which reaches the user as an aborted download
+    // ("site wasn't available") rather than a clean error. We only rasterise
+    // static HTML to a PDF, so we never need it.
+    chromium.setGraphicsMode = false;
     cachedBrowser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
