@@ -14,6 +14,10 @@ export const runtime = "nodejs";
 // Each user has unique data, and downloads should always be fresh after an
 // edit. No static caching.
 export const dynamic = "force-dynamic";
+// Chromium cold-start (first download/launch of the serverless binary) can
+// take 5–15s. The 10s default would time out the first request; 60 is the
+// Hobby-plan ceiling and ample once warm.
+export const maxDuration = 60;
 
 // Per-template font URLs — the §12 prototype pairings. Variable-font
 // ranges (opsz + wght) so Fraunces' optical sizing and the in-between

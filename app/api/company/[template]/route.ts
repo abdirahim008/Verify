@@ -10,6 +10,9 @@ import { MinimalCompanyProfile } from "@/components/cv/MinimalCompanyProfile";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// Chromium cold-start can take 5–15s; the 10s default would time out the
+// first request. 60 is the Hobby ceiling and ample once warm.
+export const maxDuration = 60;
 
 const TEMPLATES = {
   wadani:  { name: "Wadani",  component: WadaniCompanyProfile },
