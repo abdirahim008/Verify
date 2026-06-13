@@ -200,12 +200,19 @@ function VerifiedPill({ note, small }: { note: string; small?: boolean }) {
 }
 
 const styles = (C: Palette) => `
-@page { size: A4; margin: 0; }
+/* Real page margins (not .cv padding) so the bottom margin is honoured on
+   EVERY page, including where content breaks onto a second page. Chromium
+   respects these because the PDF is rendered with preferCSSPageSize. */
+@page { size: A4; margin: 16mm 19mm; }
+
+/* Paint the cream on the root element, not on .cv. In print the root
+   background is propagated across the whole canvas of every page (incl. the
+   @page margin area and any overflow page), so the paper colour fills the
+   sheet edge-to-edge instead of stopping where the content ends and leaving
+   the rest white. */
+html { background: ${C.cream}; }
 
 .cv {
-  width: 210mm;
-  min-height: 297mm;
-  padding: 16mm 19mm 16mm;
   background: ${C.cream};
   color: ${C.ink};
   font-family: ${BODY};
