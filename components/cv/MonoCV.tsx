@@ -39,6 +39,8 @@ export function MonoCV({ data, theme }: { data: CVData; theme?: Record<string, s
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: styles(C) }} />
+      {/* Full-bleed paper layer — see .paper in styles(). */}
+      <div className="paper" />
       <section className="page">
         {/* Meta strip */}
         <div className="top">
@@ -225,19 +227,26 @@ function yearOf(range: string, which: "start" | "end"): string {
 }
 
 const styles = (C: Palette) => `
-@page { size: A4; margin: 0; }
+/* Real per-page margins so the text margin holds on every page, including
+   at page breaks (honoured via preferCSSPageSize). */
+@page { size: A4; margin: 17mm 18mm 15mm; }
+
+/* Full-bleed paper: Chromium won't paint element/root backgrounds into the
+   @page margin band, so a fixed layer pushed out into it with negative insets
+   (equal to the @page margins) repeats on every page and fills the whole
+   sheet edge-to-edge. */
+.paper {
+  position: fixed;
+  top: -17mm; bottom: -15mm; left: -18mm; right: -18mm;
+  background: ${C.bg};
+  z-index: -1;
+}
 
 .page {
-  width: 210mm;
-  min-height: 297mm;
-  background: ${C.bg};
   color: ${C.ink};
   font-family: ${BODY};
   font-kerning: normal;
-  padding: 17mm 18mm 15mm;
-  position: relative;
   -webkit-font-smoothing: antialiased;
-  box-sizing: border-box;
 }
 
 /* ── Meta strip ────────────────────────────────────────────────── */
@@ -346,8 +355,10 @@ const styles = (C: Palette) => `
 .cert-meta { font-size: 8.5pt; color: ${C.muted}; }
 
 /* ── Footer ────────────────────────────────────────────────────── */
+/* Flows after the content (was pinned to the page bottom, which only works
+   on a single page) so it lands correctly on the last page of any length. */
 .ft {
-  position: absolute; bottom: 9mm; left: 18mm; right: 18mm;
+  margin-top: 12mm;
   display: flex; justify-content: space-between;
   font-family: ${MONO};
   font-size: 7.5pt; color: ${C.muted}; letter-spacing: 0.04em;

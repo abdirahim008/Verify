@@ -38,6 +38,8 @@ export function SidebarCV({ data, theme }: { data: CVData; theme?: Record<string
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: styles(C) }} />
+      {/* Full-bleed two-tone paper layer — see .paper in styles(). */}
+      <div className="paper" />
       <section className="page">
         <aside className="sb">
           {photoUrl ? (
@@ -207,6 +209,17 @@ function splitHeadline(h: string): [string, string] {
 
 const styles = (C: Palette) => `
 @page { size: A4; margin: 0; }
+
+/* Full-bleed two-tone paper. The two-column .page fills the sheet on the
+   first page, but if a profile overflows onto a second page the column
+   backgrounds stop where the grid ends, leaving the rest of the last sheet
+   white. A position:fixed layer repeats on every page and fills the whole
+   sheet edge-to-edge; its gradient splits at 76mm to match the sidebar/main
+   column boundary so the navy band and teal field line up under the columns. */
+.paper {
+  position: fixed; inset: 0; z-index: -1;
+  background: linear-gradient(to right, ${C.tealDark} 0 76mm, ${C.teal} 76mm 100%);
+}
 
 .page {
   width: 210mm;
