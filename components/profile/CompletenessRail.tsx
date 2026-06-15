@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/Button";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { CvDownloadModal } from "./CvDownloadModal";
 
 interface Todo { label: string; done: boolean }
 
@@ -10,6 +12,7 @@ export function CompletenessRail({
   percent, todos, hasMinimumCore, verifiedCount,
 }: { percent: number; todos: Todo[]; hasMinimumCore: boolean; verifiedCount: number }) {
   const complete = percent >= 100;
+  const [chooser, setChooser] = useState(false);
   return (
     <div className="space-y-4 lg:sticky lg:top-6">
       <div className="card">
@@ -43,15 +46,13 @@ export function CompletenessRail({
           <p className="mt-1.5 text-[12.5px] text-paper/70">Add basics, one experience, one education, and one skill to unlock your first CV.</p>
         )}
         {hasMinimumCore ? (
-          <a href="/api/cv/editorial" download className="block mt-4">
-            <Button kind="sienna" size="md" className="w-full">Download CV →</Button>
-          </a>
+          <Button kind="sienna" size="md" className="w-full mt-4" onClick={() => setChooser(true)}>Download CV →</Button>
         ) : (
-          <Link href="/templates" className="block mt-4 pointer-events-none">
-            <Button kind="quiet" size="md" className="w-full" disabled>Locked until minimum core</Button>
-          </Link>
+          <Button kind="quiet" size="md" className="w-full mt-4" disabled>Locked until minimum core</Button>
         )}
       </div>
+
+      <CvDownloadModal open={chooser} onClose={() => setChooser(false)} />
 
       <div className="card">
         <p className="section-eyebrow">Verified claims</p>
