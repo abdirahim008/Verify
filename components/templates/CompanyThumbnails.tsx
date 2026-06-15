@@ -1,6 +1,6 @@
 // Shared company-profile template thumbnails — small static mockups of
-// each register. Used by the /templates cards and the on-profile download
-// chooser so the two stay in sync.
+// each register. Rendered in the on-profile download chooser
+// (CompanyDownloadModal).
 
 export function WadaniThumb() {
   return (

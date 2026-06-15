@@ -1,6 +1,5 @@
 // Shared CV template thumbnails — small static mockups of each register.
-// Used by the /templates cards and the on-profile download chooser so the
-// two stay in sync.
+// Rendered in the on-profile download chooser (CvDownloadModal).
 
 export function EditorialThumb() {
   return (

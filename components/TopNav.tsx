@@ -17,7 +17,6 @@ interface Props {
 const ITEMS: Array<{ href: string; label: string }> = [
   { href: "/home", label: "Home" },
   { href: "/profile", label: "My profile" },
-  { href: "/templates", label: "Templates" },
   { href: "/verification", label: "Verification" },
 ];
 

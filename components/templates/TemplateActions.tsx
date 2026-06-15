@@ -15,10 +15,11 @@ interface Props {
   themes: PdfTheme[];
 }
 
-// Per-template action block on /templates: curated-palette swatches, a
-// real PDF preview (the actual route rendered inline in an iframe), and
-// the themed download link. The chosen palette is remembered per template
-// in localStorage — no schema, survives reloads on this device.
+// Per-template action block used inside the download choosers: curated-
+// palette swatches, a real on-screen PDF preview (the actual route
+// rasterised client-side via PDF.js), and the themed download link. The
+// chosen palette is remembered per template in localStorage — no schema,
+// survives reloads on this device.
 export function TemplateActions({ href, storageKey, templateName, themes }: Props) {
   const lsKey = `sahan-theme:${storageKey}`;
   const [themeId, setThemeId] = useState(themes[0]?.id ?? "");
