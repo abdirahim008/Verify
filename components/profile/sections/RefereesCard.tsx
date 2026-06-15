@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/Button";
-import { SectionCard, Field, NewItemPanel } from "../SectionCard";
+import { SectionCard, Field, NewItemPanel, IconButton } from "../SectionCard";
+import { PencilIcon, TrashIcon } from "../icons";
 import { refereeSchema, type RefereeValues } from "@/lib/schemas";
 import { addReferee, updateReferee, deleteReferee } from "@/lib/actions/profile";
 
@@ -19,16 +20,21 @@ export function RefereesCard({ items, experiences }: { items: RefereeRow[]; expe
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  const addButton = <Button kind="primary" size="sm" onClick={() => setAdding(true)}>+ Add referee</Button>;
+
   return (
     <SectionCard
       eyebrow="Section 7"
       title="Referees"
+      metaNoun="referee"
       description="Private — never shown to other users or in public profiles. We only reveal contact details to an admin during verification, with your consent."
       defaultOpen={false}
       count={items.length}
+      headerAction={!adding ? addButton : undefined}
     >
-      <div className="rounded-md border border-border-soft bg-cream/70 p-3 text-[12.5px] text-ink-soft">
-        🔒 Referee contact details are private by default and not user-overridable.
+      <div className="flex items-center gap-2 rounded-md border border-border-soft bg-cream/70 p-3 text-[12.5px] text-ink-soft">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="shrink-0 text-muted" aria-hidden><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></svg>
+        Referee contact details are private by default and not user-overridable.
       </div>
 
       <div className="mt-4 space-y-3">
@@ -53,7 +59,7 @@ export function RefereesCard({ items, experiences }: { items: RefereeRow[]; expe
         <p className="mt-4 text-[13.5px] text-muted">No referees yet.</p>
       )}
 
-      {adding ? (
+      {adding && (
         <RefereeForm
           experiences={experiences}
           onSubmit={addReferee}
@@ -62,10 +68,6 @@ export function RefereesCard({ items, experiences }: { items: RefereeRow[]; expe
           submitLabel="Save referee"
           asPanel
         />
-      ) : (
-        <div className="mt-4">
-          <Button kind="quiet" size="md" onClick={() => setAdding(true)}>+ Add referee</Button>
-        </div>
       )}
     </SectionCard>
   );
@@ -76,7 +78,7 @@ function RefereeRowDisplay({ item, experiences, onEdit }: { item: RefereeRow; ex
   const linkedExp = experiences.find((e) => e.id === item.experience_id);
   return (
     <article className="rounded-[10px] border border-border bg-paper p-4 sm:p-5 flex items-start justify-between gap-3">
-      <div>
+      <div className="min-w-0 flex-1">
         <h3 className="font-serif text-[17px] tracking-tightish">{item.name}</h3>
         <div className="text-[13px] text-ink-soft mt-1">{[item.position, item.organization].filter(Boolean).join(" · ")}</div>
         {item.relationship && <div className="text-[12.5px] text-muted mt-0.5">{item.relationship}</div>}
@@ -87,13 +89,12 @@ function RefereeRowDisplay({ item, experiences, onEdit }: { item: RefereeRow; ex
         )}
         <div className="text-[12px] text-muted mt-2">Contact details hidden — visible only to admins during verification.</div>
       </div>
-      <div className="flex gap-1 shrink-0">
-        <Button kind="ghost" size="sm" onClick={onEdit}>Edit</Button>
-        <Button kind="ghost" size="sm" disabled={pending}
-          onClick={() => { if (confirm("Delete this referee?")) startTransition(() => { void deleteReferee(item.id); }); }}
-          className="text-red-700 hover:bg-red-50">
-          {pending ? "..." : "Delete"}
-        </Button>
+      <div className="flex gap-0.5 shrink-0">
+        <IconButton label="Edit" onClick={onEdit}><PencilIcon size={15} /></IconButton>
+        <IconButton label="Delete" danger disabled={pending}
+          onClick={() => { if (confirm("Delete this referee?")) startTransition(() => { void deleteReferee(item.id); }); }}>
+          <TrashIcon size={15} />
+        </IconButton>
       </div>
     </article>
   );

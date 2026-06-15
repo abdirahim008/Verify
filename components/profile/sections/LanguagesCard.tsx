@@ -43,6 +43,7 @@ export function LanguagesCard({ initial }: { initial: string[] }) {
     <SectionCard
       eyebrow="Section 6"
       title="Languages"
+      metaNoun="language"
       description="Languages of work. Include proficiency (e.g. Somali (native), English (fluent))."
       defaultOpen={items.length === 0}
       count={items.length}

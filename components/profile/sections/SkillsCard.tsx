@@ -34,6 +34,7 @@ export function SkillsCard({ items }: { items: SkillRow[] }) {
     <SectionCard
       eyebrow="Section 4"
       title="Skills"
+      metaNoun="skill"
       description="Short labels — software, methods, languages of work. Aim for 6–12."
       required
       defaultOpen={items.length < 3}

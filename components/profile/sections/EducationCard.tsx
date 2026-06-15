@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/Button";
-import { SectionCard, Field, NewItemPanel } from "../SectionCard";
+import { SectionCard, Field, NewItemPanel, IconButton } from "../SectionCard";
+import { CheckDot, HollowDot, CapIcon, CalendarIcon, PencilIcon, TrashIcon } from "../icons";
 import { RequestVerifyButton } from "@/components/verification/RequestVerifyButton";
 import { educationSchema, type EducationValues } from "@/lib/schemas";
 import { addEducation, updateEducation, deleteEducation } from "@/lib/actions/profile";
@@ -25,42 +26,48 @@ export function EducationCard({ items, pendingIds }: { items: EducationRow[]; pe
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  const addButton = <Button kind="primary" size="sm" onClick={() => setAdding(true)}>+ Add education</Button>;
+
   return (
     <SectionCard
       eyebrow="Section 3"
       title="Education"
+      metaNoun="qualification"
       description="Degrees, diplomas, and formal qualifications."
       required
       defaultOpen={items.length === 0}
       count={items.length}
+      headerAction={!adding ? addButton : undefined}
     >
-      <div className="space-y-3">
-        {items.map((item) =>
-          editingId === item.id ? (
-            <EducationForm
-              key={item.id}
-              initial={item}
-              onSubmit={(v) => updateEducation(item.id, v)}
-              onCancel={() => setEditingId(null)}
-              onDone={() => setEditingId(null)}
-              submitLabel="Save changes"
-            />
-          ) : (
-            <EducationRowDisplay key={item.id} item={item} pending={pendingIds.has(item.id)} onEdit={() => setEditingId(item.id)} />
-          ),
-        )}
-      </div>
+      {items.length > 0 && (
+        <div className="relative">
+          <span className="absolute left-[10px] top-2 bottom-2 w-px bg-border" aria-hidden />
+          <div className="space-y-5">
+            {items.map((item) =>
+              editingId === item.id ? (
+                <div key={item.id} className="pl-9">
+                  <EducationForm
+                    initial={item}
+                    onSubmit={(v) => updateEducation(item.id, v)}
+                    onCancel={() => setEditingId(null)}
+                    onDone={() => setEditingId(null)}
+                    submitLabel="Save changes"
+                  />
+                </div>
+              ) : (
+                <EducationRowDisplay key={item.id} item={item} pending={pendingIds.has(item.id)} onEdit={() => setEditingId(item.id)} />
+              ),
+            )}
+          </div>
+        </div>
+      )}
 
       {items.length === 0 && !adding && (
         <p className="text-[13.5px] text-muted">No education yet. Add your highest qualification first.</p>
       )}
 
-      {adding ? (
+      {adding && (
         <EducationForm onSubmit={addEducation} onCancel={() => setAdding(false)} onDone={() => setAdding(false)} submitLabel="Save education" asPanel />
-      ) : (
-        <div className="mt-4">
-          <Button kind="quiet" size="md" onClick={() => setAdding(true)}>+ Add education</Button>
-        </div>
       )}
     </SectionCard>
   );
@@ -71,9 +78,10 @@ function EducationRowDisplay({ item, pending: pendingVerify, onEdit }: { item: E
   const qualLabel = QUALIFICATION_LABELS[item.qualification_level];
   const dateStr = yearRange(item.start_year, item.end_year);
   return (
-    <article className="rounded-[10px] border border-border bg-paper p-4 sm:p-5">
+    <article className="relative pl-9">
+      <span className="absolute left-0 top-0.5">{item.verified ? <CheckDot /> : <HollowDot />}</span>
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-serif text-[18px] tracking-tightish">{qualLabel}{item.field_of_study ? ` · ${item.field_of_study}` : ""}</h3>
             <RequestVerifyButton
@@ -86,22 +94,23 @@ function EducationRowDisplay({ item, pending: pendingVerify, onEdit }: { item: E
               }}
             />
           </div>
-          <div className="text-[13px] text-ink-soft mt-1">
-            <span className="font-medium">{item.institution}</span>
-            {(item.start_year || item.end_year) && (
-              <> &middot; <span className="text-muted">{yearRange(item.start_year, item.end_year)}</span></>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[12.5px]">
+            <span className="inline-flex items-center gap-1.5 text-sienna font-medium">
+              <CapIcon size={13} className="text-sienna/70" />{item.institution}
+            </span>
+            {dateStr && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-cream border border-border px-2.5 py-1 text-ink-soft">
+                <CalendarIcon size={12} className="text-muted" />{dateStr}
+              </span>
             )}
           </div>
         </div>
-        <div className="flex gap-1 shrink-0">
-          <Button kind="ghost" size="sm" onClick={onEdit}>Edit</Button>
-          <Button
-            kind="ghost" size="sm" disabled={pending}
-            onClick={() => { if (confirm("Delete this education?")) startTransition(() => { void deleteEducation(item.id); }); }}
-            className="text-red-700 hover:bg-red-50"
-          >
-            {pending ? "..." : "Delete"}
-          </Button>
+        <div className="flex gap-0.5 shrink-0">
+          <IconButton label="Edit" onClick={onEdit}><PencilIcon size={15} /></IconButton>
+          <IconButton label="Delete" danger disabled={pending}
+            onClick={() => { if (confirm("Delete this education?")) startTransition(() => { void deleteEducation(item.id); }); }}>
+            <TrashIcon size={15} />
+          </IconButton>
         </div>
       </div>
     </article>

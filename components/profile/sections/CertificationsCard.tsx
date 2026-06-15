@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/Button";
-import { SectionCard, Field, NewItemPanel } from "../SectionCard";
+import { SectionCard, Field, NewItemPanel, IconButton } from "../SectionCard";
+import { CheckDot, HollowDot, PencilIcon, TrashIcon } from "../icons";
 import { RequestVerifyButton } from "@/components/verification/RequestVerifyButton";
 import { certificationSchema, type CertificationValues } from "@/lib/schemas";
 import { addCertification, updateCertification, deleteCertification } from "@/lib/actions/profile";
@@ -18,41 +19,47 @@ export function CertificationsCard({ items, pendingIds }: { items: CertRow[]; pe
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  const addButton = <Button kind="primary" size="sm" onClick={() => setAdding(true)}>+ Add certification</Button>;
+
   return (
     <SectionCard
       eyebrow="Section 5"
       title="Certifications"
+      metaNoun="certification"
       description="Issued credentials with an issuer and year."
       defaultOpen={false}
       count={items.length}
+      headerAction={!adding ? addButton : undefined}
     >
-      <div className="space-y-3">
-        {items.map((item) =>
-          editingId === item.id ? (
-            <CertForm
-              key={item.id}
-              initial={item}
-              onSubmit={(v) => updateCertification(item.id, v)}
-              onCancel={() => setEditingId(null)}
-              onDone={() => setEditingId(null)}
-              submitLabel="Save changes"
-            />
-          ) : (
-            <CertRowDisplay key={item.id} item={item} pending={pendingIds.has(item.id)} onEdit={() => setEditingId(item.id)} />
-          ),
-        )}
-      </div>
+      {items.length > 0 && (
+        <div className="relative">
+          <span className="absolute left-[10px] top-2 bottom-2 w-px bg-border" aria-hidden />
+          <div className="space-y-5">
+            {items.map((item) =>
+              editingId === item.id ? (
+                <div key={item.id} className="pl-9">
+                  <CertForm
+                    initial={item}
+                    onSubmit={(v) => updateCertification(item.id, v)}
+                    onCancel={() => setEditingId(null)}
+                    onDone={() => setEditingId(null)}
+                    submitLabel="Save changes"
+                  />
+                </div>
+              ) : (
+                <CertRowDisplay key={item.id} item={item} pending={pendingIds.has(item.id)} onEdit={() => setEditingId(item.id)} />
+              ),
+            )}
+          </div>
+        </div>
+      )}
 
       {items.length === 0 && !adding && (
         <p className="text-[13.5px] text-muted">No certifications yet.</p>
       )}
 
-      {adding ? (
+      {adding && (
         <CertForm onSubmit={addCertification} onCancel={() => setAdding(false)} onDone={() => setAdding(false)} submitLabel="Save certification" asPanel />
-      ) : (
-        <div className="mt-4">
-          <Button kind="quiet" size="md" onClick={() => setAdding(true)}>+ Add certification</Button>
-        </div>
       )}
     </SectionCard>
   );
@@ -61,31 +68,35 @@ export function CertificationsCard({ items, pendingIds }: { items: CertRow[]; pe
 function CertRowDisplay({ item, pending: pendingVerify, onEdit }: { item: CertRow; pending: boolean; onEdit: () => void }) {
   const [pending, startTransition] = useTransition();
   return (
-    <article className="rounded-[10px] border border-border bg-paper p-4 sm:p-5 flex items-start justify-between gap-3">
-      <div>
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 className="font-serif text-[17px] tracking-tightish">{item.name}</h3>
-          <RequestVerifyButton
-            verified={item.verified} verifiedNote={item.verified_note}
-            pending={pendingVerify}
-            target={{
-              type: "certification", id: item.id,
-              label: item.name,
-              sublabel: [item.issuer, item.year].filter(Boolean).join(" · "),
-            }}
-          />
+    <article className="relative pl-9">
+      <span className="absolute left-0 top-0.5">{item.verified ? <CheckDot /> : <HollowDot />}</span>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-serif text-[17px] tracking-tightish">{item.name}</h3>
+            <RequestVerifyButton
+              verified={item.verified} verifiedNote={item.verified_note}
+              pending={pendingVerify}
+              target={{
+                type: "certification", id: item.id,
+                label: item.name,
+                sublabel: [item.issuer, item.year].filter(Boolean).join(" · "),
+              }}
+            />
+          </div>
+          {(item.issuer || item.year) && (
+            <div className="text-[12.5px] text-ink-soft mt-1.5">
+              {[item.issuer, item.year].filter(Boolean).join(" · ")}
+            </div>
+          )}
         </div>
-        <div className="text-[13px] text-ink-soft mt-1">
-          {[item.issuer, item.year].filter(Boolean).join(" · ")}
+        <div className="flex gap-0.5 shrink-0">
+          <IconButton label="Edit" onClick={onEdit}><PencilIcon size={15} /></IconButton>
+          <IconButton label="Delete" danger disabled={pending}
+            onClick={() => { if (confirm("Delete this certification?")) startTransition(() => { void deleteCertification(item.id); }); }}>
+            <TrashIcon size={15} />
+          </IconButton>
         </div>
-      </div>
-      <div className="flex gap-1 shrink-0">
-        <Button kind="ghost" size="sm" onClick={onEdit}>Edit</Button>
-        <Button kind="ghost" size="sm" disabled={pending}
-          onClick={() => { if (confirm("Delete this certification?")) startTransition(() => { void deleteCertification(item.id); }); }}
-          className="text-red-700 hover:bg-red-50">
-          {pending ? "..." : "Delete"}
-        </Button>
       </div>
     </article>
   );
