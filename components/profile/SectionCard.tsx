@@ -5,59 +5,71 @@ import { cn } from "@/lib/cn";
 
 interface Props {
   title: string;
+  /** "Section 2" — the number is parsed from here for the header label. */
   eyebrow?: string;
+  /** e.g. "role" → header reads "SECTION 02 — 3 ROLES". Falls back to a
+   *  generic count when omitted. */
+  metaNoun?: string;
   description?: string;
   count?: number;
   required?: boolean;
   defaultOpen?: boolean;
+  /** Primary action shown in the header (e.g. a "+ Add role" button). */
+  headerAction?: React.ReactNode;
   children: React.ReactNode;
   actions?: React.ReactNode;
 }
 
-// Collapsible section card. Used as the shell for every profile section so
-// they all look and behave the same. Mobile-friendly — long sections fold
-// away below the fold and only open when tapped.
+// Collapsible section card. New header: a small all-caps "SECTION 0X — …"
+// kicker over a serif title, an optional action on the right, and a
+// chevron toggle. The header is NOT one big button (so the action stays
+// independently clickable) — the title area and chevron both toggle.
 export function SectionCard({
-  title, eyebrow, description, count, required, defaultOpen = false, children, actions,
+  title, eyebrow, metaNoun, description, count, required,
+  defaultOpen = false, headerAction, children, actions,
 }: Props) {
   const [open, setOpen] = React.useState(defaultOpen);
   const id = React.useId();
+  const num = parseSectionNo(eyebrow);
+  const meta = buildMeta(num, count, metaNoun);
+
   return (
     <section className="card p-0 overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        aria-controls={id}
-        className={cn(
-          "w-full text-left px-5 sm:px-7 py-5 flex items-start gap-4 transition",
-          "hover:bg-cream/40",
-        )}
-      >
-        <div className="flex-1 min-w-0">
-          {eyebrow && <p className="section-eyebrow">{eyebrow}</p>}
-          <h2 className="font-serif text-[22px] sm:text-[24px] tracking-tightish mt-1 flex items-center gap-2">
+      <div className={cn("flex items-center gap-3 px-5 sm:px-7 py-4", open && "border-b border-border-soft")}>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-controls={id}
+          className="flex-1 min-w-0 text-left"
+        >
+          <p className="text-[10.5px] uppercase tracking-[0.16em] text-muted font-semibold">{meta}</p>
+          <h2 className="font-serif text-[21px] sm:text-[24px] tracking-tightish mt-0.5 flex items-center gap-2">
             {title}
             {required && <span aria-label="Required for download" className="inline-block w-1.5 h-1.5 rounded-full bg-sienna" />}
           </h2>
-          {description && <p className="mt-1 text-[13.5px] text-muted max-w-2xl">{description}</p>}
-        </div>
-        <div className="flex items-center gap-3 shrink-0 pt-1">
-          {typeof count === "number" && (
-            <span className="text-[12px] text-muted tabular-nums">{count}</span>
-          )}
-          <svg
-            width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor"
-            strokeWidth="1.8" strokeLinecap="round"
-            className={cn("text-muted transition-transform", open && "rotate-180")}
-          >
+        </button>
+
+        {headerAction && <div className="shrink-0">{headerAction}</div>}
+
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-controls={id}
+          aria-label={open ? "Collapse section" : "Expand section"}
+          className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-muted hover:bg-cream transition"
+        >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
+            className={cn("transition-transform", open && "rotate-180")}>
             <path d="M4 7l5 5 5-5" />
           </svg>
-        </div>
-      </button>
+        </button>
+      </div>
 
       {open && (
-        <div id={id} className="px-5 sm:px-7 pb-6 pt-1 border-t border-border-soft">
+        <div id={id} className="px-5 sm:px-7 pb-6 pt-5">
+          {description && <p className="text-[13.5px] text-muted max-w-2xl -mt-1 mb-4">{description}</p>}
           {children}
           {actions && <div className="mt-5 flex flex-wrap gap-2">{actions}</div>}
         </div>
@@ -66,8 +78,28 @@ export function SectionCard({
   );
 }
 
-// Inline field group — same as Tailwind's `label` + `field` but encapsulated
-// so we can swap visuals in one place if the design changes.
+// "Section 2" → "02". Falls back to "—" when no/odd eyebrow.
+function parseSectionNo(eyebrow?: string): string {
+  const m = eyebrow?.match(/(\d+)/);
+  return m ? m[1].padStart(2, "0") : "";
+}
+function buildMeta(num: string, count?: number, noun?: string): string {
+  const head = num ? `Section ${num}` : "Section";
+  if (typeof count === "number" && noun) {
+    return `${head} — ${count} ${count === 1 ? noun : pluralize(noun)}`.toUpperCase();
+  }
+  if (typeof count === "number" && count > 0) {
+    return `${head} — ${count}`.toUpperCase();
+  }
+  return head.toUpperCase();
+}
+function pluralize(n: string): string {
+  if (/y$/.test(n)) return n.replace(/y$/, "ies");
+  if (/(s|x|z|ch|sh)$/.test(n)) return n + "es";
+  return n + "s";
+}
+
+// Inline field group — label + control + hint/error.
 export function Field({
   label, error, children, hint,
 }: { label: string; error?: string | null; hint?: string; children: React.ReactNode }) {
@@ -81,13 +113,53 @@ export function Field({
   );
 }
 
-// Dashed-bordered "new item" container — used by every list section when
-// the user clicks Add.
+// Dashed-bordered "new item" container — used by list sections on Add.
 export function NewItemPanel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mt-4 rounded-[10px] border border-dashed border-border bg-cream/60 p-5">
       <p className="section-eyebrow text-sienna">{title}</p>
       <div className="mt-3">{children}</div>
+    </div>
+  );
+}
+
+// Small rounded action buttons (pencil / trash) used in row corners.
+export function IconButton({
+  onClick, label, disabled, danger, children,
+}: { onClick: () => void; label: string; disabled?: boolean; danger?: boolean; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      title={label}
+      className={cn(
+        "w-8 h-8 rounded-full flex items-center justify-center transition disabled:opacity-50",
+        danger ? "text-muted hover:text-red-700 hover:bg-red-50" : "text-muted hover:text-sienna hover:bg-cream",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+// A small read-more toggle for long body text. Clamp classes are literal
+// so Tailwind compiles them (dynamic `line-clamp-${n}` would be purged).
+const CLAMP: Record<number, string> = { 2: "line-clamp-2", 3: "line-clamp-3", 4: "line-clamp-4" };
+export function Clamp({ text, lines = 3, className }: { text: string; lines?: 2 | 3 | 4; className?: string }) {
+  const [open, setOpen] = React.useState(false);
+  const longish = text.length > 180;
+  return (
+    <div className={className}>
+      <p className={cn("text-[13.5px] text-ink-soft leading-relaxed", !open && longish && CLAMP[lines])}>
+        {text}
+      </p>
+      {longish && (
+        <button type="button" onClick={() => setOpen((o) => !o)} className="mt-1 text-[12.5px] text-sienna font-medium hover:underline">
+          {open ? "Show less" : "Read more"}
+        </button>
+      )}
     </div>
   );
 }

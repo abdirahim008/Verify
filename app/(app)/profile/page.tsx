@@ -78,7 +78,7 @@ async function IndividualBuilder({ userId }: { userId: string }) {
             <p className="section-eyebrow text-sienna">Your profile</p>
             <h1 className="font-serif text-[32px] sm:text-[40px] tracking-[-0.02em] mt-2">Profile builder</h1>
             <p className="mt-2 text-[14.5px] text-ink-soft max-w-2xl leading-relaxed">
-              Fill in the basics and add at least one experience, education, and skill — that&apos;s the minimum to download your first CV. You can always come back and enrich the rest.
+              A refined, verified record of your work. Each entry can be edited inline and verified by the organisation that issued it.
             </p>
           </div>
           <a href={`/u/${userId}`} target="_blank" rel="noopener noreferrer" className="text-[12.5px] text-sienna font-medium hover:underline whitespace-nowrap">

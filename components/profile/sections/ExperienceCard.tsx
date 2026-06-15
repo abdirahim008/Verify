@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/Button";
-import { SectionCard, Field, NewItemPanel } from "../SectionCard";
+import { SectionCard, Field, NewItemPanel, IconButton, Clamp } from "../SectionCard";
+import { CheckDot, HollowDot, OrgIcon, PinIcon, CalendarIcon, PencilIcon, TrashIcon } from "../icons";
 import { RequestVerifyButton } from "@/components/verification/RequestVerifyButton";
 import { experienceSchema, type ExperienceValues } from "@/lib/schemas";
 import {
@@ -28,37 +29,50 @@ export function ExperienceCard({ items, pendingIds }: { items: ExperienceRow[]; 
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  const addButton = (
+    <Button kind="primary" size="sm" onClick={() => setAdding(true)}>+ Add role</Button>
+  );
+
   return (
     <SectionCard
       eyebrow="Section 2"
       title="Experience"
+      metaNoun="role"
       description="One entry per role. Verified entries get a green check on your CV."
       required
       defaultOpen={items.length === 0}
       count={items.length}
+      headerAction={!adding ? addButton : undefined}
     >
-      <div className="space-y-3">
-        {items.map((item) => (
-          editingId === item.id ? (
-            <ExperienceForm
-              key={item.id}
-              initial={item}
-              onSubmit={async (v) => updateExperience(item.id, v)}
-              onCancel={() => setEditingId(null)}
-              onDone={() => setEditingId(null)}
-              submitLabel="Save changes"
-            />
-          ) : (
-            <ExperienceRow key={item.id} item={item} pending={pendingIds.has(item.id)} onEdit={() => setEditingId(item.id)} />
-          )
-        ))}
-      </div>
+      {items.length > 0 && (
+        <div className="relative">
+          {/* timeline rail */}
+          <span className="absolute left-[10px] top-2 bottom-2 w-px bg-border" aria-hidden />
+          <div className="space-y-5">
+            {items.map((item) =>
+              editingId === item.id ? (
+                <div key={item.id} className="pl-9">
+                  <ExperienceForm
+                    initial={item}
+                    onSubmit={(v) => updateExperience(item.id, v)}
+                    onCancel={() => setEditingId(null)}
+                    onDone={() => setEditingId(null)}
+                    submitLabel="Save changes"
+                  />
+                </div>
+              ) : (
+                <ExperienceRowView key={item.id} item={item} pending={pendingIds.has(item.id)} onEdit={() => setEditingId(item.id)} />
+              ),
+            )}
+          </div>
+        </div>
+      )}
 
       {items.length === 0 && !adding && (
         <p className="text-[13.5px] text-muted">No experience yet. Add your most recent role first.</p>
       )}
 
-      {adding ? (
+      {adding && (
         <ExperienceForm
           onSubmit={addExperience}
           onCancel={() => setAdding(false)}
@@ -66,26 +80,25 @@ export function ExperienceCard({ items, pendingIds }: { items: ExperienceRow[]; 
           submitLabel="Save experience"
           asPanel
         />
-      ) : (
-        <div className="mt-4">
-          <Button kind="quiet" size="md" onClick={() => setAdding(true)}>+ Add experience</Button>
-        </div>
       )}
     </SectionCard>
   );
 }
 
-function ExperienceRow({ item, pending: pendingVerify, onEdit }: { item: ExperienceRow; pending: boolean; onEdit: () => void }) {
+function ExperienceRowView({ item, pending: pendingVerify, onEdit }: { item: ExperienceRow; pending: boolean; onEdit: () => void }) {
   const [pending, startTransition] = useTransition();
   const handleDelete = () => {
     if (!confirm("Delete this experience? This can't be undone.")) return;
     startTransition(() => { void deleteExperience(item.id); });
   };
   const dateStr = dateRange(item.start_date, item.end_date);
+
   return (
-    <article className="rounded-[10px] border border-border bg-paper p-4 sm:p-5">
+    <article className="relative pl-9">
+      <span className="absolute left-0 top-0.5">{item.verified ? <CheckDot /> : <HollowDot />}</span>
+
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-serif text-[18px] tracking-tightish">{item.title}</h3>
             <RequestVerifyButton
@@ -98,20 +111,31 @@ function ExperienceRow({ item, pending: pendingVerify, onEdit }: { item: Experie
               }}
             />
           </div>
-          <div className="text-[13px] text-ink-soft mt-1">
-            <span className="font-medium">{item.organization}</span>
-            {item.location && <> &middot; {item.location}</>}
-            {dateStr && (<> &middot; <span className="text-muted">{dateStr}</span></>)}
+
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[12.5px]">
+            {item.organization && (
+              <span className="inline-flex items-center gap-1.5 text-sienna font-medium">
+                <OrgIcon size={13} className="text-sienna/70" />{item.organization}
+              </span>
+            )}
+            {item.location && (
+              <span className="inline-flex items-center gap-1.5 text-muted">
+                <PinIcon size={13} />{item.location}
+              </span>
+            )}
+            {dateStr && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-cream border border-border px-2.5 py-1 text-ink-soft">
+                <CalendarIcon size={12} className="text-muted" />{dateStr}
+              </span>
+            )}
           </div>
-          {item.description && (
-            <p className="mt-2 text-[13.5px] text-ink-soft leading-relaxed">{item.description}</p>
-          )}
+
+          {item.description && <Clamp text={item.description} lines={3} className="mt-2.5" />}
         </div>
-        <div className="flex gap-1 shrink-0">
-          <Button kind="ghost" size="sm" onClick={onEdit}>Edit</Button>
-          <Button kind="ghost" size="sm" onClick={handleDelete} disabled={pending} className="text-red-700 hover:bg-red-50">
-            {pending ? "..." : "Delete"}
-          </Button>
+
+        <div className="flex gap-0.5 shrink-0">
+          <IconButton label="Edit" onClick={onEdit}><PencilIcon size={15} /></IconButton>
+          <IconButton label="Delete" danger disabled={pending} onClick={handleDelete}><TrashIcon size={15} /></IconButton>
         </div>
       </div>
     </article>
@@ -174,7 +198,7 @@ function ExperienceForm({
         </Field>
       </div>
       <label className="sm:col-span-2 flex items-center gap-2 text-[13px] text-ink-soft">
-        <input type="checkbox" className="rounded border-border" {...register("is_current")} />
+        <input type="checkbox" className="rounded border-border accent-sienna" {...register("is_current")} />
         I currently work here
       </label>
       <div className="sm:col-span-2">
