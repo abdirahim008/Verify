@@ -1,14 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/Button";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { CompanyDownloadModal } from "./CompanyDownloadModal";
 
 interface Todo { label: string; done: boolean }
 
 export function CompanyCompletenessRail({
   percent, todos, hasMinimumCore, verifiedCount,
 }: { percent: number; todos: Todo[]; hasMinimumCore: boolean; verifiedCount: number }) {
+  const [chooser, setChooser] = useState(false);
   return (
     <div className="space-y-4 lg:sticky lg:top-6">
       <div className="card">
@@ -38,15 +41,13 @@ export function CompanyCompletenessRail({
             : "Add basics, an about paragraph, and at least one project to unlock the download."}
         </p>
         {hasMinimumCore ? (
-          <a href="/api/company/wadani" download className="block mt-3">
-            <Button kind="primary" size="md" className="w-full">Download company profile →</Button>
-          </a>
+          <Button kind="primary" size="md" className="w-full mt-3" onClick={() => setChooser(true)}>Download company profile →</Button>
         ) : (
-          <Link href="#" className="block mt-3 pointer-events-none">
-            <Button kind="quiet" size="md" className="w-full" disabled>Locked until minimum core</Button>
-          </Link>
+          <Button kind="quiet" size="md" className="w-full mt-3" disabled>Locked until minimum core</Button>
         )}
       </div>
+
+      <CompanyDownloadModal open={chooser} onClose={() => setChooser(false)} />
 
       <div className="card">
         <p className="section-eyebrow">Verified projects</p>
