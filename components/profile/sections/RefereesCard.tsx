@@ -77,27 +77,74 @@ function RefereeRowDisplay({ item, experiences, onEdit }: { item: RefereeRow; ex
   const [pending, startTransition] = useTransition();
   const linkedExp = experiences.find((e) => e.id === item.experience_id);
   return (
-    <article className="rounded-[10px] border border-border bg-paper p-4 sm:p-5 flex items-start justify-between gap-3">
-      <div className="min-w-0 flex-1">
-        <h3 className="font-serif text-[17px] tracking-tightish">{item.name}</h3>
-        <div className="text-[13px] text-ink-soft mt-1">{[item.position, item.organization].filter(Boolean).join(" · ")}</div>
-        {item.relationship && <div className="text-[12.5px] text-muted mt-0.5">{item.relationship}</div>}
-        {linkedExp && (
-          <div className="text-[12px] text-muted mt-2">
-            Vouches for: <span className="text-ink-soft">{linkedExp.title} · {linkedExp.organization}</span>
+    <article className="group rounded-[12px] border border-border bg-paper p-4 sm:p-5 transition hover:border-muted/50 hover:shadow-card">
+      <div className="flex items-start gap-4">
+        {/* Monogram avatar */}
+        <div className="shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-sienna-soft to-cream border border-border flex items-center justify-center">
+          <span className="font-serif text-[16px] text-sienna">{refInitials(item.name)}</span>
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="font-serif text-[17.5px] tracking-tightish leading-tight">{item.name}</h3>
+              {(item.position || item.organization) && (
+                <p className="text-[13px] mt-0.5">
+                  {item.position && <span className="text-ink-soft font-medium">{item.position}</span>}
+                  {item.position && item.organization && <span className="text-muted"> &middot; </span>}
+                  {item.organization && <span className="text-sienna">{item.organization}</span>}
+                </p>
+              )}
+            </div>
+            {/* Controls reveal on hover (desktop); always visible on touch */}
+            <div className="flex gap-0.5 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+              <IconButton label="Edit" onClick={onEdit}><PencilIcon size={15} /></IconButton>
+              <IconButton label="Delete" danger disabled={pending}
+                onClick={() => { if (confirm("Delete this referee?")) startTransition(() => { void deleteReferee(item.id); }); }}>
+                <TrashIcon size={15} />
+              </IconButton>
+            </div>
           </div>
-        )}
-        <div className="text-[12px] text-muted mt-2">Contact details hidden — visible only to admins during verification.</div>
-      </div>
-      <div className="flex gap-0.5 shrink-0">
-        <IconButton label="Edit" onClick={onEdit}><PencilIcon size={15} /></IconButton>
-        <IconButton label="Delete" danger disabled={pending}
-          onClick={() => { if (confirm("Delete this referee?")) startTransition(() => { void deleteReferee(item.id); }); }}>
-          <TrashIcon size={15} />
-        </IconButton>
+
+          {/* Chips: relationship + vouches-for */}
+          {(item.relationship || linkedExp) && (
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              {item.relationship && (
+                <span className="inline-flex items-center rounded-full bg-cream border border-border px-2.5 py-1 text-[11.5px] text-ink-soft">
+                  {item.relationship}
+                </span>
+              )}
+              {linkedExp && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-sienna-soft/60 border border-sienna/20 px-2.5 py-1 text-[11.5px] text-sienna">
+                  <LinkIcon />
+                  Vouches for {linkedExp.title}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Locked-contact badge */}
+          <div className="mt-3 inline-flex items-center gap-1.5 text-[11.5px] text-muted">
+            <LockMini />
+            Contact details hidden — visible to admins during verification only
+          </div>
+        </div>
       </div>
     </article>
   );
+}
+
+function refInitials(name: string): string {
+  const t = name.replace(/^(eng\.?|dr\.?|mr\.?|mrs\.?|ms\.?|prof\.?)\s+/i, "").trim().split(/\s+/).filter(Boolean);
+  if (!t.length) return "?";
+  if (t.length === 1) return t[0].slice(0, 2).toUpperCase();
+  return (t[0][0] + t[t.length - 1][0]).toUpperCase();
+}
+function LinkIcon() {
+  return <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M10 13a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1" /><path d="M14 11a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1" /></svg>;
+}
+function LockMini() {
+  return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></svg>;
 }
 
 function RefereeForm({
