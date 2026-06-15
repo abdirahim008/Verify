@@ -44,8 +44,8 @@ export function BasicsCard({ initial }: Props) {
 
   return (
     <section className="card p-0 overflow-hidden">
-      {/* Gradient header */}
-      <div className="relative h-[92px] bg-gradient-to-br from-sienna to-ochre">
+      {/* Gradient cover banner */}
+      <div className="relative h-28 bg-gradient-to-br from-sienna to-ochre">
         <div className="absolute inset-0 flex items-start justify-between px-5 sm:px-7 pt-4">
           <p className="text-[10.5px] uppercase tracking-[0.18em] text-white/80 font-semibold">Section 01 — Basics</p>
           {!editing && initial.full_name && (
@@ -62,8 +62,9 @@ export function BasicsCard({ initial }: Props) {
       </div>
 
       <div className="px-5 sm:px-7 pb-6">
-        {/* Avatar overlapping the gradient */}
-        <div className="-mt-11 mb-3">
+        {/* Avatar sits ON the cover — lifted up so ~two-thirds overlaps the
+            gradient, with z-10 so it paints cleanly over it. */}
+        <div className="-mt-16 mb-3 relative z-10">
           <Avatar url={initial.photo_url || null} name={initial.full_name} />
         </div>
 
