@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/cn";
+import { useWorkspaceMode } from "./SectionChrome";
 
 interface Props {
   title: string;
@@ -28,7 +29,11 @@ export function SectionCard({
   title, eyebrow, metaNoun, description, count, required,
   defaultOpen = false, headerAction, children, actions,
 }: Props) {
-  const [open, setOpen] = React.useState(defaultOpen);
+  const workspace = useWorkspaceMode();
+  const [stateOpen, setOpen] = React.useState(defaultOpen);
+  // In the sidebar workspace one section shows at a time, so it's always
+  // expanded and the collapse chevron is hidden.
+  const open = workspace ? true : stateOpen;
   const id = React.useId();
   const num = parseSectionNo(eyebrow);
   const meta = buildMeta(num, count, metaNoun);
@@ -41,7 +46,8 @@ export function SectionCard({
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
           aria-controls={id}
-          className="flex-1 min-w-0 text-left"
+          disabled={workspace}
+          className={cn("flex-1 min-w-0 text-left", workspace && "cursor-default")}
         >
           <p className="text-[10.5px] uppercase tracking-[0.16em] text-muted font-semibold">{meta}</p>
           <h2 className="font-serif text-[21px] sm:text-[24px] tracking-tightish mt-0.5 flex items-center gap-2">
@@ -52,19 +58,21 @@ export function SectionCard({
 
         {headerAction && <div className="shrink-0">{headerAction}</div>}
 
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          aria-expanded={open}
-          aria-controls={id}
-          aria-label={open ? "Collapse section" : "Expand section"}
-          className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-muted hover:bg-cream transition"
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
-            className={cn("transition-transform", open && "rotate-180")}>
-            <path d="M4 7l5 5 5-5" />
-          </svg>
-        </button>
+        {!workspace && (
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            aria-controls={id}
+            aria-label={open ? "Collapse section" : "Expand section"}
+            className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-muted hover:bg-cream transition"
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
+              className={cn("transition-transform", open && "rotate-180")}>
+              <path d="M4 7l5 5 5-5" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {open && (

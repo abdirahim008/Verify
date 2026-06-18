@@ -12,6 +12,7 @@ import { CertificationsCard } from "@/components/profile/sections/Certifications
 import { LanguagesCard } from "@/components/profile/sections/LanguagesCard";
 import { RefereesCard } from "@/components/profile/sections/RefereesCard";
 import { CompletenessRail } from "@/components/profile/CompletenessRail";
+import { ProfileWorkspace, type WorkspaceSection } from "@/components/profile/ProfileWorkspace";
 // Company sections
 import { CompanyBasicsCard } from "@/components/profile/company/CompanyBasicsCard";
 import { CompanyAboutCard } from "@/components/profile/company/CompanyAboutCard";
@@ -70,45 +71,63 @@ async function IndividualBuilder({ userId }: { userId: string }) {
     { label: "Add a referee", done: data.referees.length >= 1 },
   ];
 
+  const langCount = data.basics?.languages?.length ?? 0;
+  const sections: WorkspaceSection[] = [
+    {
+      id: "basics", label: "Basics", done: Boolean(data.basics?.full_name),
+      node: <BasicsCard initial={{
+        full_name: data.basics?.full_name ?? "",
+        headline: data.basics?.headline ?? "",
+        summary: data.basics?.summary ?? "",
+        location: data.basics?.location ?? "",
+        phone: data.basics?.phone ?? "",
+        email: data.basics?.email ?? "",
+        photo_url: data.basics?.photo_url ?? "",
+        hasRow: Boolean(data.basics),
+      }} />,
+    },
+    {
+      id: "experience", label: "Experience", count: data.experiences.length, done: data.experiences.length >= 1,
+      node: <ExperienceCard items={data.experiences} pendingIds={pendingExp} />,
+    },
+    {
+      id: "education", label: "Education", count: data.educations.length, done: data.educations.length >= 1,
+      node: <EducationCard items={data.educations} pendingIds={pendingEdu} />,
+    },
+    {
+      id: "skills", label: "Skills", count: data.skills.length, done: data.skills.length >= 3,
+      node: <SkillsCard items={data.skills} />,
+    },
+    {
+      id: "languages", label: "Languages", count: langCount, done: langCount >= 1,
+      node: <LanguagesCard initial={data.basics?.languages ?? []} />,
+    },
+    {
+      id: "certifications", label: "Certifications", count: data.certifications.length, done: data.certifications.length >= 1,
+      node: <CertificationsCard items={data.certifications} pendingIds={pendingCert} />,
+    },
+    {
+      id: "referees", label: "Referees", count: data.referees.length, done: data.referees.length >= 1,
+      node: <RefereesCard
+        items={data.referees}
+        experiences={data.experiences.map((e) => ({ id: e.id, title: e.title, organization: e.organization }))}
+      />,
+    },
+  ];
+
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-      <main className="space-y-4">
-        <header className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="section-eyebrow text-sienna">Your profile</p>
-            <h1 className="font-serif text-[32px] sm:text-[40px] tracking-[-0.02em] mt-2">Profile builder</h1>
-            <p className="mt-2 text-[14.5px] text-ink-soft max-w-2xl leading-relaxed">
-              A refined, verified record of your work. Each entry can be edited inline and verified by the organisation that issued it.
-            </p>
-          </div>
-          <a href={`/u/${userId}`} target="_blank" rel="noopener noreferrer" className="text-[12.5px] text-sienna font-medium hover:underline whitespace-nowrap">
-            View public profile ↗
-          </a>
-        </header>
-
-        <BasicsCard initial={{
-          full_name: data.basics?.full_name ?? "",
-          headline: data.basics?.headline ?? "",
-          summary: data.basics?.summary ?? "",
-          location: data.basics?.location ?? "",
-          phone: data.basics?.phone ?? "",
-          email: data.basics?.email ?? "",
-          photo_url: data.basics?.photo_url ?? "",
-          hasRow: Boolean(data.basics),
-        }} />
-        <ExperienceCard items={data.experiences} pendingIds={pendingExp} />
-        <EducationCard items={data.educations} pendingIds={pendingEdu} />
-        <SkillsCard items={data.skills} />
-        <LanguagesCard initial={data.basics?.languages ?? []} />
-        <CertificationsCard items={data.certifications} pendingIds={pendingCert} />
-        <RefereesCard
-          items={data.referees}
-          experiences={data.experiences.map((e) => ({ id: e.id, title: e.title, organization: e.organization }))}
-        />
-      </main>
-
-      <CompletenessRail percent={percent} todos={todos} hasMinimumCore={minCore} verifiedCount={verifiedCount} />
-    </div>
+    <ProfileWorkspace
+      eyebrow="Your profile"
+      title="Profile builder"
+      publicHref={`/u/${userId}`}
+      sections={sections}
+      minCore={{
+        passed: minCore,
+        label: "You've passed the minimum — your CV is ready to download.",
+        hint: "Add basics, one experience, one education, and one skill to unlock your first CV.",
+      }}
+      rail={<CompletenessRail percent={percent} todos={todos} hasMinimumCore={minCore} verifiedCount={verifiedCount} />}
+    />
   );
 }
 
@@ -138,50 +157,69 @@ async function CompanyBuilder({ userId }: { userId: string }) {
     { label: "Add a team member", done: data.team.length >= 1 },
   ];
 
+  const sectorCount = (data.basics?.sectors?.length ?? 0) + (data.basics?.core_services?.length ?? 0);
+  const sections: WorkspaceSection[] = [
+    {
+      id: "basics", label: "Basics", done: Boolean(data.basics?.company_name),
+      node: <CompanyBasicsCard initial={{
+        company_name: data.basics?.company_name ?? "",
+        logo_url: data.basics?.logo_url ?? "",
+        country: data.basics?.country ?? "",
+        registration_number: data.basics?.registration_number ?? "",
+        registration_country: data.basics?.registration_country ?? "",
+        founded_year: data.basics?.founded_year != null ? String(data.basics.founded_year) : "",
+        website: data.basics?.website ?? "",
+        email: data.basics?.email ?? "",
+        phone: data.basics?.phone ?? "",
+        hasRow: Boolean(data.basics),
+      }} />,
+    },
+    {
+      id: "about", label: "About & vision", done: (data.basics?.about?.length ?? 0) > 0,
+      node: <CompanyAboutCard initial={{
+        about: data.basics?.about ?? "",
+        mission: data.basics?.mission ?? "",
+        vision: data.basics?.vision ?? "",
+      }} />,
+    },
+    {
+      id: "offerings", label: "Sectors & services", count: sectorCount,
+      done: (data.basics?.sectors?.length ?? 0) >= 1 && (data.basics?.core_services?.length ?? 0) >= 1,
+      node: <CompanyOfferingsCard initial={{
+        sectors: data.basics?.sectors ?? [],
+        core_services: data.basics?.core_services ?? [],
+      }} />,
+    },
+    {
+      id: "projects", label: "Selected projects", count: data.projects.length, done: data.projects.length >= 1,
+      node: <CompanyProjectsCard items={data.projects} pendingIds={pendingProj} />,
+    },
+    {
+      id: "clients", label: "Clients", count: data.clients.length, done: data.clients.length >= 1,
+      node: <CompanyClientsCard items={data.clients} />,
+    },
+    {
+      id: "team", label: "Key personnel", count: data.team.length, done: data.team.length >= 1,
+      node: <CompanyTeamCard items={data.team} />,
+    },
+    {
+      id: "certifications", label: "Certifications", count: data.certifications.length, done: data.certifications.length >= 1,
+      node: <CompanyCertificationsCard items={data.certifications} pendingIds={pendingCert} />,
+    },
+  ];
+
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-      <main className="space-y-4">
-        <header className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="section-eyebrow text-sienna">Your company</p>
-            <h1 className="font-serif text-[32px] sm:text-[40px] tracking-[-0.02em] mt-2">Company profile builder</h1>
-            <p className="mt-2 text-[14.5px] text-ink-soft max-w-2xl leading-relaxed">
-              Build the bid-ready profile once. Add an about, one project, and the cover takes shape — that&apos;s your minimum core. Add team and accreditations to fill it out.
-            </p>
-          </div>
-          <a href={`/u/${userId}`} target="_blank" rel="noopener noreferrer" className="text-[12.5px] text-sienna font-medium hover:underline whitespace-nowrap">
-            View public profile ↗
-          </a>
-        </header>
-
-        <CompanyBasicsCard initial={{
-          company_name: data.basics?.company_name ?? "",
-          logo_url: data.basics?.logo_url ?? "",
-          country: data.basics?.country ?? "",
-          registration_number: data.basics?.registration_number ?? "",
-          registration_country: data.basics?.registration_country ?? "",
-          founded_year: data.basics?.founded_year != null ? String(data.basics.founded_year) : "",
-          website: data.basics?.website ?? "",
-          email: data.basics?.email ?? "",
-          phone: data.basics?.phone ?? "",
-          hasRow: Boolean(data.basics),
-        }} />
-        <CompanyAboutCard initial={{
-          about: data.basics?.about ?? "",
-          mission: data.basics?.mission ?? "",
-          vision: data.basics?.vision ?? "",
-        }} />
-        <CompanyOfferingsCard initial={{
-          sectors: data.basics?.sectors ?? [],
-          core_services: data.basics?.core_services ?? [],
-        }} />
-        <CompanyProjectsCard items={data.projects} pendingIds={pendingProj} />
-        <CompanyClientsCard items={data.clients} />
-        <CompanyTeamCard items={data.team} />
-        <CompanyCertificationsCard items={data.certifications} pendingIds={pendingCert} />
-      </main>
-
-      <CompanyCompletenessRail percent={percent} todos={todos} hasMinimumCore={minCore} verifiedCount={verifiedCount} />
-    </div>
+    <ProfileWorkspace
+      eyebrow="Your company"
+      title="Company profile"
+      publicHref={`/u/${userId}`}
+      sections={sections}
+      minCore={{
+        passed: minCore,
+        label: "You've passed the minimum — your company profile is ready to download.",
+        hint: "Add basics, an about paragraph, and one project to unlock the download.",
+      }}
+      rail={<CompanyCompletenessRail percent={percent} todos={todos} hasMinimumCore={minCore} verifiedCount={verifiedCount} />}
+    />
   );
 }
