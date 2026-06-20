@@ -38,8 +38,6 @@ export function SidebarCV({ data, theme }: { data: CVData; theme?: Record<string
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: styles(C) }} />
-      {/* Full-bleed two-tone paper layer — see .paper in styles(). */}
-      <div className="paper" />
       <section className="page">
         <aside className="sb">
           {photoUrl ? (
@@ -212,12 +210,15 @@ const styles = (C: Palette) => `
 
 /* Full-bleed two-tone paper. The two-column .page fills the sheet on the
    first page, but if a profile overflows onto a second page the column
-   backgrounds stop where the grid ends, leaving the rest of the last sheet
-   white. A position:fixed layer repeats on every page and fills the whole
-   sheet edge-to-edge; its gradient splits at 76mm to match the sidebar/main
-   column boundary so the navy band and teal field line up under the columns. */
-.paper {
-  position: fixed; inset: 0; z-index: -1;
+   backgrounds stop where the grid ends. A position:fixed layer with
+   inset:0 does NOT reliably fill the sheet in Chromium's print path (it
+   leaves a white band at the foot of the page). Instead we put the two-tone
+   gradient on the ROOT element: Chromium propagates the root background to
+   the page canvas and paints it across the WHOLE sheet on EVERY page. The
+   gradient splits at 76mm to match the sidebar/main boundary so the navy
+   band and teal field line up under the columns on every page. */
+html {
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
   background: linear-gradient(to right, ${C.tealDark} 0 76mm, ${C.teal} 76mm 100%);
 }
 
