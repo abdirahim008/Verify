@@ -105,7 +105,7 @@ export function EditorialCV({ data, theme }: { data: CVData; theme?: Record<stri
           </>
         )}
 
-        {/* Education + Skills two-up */}
+        {/* Education + Certifications two-up */}
         <div className="twoUp">
           <div>
             {educations.length > 0 && (
@@ -126,7 +126,9 @@ export function EditorialCV({ data, theme }: { data: CVData; theme?: Record<stri
                 ))}
               </>
             )}
+          </div>
 
+          <div>
             {certifications.length > 0 && (
               <>
                 <SectionHead label="Certifications" />
@@ -142,32 +144,37 @@ export function EditorialCV({ data, theme }: { data: CVData; theme?: Record<stri
               </>
             )}
           </div>
-
-          <div>
-            {skills.length > 0 && (
-              <>
-                <SectionHead label="Skills" />
-                <div className="skills">
-                  {skills.map((s, i) => (
-                    <span key={i} className="skill">
-                      {s}
-                      {i < skills.length - 1 && <span className="skill-sep"> · </span>}
-                    </span>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {languages.length > 0 && (
-              <>
-                <SectionHead label="Languages" />
-                <div className="languages">
-                  {languages.map((l, i) => <div key={i} className="lang">{l}</div>)}
-                </div>
-              </>
-            )}
-          </div>
         </div>
+
+        {/* Skills — full-width row */}
+        {skills.length > 0 && (
+          <>
+            <SectionHead label="Skills" />
+            <div className="skills">
+              {skills.map((s, i) => (
+                <span key={i} className="skill">
+                  {s}
+                  {i < skills.length - 1 && <span className="skill-sep"> · </span>}
+                </span>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Languages — full-width row */}
+        {languages.length > 0 && (
+          <>
+            <SectionHead label="Languages" />
+            <div className="languages">
+              {languages.map((l, i) => (
+                <span key={i} className="lang">
+                  {l}
+                  {i < languages.length - 1 && <span className="skill-sep"> · </span>}
+                </span>
+              ))}
+            </div>
+          </>
+        )}
 
         {/* Footer */}
         <footer className="ft">
