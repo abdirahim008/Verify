@@ -105,46 +105,41 @@ export function EditorialCV({ data, theme }: { data: CVData; theme?: Record<stri
           </>
         )}
 
-        {/* Education + Certifications two-up */}
-        <div className="twoUp">
-          <div>
-            {educations.length > 0 && (
-              <>
-                <SectionHead label="Education" />
-                {educations.map((e, i) => (
-                  <div key={i} className="edu">
-                    <div className="edu-head">
-                      <span className="edu-qual">{e.qualification}</span>
-                      {e.dateRange && <span className="edu-dates">{e.dateRange}</span>}
-                    </div>
-                    <div className="edu-inst">
-                      <span className="edu-inst-name">{e.institution}</span>
-                      {e.verified && <VerifiedPill small note={e.verifiedNote} />}
-                    </div>
-                    {e.field && <div className="edu-field">{e.field}</div>}
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
+        {/* Education — full-width row */}
+        {educations.length > 0 && (
+          <>
+            <SectionHead label="Education" />
+            {educations.map((e, i) => (
+              <div key={i} className="edu">
+                <div className="edu-head">
+                  <span className="edu-qual">{e.qualification}</span>
+                  {e.dateRange && <span className="edu-dates">{e.dateRange}</span>}
+                </div>
+                <div className="edu-inst">
+                  <span className="edu-inst-name">{e.institution}</span>
+                  {e.verified && <VerifiedPill small note={e.verifiedNote} />}
+                </div>
+                {e.field && <div className="edu-field">{e.field}</div>}
+              </div>
+            ))}
+          </>
+        )}
 
-          <div>
-            {certifications.length > 0 && (
-              <>
-                <SectionHead label="Certifications" />
-                {certifications.map((c, i) => (
-                  <div key={i} className="cert">
-                    <span className="cert-name">{c.name}</span>
-                    {(c.issuer || c.year) && (
-                      <span className="cert-meta">&thinsp;·&thinsp;{[c.issuer, c.year].filter(Boolean).join(", ")}</span>
-                    )}
-                    {c.verified && <VerifiedPill small note={c.verifiedNote} />}
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
-        </div>
+        {/* Certifications — full-width row */}
+        {certifications.length > 0 && (
+          <>
+            <SectionHead label="Certifications" />
+            {certifications.map((c, i) => (
+              <div key={i} className="cert">
+                <span className="cert-name">{c.name}</span>
+                {(c.issuer || c.year) && (
+                  <span className="cert-meta">&thinsp;·&thinsp;{[c.issuer, c.year].filter(Boolean).join(", ")}</span>
+                )}
+                {c.verified && <VerifiedPill small note={c.verifiedNote} />}
+              </div>
+            ))}
+          </>
+        )}
 
         {/* Skills — full-width row */}
         {skills.length > 0 && (
@@ -296,7 +291,7 @@ const styles = (C: Palette) => `
 }
 
 /* ── Section heads ─────────────────────────────────────────────── */
-.sh { margin: 7.5mm 0 4mm; display: flex; align-items: center; gap: 4mm; }
+.sh { margin: 6mm 0 3.5mm; display: flex; align-items: center; gap: 4mm; }
 .sh-label {
   font-family: ${SANS};
   font-size: 8pt; font-weight: 700;
@@ -341,9 +336,7 @@ const styles = (C: Palette) => `
   font-feature-settings: "onum", "liga";
 }
 
-/* ── Two-up lower ──────────────────────────────────────────────── */
-.twoUp { display: grid; grid-template-columns: 1.25fr 1fr; gap: 11mm; margin-top: 1mm; }
-
+/* ── Lower sections (full-width, stacked) ──────────────────────── */
 .edu { margin-bottom: 4.2mm; break-inside: avoid; }
 .edu-head { display: flex; justify-content: space-between; align-items: baseline; gap: 3mm; }
 .edu-qual {
@@ -383,7 +376,7 @@ const styles = (C: Palette) => `
 
 /* ── Footer ────────────────────────────────────────────────────── */
 .ft {
-  margin-top: 12mm;
+  margin-top: 6mm;
   padding-top: 3.5mm;
   border-top: 1px solid ${C.rule};
   display: flex; justify-content: space-between; align-items: baseline;
