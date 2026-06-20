@@ -206,7 +206,13 @@ function splitHeadline(h: string): [string, string] {
 }
 
 const styles = (C: Palette) => `
-@page { size: A4; margin: 0; }
+/* Vertical page margins give every page real top/bottom text spacing so a
+   profile that overflows onto a second page doesn't run its text to the
+   sheet edges. Horizontal stays 0 — the columns are full-bleed left/right.
+   The root-element gradient (below) still paints the WHOLE sheet, so the
+   navy/teal fill the top/bottom margin bands and the columns read as
+   edge-to-edge despite the @page inset. */
+@page { size: A4; margin: 12mm 0; }
 
 /* Full-bleed two-tone paper. The two-column .page fills the sheet on the
    first page, but if a profile overflows onto a second page the column
@@ -224,7 +230,7 @@ html {
 
 .page {
   width: 210mm;
-  min-height: 297mm;
+  min-height: 273mm; /* one A4 minus the 12mm top + 12mm bottom @page margins */
   display: grid;
   grid-template-columns: 76mm 1fr;
   color: ${C.cream};
@@ -236,7 +242,7 @@ html {
 /* ── Sidebar ───────────────────────────────────────────────────── */
 .sb {
   background: ${C.tealDark};
-  padding: 15mm 9mm 18mm;
+  padding: 6mm 9mm 8mm; /* @page adds 12mm top/bottom; keeps visual margins */
   position: relative;
 }
 .sb-monogram {
@@ -302,7 +308,7 @@ html {
 }
 .sb-cert-meta { font-size: 7.5pt; color: ${C.dim}; margin-top: 0.5mm; }
 .sb-foot {
-  position: absolute; bottom: 9mm; left: 9mm; right: 9mm;
+  position: absolute; bottom: 4mm; left: 9mm; right: 9mm;
   padding-top: 2.5mm; border-top: 1px solid ${C.ruleSb};
   font-family: ${DISPLAY};
   font-size: 6.5pt; font-weight: 600; color: ${C.dim};
@@ -313,7 +319,7 @@ html {
 .mn {
   background: ${C.teal};
   background-image: radial-gradient(circle at 92% 0%, rgba(10, 92, 173, 0.20), transparent 52%);
-  padding: 15mm 13mm 18mm;
+  padding: 6mm 13mm 8mm; /* @page adds 12mm top/bottom; keeps visual margins */
 }
 .mn-head {
   font-family: ${DISPLAY};
