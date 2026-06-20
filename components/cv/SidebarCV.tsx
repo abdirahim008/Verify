@@ -38,6 +38,8 @@ export function SidebarCV({ data, theme }: { data: CVData; theme?: Record<string
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: styles(C) }} />
+      {/* Full-bleed two-tone paper layer — see .paper in styles(). */}
+      <div className="paper" />
       <section className="page">
         <aside className="sb">
           {photoUrl ? (
@@ -208,23 +210,22 @@ function splitHeadline(h: string): [string, string] {
 const styles = (C: Palette) => `
 /* Vertical page margins give every page real top/bottom text spacing so a
    profile that overflows onto a second page doesn't run its text to the
-   sheet edges. Horizontal stays 0 — the columns are full-bleed left/right.
-   The root-element gradient (below) still paints the WHOLE sheet, so the
-   navy/teal fill the top/bottom margin bands and the columns read as
-   edge-to-edge despite the @page inset. */
+   sheet edges. Horizontal stays 0 — the columns are full-bleed left/right. */
 @page { size: A4; margin: 12mm 0; }
 
-/* Full-bleed two-tone paper. The two-column .page fills the sheet on the
-   first page, but if a profile overflows onto a second page the column
-   backgrounds stop where the grid ends. A position:fixed layer with
-   inset:0 does NOT reliably fill the sheet in Chromium's print path (it
-   leaves a white band at the foot of the page). Instead we put the two-tone
-   gradient on the ROOT element: Chromium propagates the root background to
-   the page canvas and paints it across the WHOLE sheet on EVERY page. The
-   gradient splits at 76mm to match the sidebar/main boundary so the navy
-   band and teal field line up under the columns on every page. */
-html {
-  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+/* Full-bleed two-tone paper. The @page margin band is ALWAYS transparent in
+   print — element and even root backgrounds only fill the page's content box,
+   never the margin — so a background confined to the content box leaves a
+   white band in the 12mm margins. Instead paint a position:fixed layer that
+   repeats on every page and is pushed OUT past the content box into the margin
+   band via negative insets equal to the @page margins (vertical -12mm; the
+   horizontal margin is 0 so left/right sit at 0). The gradient then fills the
+   whole sheet edge-to-edge on every page while the @page margin still gives
+   real text spacing. Its split at 76mm matches the sidebar/main boundary. */
+.paper {
+  position: fixed;
+  top: -12mm; bottom: -12mm; left: 0; right: 0;
+  z-index: -1;
   background: linear-gradient(to right, ${C.tealDark} 0 76mm, ${C.teal} 76mm 100%);
 }
 
