@@ -2,14 +2,21 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { loadPublicProfile, viewerContext } from "@/lib/public-profile";
-import { SahanMark } from "@/components/SahanMark";
-import { VerifiedBadge } from "@/components/VerifiedBadge";
-import { Button } from "@/components/Button";
 import { ReadMore } from "@/components/ReadMore";
 
-// Public profile page. No (app) layout — accessible to logged-out viewers.
-// Visibility is filtered at the data layer per CLAUDE.md §10.
+// Public profile page — the QR / share destination, so it doubles as the
+// app's shop window. No (app) layout: reachable by logged-out viewers, with
+// per-section visibility enforced at the data layer (CLAUDE.md §10).
+// Design: Sahan-Public-Profile handoff.
 export const dynamic = "force-dynamic";
+
+const C = {
+  ink: "#16130f", blue: "#1e50c7", green: "#1f8a4c", greenSoft: "#e7f4ec",
+  body: "#43403a", muted: "#6a6a64", faint: "#8a8a84", faint2: "#8d8d87", soft: "#a8a29a",
+  cardBorder: "#e6e3dc", chipBorder: "#e1ddd4", chipBg: "#faf9f6",
+  hair: "#efedea", line: "#f2f0ea", connector: "#e9e6df", dotIdle: "#cdd0d6",
+};
+const SERIF = "var(--font-serif), 'Source Serif 4', Georgia, serif";
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const profile = await loadPublicProfile(params.id, "public");
@@ -19,7 +26,6 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
 }
 
 export default async function PublicProfilePage({ params }: { params: { id: string } }) {
-  // Resolve viewer (anon vs registered vs owner).
   const supabase = createSupabaseServerClient();
   const { data: { user } } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
   const ctx = viewerContext(params.id, user?.id ?? null);
@@ -28,236 +34,423 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
   if (!profile) notFound();
 
   return (
-    <div className="min-h-screen bg-cream">
-      <header className="border-b border-border bg-paper">
-        <div className="mx-auto max-w-5xl px-5 sm:px-10 h-[60px] flex items-center justify-between">
-          <Link href="/" aria-label="Sahan home"><SahanMark /></Link>
+    <div className="min-h-screen" style={{ background: "#f3f2ef", color: C.ink }}>
+      {/* Nav */}
+      <nav className="sticky top-0 z-20 border-b" style={{ borderColor: C.cardBorder, background: "rgba(243,242,239,0.86)", backdropFilter: "blur(10px)" }}>
+        <div className="mx-auto max-w-[760px] px-5 sm:px-6 h-[60px] flex items-center justify-between">
+          <Link href="/" className="font-serif font-bold text-[20px]" style={{ fontFamily: SERIF, color: C.ink }}>Sahan<span style={{ color: C.blue }}>.</span></Link>
           {ctx === "owner" ? (
-            <Link href="/profile"><Button kind="secondary" size="sm">Edit your profile</Button></Link>
-          ) : ctx === "public" ? (
-            <Link href="/signup"><Button kind="sienna" size="sm">Join Sahan</Button></Link>
+            <Link href="/profile" className="text-[12.5px] font-semibold rounded-full border bg-white px-4 py-2" style={{ color: "#46506a", borderColor: "#d7d3cc" }}>Edit your profile</Link>
+          ) : ctx === "registered" ? (
+            <Link href="/home" className="text-[12.5px] font-semibold rounded-full border bg-white px-4 py-2" style={{ color: "#46506a", borderColor: "#d7d3cc" }}>Your home →</Link>
           ) : (
-            <Link href="/home"><Button kind="ghost" size="sm">Your home →</Button></Link>
+            <Link href="/signup" className="text-[12.5px] font-semibold rounded-full px-4 py-2 text-white" style={{ background: C.blue }}>Join Sahan</Link>
           )}
         </div>
-      </header>
+      </nav>
 
-      <main className="mx-auto max-w-3xl px-5 sm:px-10 py-10 sm:py-16">
+      <div className="mx-auto max-w-[760px] px-5 sm:px-6 pb-20">
         {profile.kind === "individual" ? <IndividualProfile p={profile} /> : <CompanyProfile p={profile} />}
 
-        {/* Hint for sections the viewer can't see — tells the visitor that
-            more exists behind sign-in / behind the owner's settings, without
-            leaking what. */}
-        {ctx !== "owner" && (
-          <p className="mt-12 text-center text-[12px] text-muted">
-            Some sections are hidden by privacy settings.
-            {ctx === "public" && <> <Link href="/signup" className="text-sienna hover:underline">Sign up</Link> to see more.</>}
+        {/* CTA */}
+        {ctx !== "owner" ? (
+          <div className="mt-[30px] rounded-[18px] p-8 sm:p-9 text-center" style={{ background: "#15171c" }}>
+            <div className="text-[11px] font-semibold tracking-[0.2em]" style={{ color: "#8a93a6" }}>VERIFIED ON SAHAN</div>
+            <div className="font-serif font-semibold text-[22px] sm:text-[24px] text-white mt-3 leading-[1.3] max-w-[440px] mx-auto" style={{ fontFamily: SERIF }}>
+              Build your own verified profile and share it with a single link.
+            </div>
+            <p className="mt-3 text-[13.5px] leading-[1.55] max-w-[420px] mx-auto" style={{ color: "#aeb4bf" }}>
+              Free, on any phone. Generate a recruiter-ready CV or company profile in minutes.
+            </p>
+            <Link href="/signup" className="inline-block mt-[22px] text-white text-[14px] font-semibold rounded-[10px] px-7 py-3" style={{ background: C.blue }}>Join Sahan — it&apos;s free</Link>
+          </div>
+        ) : (
+          <p className="mt-6 text-center text-[12.5px]" style={{ color: C.muted }}>
+            This is your public profile — others see it exactly like this. <Link href="/profile" className="font-medium hover:underline" style={{ color: C.blue }}>Edit →</Link>
           </p>
         )}
-      </main>
+
+        <div className="mt-[26px] flex items-center justify-between flex-wrap gap-2.5">
+          <Link href="/" className="font-serif font-bold text-[16px]" style={{ fontFamily: SERIF, color: C.ink }}>Sahan<span style={{ color: C.blue }}>.</span></Link>
+          <div className="text-[11.5px]" style={{ color: C.soft }}>Free CV &amp; company-profile maker for East Africa</div>
+        </div>
+      </div>
     </div>
   );
 }
 
+// ── Individual ──
 function IndividualProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublicProfile>>, { kind: "individual" }> }) {
+  const verified =
+    p.experiences.filter((x) => x.verified).length +
+    p.educations.filter((x) => x.verified).length +
+    p.certifications.filter((x) => x.verified).length;
+  const latestOrg = p.experiences[0]?.organization || "";
+  const showOrg = latestOrg && (!p.headline || !p.headline.includes(latestOrg));
+  const topCert = p.certifications.find((c) => c.verified) || p.certifications[0];
+  const stats = ([
+    ["Roles", p.experiences.length, C.ink],
+    ["Verified", verified, C.green],
+    ["Skills", p.skills.length, C.ink],
+    ["Languages", p.languages.length, C.ink],
+  ] as [string, number, string][]).filter(([, n]) => n > 0);
+
   return (
     <article>
-      <div className="flex items-start gap-5 sm:gap-7">
-        {p.photoUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={p.photoUrl} alt="" className="w-20 h-20 sm:w-28 sm:h-28 rounded-full object-cover border border-border shrink-0" />
-        )}
-        <div className="min-w-0">
-          <h1 className="font-serif text-[32px] sm:text-[44px] lg:text-[52px] tracking-[-0.025em] leading-[1.05] break-words">{p.fullName}</h1>
-          {p.headline && <p className="font-serif italic text-[16px] sm:text-[18px] text-ink-soft mt-2 break-words">{p.headline}</p>}
-          <div className="mt-2 text-[13px] text-muted break-words">
-            {[p.location, p.email, p.phone].filter(Boolean).join(" · ")}
+      {/* Header card */}
+      <header className="relative mt-[26px] bg-white rounded-[20px] overflow-hidden border shadow-sm" style={{ borderColor: C.cardBorder }}>
+        <div className="h-[108px]" style={{ background: "linear-gradient(120deg,#20304d 0%,#2d4a86 100%)" }} />
+        <div className="px-6 sm:px-8 pb-7">
+          <div className="flex items-end justify-between gap-4 -mt-[46px]">
+            <Avatar src={p.photoUrl} name={p.fullName} round />
+            <ContactActions name={p.fullName} headline={p.headline} email={p.email} phone={p.phone} org="" />
           </div>
-        </div>
-      </div>
 
-      {p.summary && (
-        <section className="mt-8">
-          <ReadMore text={p.summary} className="text-[15px] leading-relaxed text-ink-soft max-w-2xl" lines={5} />
+          <div className="flex items-center gap-2.5 mt-4">
+            <h1 className="font-serif font-semibold text-[26px] sm:text-[29px] tracking-[-0.01em] leading-[1.1] break-words" style={{ fontFamily: SERIF, color: C.ink }}>{p.fullName}</h1>
+            {verified > 0 && <VerifiedCheck title="Verified credentials" />}
+          </div>
+          {p.headline && <div className="mt-1.5 text-[14.5px] font-medium" style={{ color: C.blue }}>{p.headline}</div>}
+          {showOrg && <div className="text-[13.5px]" style={{ color: C.muted }}>{latestOrg}</div>}
+
+          <div className="flex flex-wrap gap-2 mt-4">
+            {p.location && <Chip icon={<span style={{ color: "#9a9a92" }}>⌖</span>}>{p.location}</Chip>}
+            {topCert?.verified && <Chip icon={<span style={{ color: C.green }}>✦</span>}>{[topCert.name, topCert.issuer].filter(Boolean).join(" — ")}</Chip>}
+          </div>
+
+          {p.summary && <ReadMore text={p.summary} className="mt-5 text-[14px] leading-[1.65]" lines={6} style={{ color: C.body }} />}
+
+          {stats.length > 1 && (
+            <div className="flex gap-[18px] mt-[22px] pt-5 border-t" style={{ borderColor: C.hair }}>
+              {stats.map(([label, n, color], i) => (
+                <div key={label} className="flex gap-[18px]">
+                  {i > 0 && <div className="w-px self-stretch" style={{ background: C.hair }} />}
+                  <div>
+                    <div className="font-serif font-semibold text-[22px]" style={{ fontFamily: SERIF, color }}>{n}</div>
+                    <div className="text-[11.5px] mt-px" style={{ color: C.faint2 }}>{label}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* Experience */}
+      {p.experiences.length > 0 && (
+        <section className="mt-6">
+          <SectionHead title="Experience" meta={`${p.experiences.length} ${p.experiences.length === 1 ? "role" : "roles"}`} />
+          <div className="bg-white rounded-2xl border shadow-sm px-6 sm:px-[26px]" style={{ borderColor: C.cardBorder }}>
+            {p.experiences.map((e, i) => (
+              <TimelineItem key={e.id} first={i === 0} last={i === p.experiences.length - 1} verified={e.verified}
+                title={e.title} date={e.dateRange}
+                meta={[e.organization, e.location].filter(Boolean).join(" · ")} note={e.verifiedNote}
+                description={e.description} />
+            ))}
+          </div>
         </section>
       )}
 
-      {p.educations.length > 0 && (
-        <Section title="Education">
-          {p.educations.map((e) => (
-            <article key={e.id} className="card mb-3">
-              <div className="flex flex-wrap items-baseline gap-2">
-                <h3 className="font-serif text-[17px] tracking-tightish">{e.qualification}{e.field ? ` · ${e.field}` : ""}</h3>
-                {e.verified && <VerifiedBadge note={e.verifiedNote || undefined} />}
+      {/* Education + Certifications */}
+      {(p.educations.length > 0 || p.certifications.length > 0) && (
+        <div className="grid sm:grid-cols-2 gap-[18px] mt-6">
+          {p.educations.length > 0 && (
+            <section>
+              <SectionHead title="Education" />
+              <ListCard items={p.educations.map((e) => ({
+                key: e.id, title: e.qualification + (e.field ? `, ${e.field}` : ""), sub: e.institution, meta: e.dateRange, verified: e.verified,
+              }))} />
+            </section>
+          )}
+          {p.certifications.length > 0 && (
+            <section>
+              <SectionHead title="Certifications" />
+              <ListCard items={p.certifications.map((c) => ({
+                key: c.id, title: c.name, sub: c.issuer, meta: c.year, verified: c.verified,
+              }))} />
+            </section>
+          )}
+        </div>
+      )}
+
+      {/* Skills + Languages */}
+      {(p.skills.length > 0 || p.languages.length > 0) && (
+        <div className="grid sm:grid-cols-[1.4fr_1fr] gap-[18px] mt-6">
+          {p.skills.length > 0 && (
+            <section>
+              <SectionHead title="Skills" />
+              <div className="bg-white rounded-2xl border shadow-sm p-[22px] flex flex-wrap gap-2.5" style={{ borderColor: C.cardBorder }}>
+                {p.skills.map((s) => (
+                  <span key={s.id} className="rounded-full px-[15px] py-2 text-[12.5px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{s.name}</span>
+                ))}
               </div>
-              <p className="text-[13px] text-ink-soft mt-1"><span className="font-medium">{e.institution}</span>{e.dateRange && <> · <span className="text-muted">{e.dateRange}</span></>}</p>
-            </article>
-          ))}
-        </Section>
-      )}
-
-      {p.experiences.length > 0 && (
-        <Section title="Experience">
-          {p.experiences.map((e) => (
-            <article key={e.id} className="card mb-3">
-              <div className="flex flex-wrap items-baseline gap-2">
-                <h3 className="font-serif text-[18px] tracking-tightish">{e.title}</h3>
-                {e.verified && <VerifiedBadge note={e.verifiedNote || undefined} />}
+            </section>
+          )}
+          {p.languages.length > 0 && (
+            <section>
+              <SectionHead title="Languages" />
+              <div className="bg-white rounded-2xl border shadow-sm px-[22px] py-5 flex flex-col gap-3" style={{ borderColor: C.cardBorder }}>
+                {p.languages.map((l, i) => {
+                  const { name, level } = splitLang(l);
+                  return (
+                    <div key={i}>
+                      {i > 0 && <div className="h-px -mt-1.5 mb-3" style={{ background: C.line }} />}
+                      <div className="flex items-center justify-between">
+                        <span className="text-[13.5px]" style={{ color: C.ink }}>{name}</span>
+                        {level && <span className="text-[12px]" style={{ color: C.faint }}>{level}</span>}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              <p className="text-[13px] text-ink-soft mt-1">
-                <span className="font-medium">{e.organization}</span>{e.location && <> · {e.location}</>}{e.dateRange && <> · <span className="text-muted">{e.dateRange}</span></>}
-              </p>
-              {e.description && <ReadMore text={e.description} className="text-[14px] text-ink-soft mt-2 leading-relaxed" lines={4} />}
-            </article>
-          ))}
-        </Section>
-      )}
-
-      {p.skills.length > 0 && (
-        <Section title="Skills">
-          <ul className="flex flex-wrap gap-2">
-            {p.skills.map((s) => <li key={s.id} className="inline-flex rounded-full bg-paper border border-border px-3 py-1 text-[13px] text-ink-soft">{s.name}</li>)}
-          </ul>
-        </Section>
-      )}
-
-      {p.languages.length > 0 && (
-        <Section title="Languages">
-          <ul className="flex flex-wrap gap-2">
-            {p.languages.map((l) => <li key={l} className="inline-flex rounded-full bg-paper border border-border px-3 py-1 text-[13px] text-ink-soft">{l}</li>)}
-          </ul>
-        </Section>
-      )}
-
-      {p.certifications.length > 0 && (
-        <Section title="Certifications">
-          {p.certifications.map((c) => (
-            <div key={c.id} className="card mb-3 flex flex-wrap items-baseline gap-2">
-              <h3 className="font-serif text-[16px]">{c.name}</h3>
-              <span className="text-[13px] text-muted">{[c.issuer, c.year].filter(Boolean).join(" · ")}</span>
-              {c.verified && <VerifiedBadge note={c.verifiedNote || undefined} />}
-            </div>
-          ))}
-        </Section>
+            </section>
+          )}
+        </div>
       )}
     </article>
   );
 }
 
+// ── Company ──
 function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublicProfile>>, { kind: "company" }> }) {
+  const verified = p.projects.filter((x) => x.verified).length + p.certifications.filter((x) => x.verified).length;
+  const blueLine = p.sectors.slice(0, 3).join(" · ");
+  const stats = ([
+    ["Projects", p.projects.length, C.ink],
+    ["Verified", verified, C.green],
+    ["Clients", p.publicClients.length, C.ink],
+    ["Sectors", p.sectors.length, C.ink],
+  ] as [string, number, string][]).filter(([, n]) => n > 0);
+
   return (
     <article>
-      <div className="flex items-start gap-5 sm:gap-7">
-        {p.logoUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={p.logoUrl} alt="" className="w-20 h-20 sm:w-28 sm:h-28 rounded-lg object-contain bg-cream border border-border p-2 shrink-0" />
-        )}
-        <div className="min-w-0">
-          <h1 className="font-serif text-[32px] sm:text-[44px] lg:text-[52px] tracking-[-0.025em] leading-[1.05] break-words">{p.name}</h1>
-          <div className="mt-2 text-[13px] text-muted break-words">
-            {[p.country, p.foundedYear && `Founded ${p.foundedYear}`, p.website, p.email].filter(Boolean).join(" · ")}
+      <header className="relative mt-[26px] bg-white rounded-[20px] overflow-hidden border shadow-sm" style={{ borderColor: C.cardBorder }}>
+        <div className="h-[108px]" style={{ background: "linear-gradient(120deg,#20304d 0%,#2d4a86 100%)" }} />
+        <div className="px-6 sm:px-8 pb-7">
+          <div className="flex items-end justify-between gap-4 -mt-[46px]">
+            <Avatar src={p.logoUrl} name={p.name} />
+            <ContactActions name={p.name} headline={blueLine} email={p.email} phone={p.phone} org={p.name} />
           </div>
-        </div>
-      </div>
 
-      {p.about && (
-        <Section title="About">
-          <ReadMore text={p.about} className="text-[15px] leading-relaxed text-ink-soft max-w-2xl break-words" lines={5} />
-        </Section>
-      )}
+          <div className="flex items-center gap-2.5 mt-4">
+            <h1 className="font-serif font-semibold text-[26px] sm:text-[29px] tracking-[-0.01em] leading-[1.1] break-words" style={{ fontFamily: SERIF, color: C.ink }}>{p.name}</h1>
+            {verified > 0 && <VerifiedCheck title="Verified credentials" />}
+          </div>
+          {blueLine && <div className="mt-1.5 text-[14.5px] font-medium" style={{ color: C.blue }}>{blueLine}</div>}
+
+          <div className="flex flex-wrap gap-2 mt-4">
+            {p.country && <Chip icon={<span style={{ color: "#9a9a92" }}>⌖</span>}>{p.country}</Chip>}
+            {p.foundedYear && <Chip>Founded {p.foundedYear}</Chip>}
+            {p.website && <Chip icon={<span style={{ color: "#9a9a92" }}>◐</span>}>{p.website.replace(/^https?:\/\//, "")}</Chip>}
+          </div>
+
+          {p.about && <ReadMore text={p.about} className="mt-5 text-[14px] leading-[1.65]" lines={6} style={{ color: C.body }} />}
+
+          {stats.length > 1 && (
+            <div className="flex gap-[18px] mt-[22px] pt-5 border-t" style={{ borderColor: C.hair }}>
+              {stats.map(([label, n, color], i) => (
+                <div key={label} className="flex gap-[18px]">
+                  {i > 0 && <div className="w-px self-stretch" style={{ background: C.hair }} />}
+                  <div>
+                    <div className="font-serif font-semibold text-[22px]" style={{ fontFamily: SERIF, color }}>{n}</div>
+                    <div className="text-[11.5px] mt-px" style={{ color: C.faint2 }}>{label}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </header>
 
       {(p.mission || p.vision) && (
-        <Section title="Mission & vision">
-          <div className="grid gap-3 sm:grid-cols-2">
-            {p.mission && (
-              <div className="card bg-paper"><p className="section-eyebrow text-sienna">Mission</p><p className="mt-2 font-serif italic text-[15px]">&ldquo;{p.mission}&rdquo;</p></div>
-            )}
-            {p.vision && (
-              <div className="card bg-ink text-paper"><p className="section-eyebrow text-sienna-soft">Vision</p><p className="mt-2 font-serif italic text-[15px]">&ldquo;{p.vision}&rdquo;</p></div>
-            )}
-          </div>
-        </Section>
-      )}
-
-      {(p.sectors.length > 0 || p.services.length > 0) && (
-        <Section title="Sectors & services">
-          <div className="grid sm:grid-cols-2 gap-6">
-            {p.sectors.length > 0 && (
-              <div>
-                <p className="section-eyebrow">Sectors</p>
-                <ul className="mt-2 flex flex-wrap gap-2">
-                  {p.sectors.map((s) => <li key={s} className="inline-flex rounded-full bg-paper border border-border px-3 py-1 text-[13px]">{s}</li>)}
-                </ul>
-              </div>
-            )}
-            {p.services.length > 0 && (
-              <div>
-                <p className="section-eyebrow">Services</p>
-                <ul className="mt-2 flex flex-wrap gap-2">
-                  {p.services.map((s) => <li key={s} className="inline-flex rounded-full bg-paper border border-border px-3 py-1 text-[13px]">{s}</li>)}
-                </ul>
-              </div>
-            )}
-          </div>
-        </Section>
+        <div className="grid sm:grid-cols-2 gap-[18px] mt-6">
+          {p.mission && <MvCard label="Mission" text={p.mission} />}
+          {p.vision && <MvCard label="Vision" text={p.vision} dark />}
+        </div>
       )}
 
       {p.projects.length > 0 && (
-        <Section title="Selected projects">
-          {p.projects.map((proj) => (
-            <article key={proj.id} className="card mb-3">
-              <div className="flex flex-wrap items-baseline gap-2">
-                <h3 className="font-serif text-[18px] tracking-tightish">{proj.project_name}</h3>
-                {proj.verified && <VerifiedBadge note={proj.verifiedNote || undefined} />}
-              </div>
-              <p className="text-[13px] text-ink-soft mt-1 italic">{[proj.client_name, proj.sector, proj.dateRange].filter(Boolean).join(" · ")}</p>
-              {proj.scope && <ReadMore text={proj.scope} className="mt-2 text-[14px] text-ink-soft leading-relaxed" lines={4} />}
-            </article>
-          ))}
-        </Section>
-      )}
-
-      {p.team.length > 0 && (
-        <Section title="Key personnel">
-          <div className="grid sm:grid-cols-2 gap-3">
-            {p.team.map((m) => (
-              <div key={m.id} className="card">
-                <p className="font-serif text-[16px] tracking-tightish">{m.person_name}</p>
-                <p className="text-[13px] text-muted mt-0.5">{m.role}</p>
-              </div>
+        <section className="mt-6">
+          <SectionHead title="Selected projects" meta={`${p.projects.length}`} />
+          <div className="bg-white rounded-2xl border shadow-sm px-6 sm:px-[26px]" style={{ borderColor: C.cardBorder }}>
+            {p.projects.map((proj, i) => (
+              <TimelineItem key={proj.id} first={i === 0} last={i === p.projects.length - 1} verified={proj.verified}
+                title={proj.project_name} date={proj.dateRange}
+                meta={[proj.client_name, proj.sector].filter(Boolean).join(" · ")} note={proj.verifiedNote}
+                description={proj.scope} />
             ))}
           </div>
-        </Section>
+        </section>
+      )}
+
+      {(p.sectors.length > 0 || p.services.length > 0) && (
+        <div className="grid sm:grid-cols-2 gap-[18px] mt-6">
+          {p.sectors.length > 0 && (
+            <section><SectionHead title="Sectors" />
+              <div className="bg-white rounded-2xl border shadow-sm p-[22px] flex flex-wrap gap-2.5" style={{ borderColor: C.cardBorder }}>
+                {p.sectors.map((s) => <span key={s} className="rounded-full px-[15px] py-2 text-[12.5px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{s}</span>)}
+              </div>
+            </section>
+          )}
+          {p.services.length > 0 && (
+            <section><SectionHead title="Services" />
+              <div className="bg-white rounded-2xl border shadow-sm p-[22px] flex flex-wrap gap-2.5" style={{ borderColor: C.cardBorder }}>
+                {p.services.map((s) => <span key={s} className="rounded-full px-[15px] py-2 text-[12.5px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{s}</span>)}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
+
+      {(p.team.length > 0 || p.certifications.length > 0) && (
+        <div className="grid sm:grid-cols-2 gap-[18px] mt-6">
+          {p.team.length > 0 && (
+            <section><SectionHead title="Key personnel" />
+              <div className="bg-white rounded-2xl border shadow-sm px-[22px] py-5 flex flex-col gap-4" style={{ borderColor: C.cardBorder }}>
+                {p.team.map((m) => (
+                  <div key={m.id}>
+                    <div className="font-serif font-semibold text-[14.5px]" style={{ fontFamily: SERIF, color: C.ink }}>{m.person_name}</div>
+                    {m.role && <div className="text-[13px] mt-0.5" style={{ color: C.muted }}>{m.role}</div>}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+          {p.certifications.length > 0 && (
+            <section><SectionHead title="Accreditations" />
+              <ListCard items={p.certifications.map((c) => ({ key: c.id, title: c.name, sub: c.issuer, meta: c.year, verified: c.verified }))} />
+            </section>
+          )}
+        </div>
       )}
 
       {p.publicClients.length > 0 && (
-        <Section title="Selected clients">
-          <ul className="flex flex-wrap gap-2">
-            {p.publicClients.map((c) => <li key={c} className="inline-flex rounded-full bg-paper border border-border px-3 py-1 text-[13px]">{c}</li>)}
-          </ul>
-        </Section>
-      )}
-
-      {p.certifications.length > 0 && (
-        <Section title="Accreditations">
-          {p.certifications.map((c) => (
-            <div key={c.id} className="card mb-3 flex flex-wrap items-baseline gap-2">
-              <h3 className="font-serif text-[16px]">{c.name}</h3>
-              <span className="text-[13px] text-muted">{[c.issuer, c.year].filter(Boolean).join(" · ")}</span>
-              {c.verified && <VerifiedBadge note={c.verifiedNote || undefined} />}
-            </div>
-          ))}
-        </Section>
+        <section className="mt-6">
+          <SectionHead title="Selected clients" />
+          <div className="bg-white rounded-2xl border shadow-sm p-[22px] flex flex-wrap gap-2.5" style={{ borderColor: C.cardBorder }}>
+            {p.publicClients.map((c) => <span key={c} className="rounded-full px-[15px] py-2 text-[12.5px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{c}</span>)}
+          </div>
+        </section>
       )}
     </article>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+// ── shared pieces ──
+function Avatar({ src, name, round }: { src: string | null; name: string; round?: boolean }) {
+  const cls = round ? "rounded-full object-cover" : "rounded-2xl object-contain bg-white p-1.5";
+  if (src) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt="" className={`w-[104px] h-[104px] ${cls} border-4 border-white shrink-0`} style={{ boxShadow: "0 4px 14px rgba(0,0,0,0.14)" }} />;
+  }
+  const initials = name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "·";
   return (
-    <section className="mt-10">
-      <p className="section-eyebrow text-sienna">{title}</p>
-      <div className="mt-3">{children}</div>
-    </section>
+    <div className={`w-[104px] h-[104px] ${round ? "rounded-full" : "rounded-2xl"} border-4 border-white shrink-0 flex items-center justify-center font-serif text-[36px] text-white`}
+      style={{ fontFamily: SERIF, background: "linear-gradient(120deg,#20304d,#2d4a86)", boxShadow: "0 4px 14px rgba(0,0,0,0.14)" }}>{initials}</div>
   );
+}
+
+function VerifiedCheck({ title }: { title: string }) {
+  return (
+    <span title={title} className="shrink-0 inline-flex items-center justify-center w-[22px] h-[22px] rounded-full text-white text-[12px]" style={{ background: C.green }}>✓</span>
+  );
+}
+
+function Chip({ icon, children }: { icon?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-[7px] rounded-full border px-[13px] py-[7px] text-[12.5px]" style={{ borderColor: C.chipBorder, color: "#4a4a44" }}>
+      {icon}{children}
+    </span>
+  );
+}
+
+// vCard "Save contact" + (owner aside) — server-rendered data URI, no JS.
+function ContactActions({ name, headline, email, phone, org }: { name: string; headline: string; email: string | null; phone: string | null; org: string }) {
+  if (!email && !phone) return <div className="mb-2" />;
+  const esc = (s: string) => s.replace(/([,;\\])/g, "\\$1").replace(/\n/g, "\\n");
+  const lines = ["BEGIN:VCARD", "VERSION:3.0", `FN:${esc(name)}`];
+  if (org) lines.push(`ORG:${esc(org)}`);
+  if (headline) lines.push(`TITLE:${esc(headline)}`);
+  if (email) lines.push(`EMAIL:${esc(email)}`);
+  if (phone) lines.push(`TEL:${esc(phone)}`);
+  lines.push("END:VCARD");
+  const href = `data:text/vcard;charset=utf-8,${encodeURIComponent(lines.join("\r\n"))}`;
+  return (
+    <a href={href} download={`${name}.vcf`} className="mb-2 inline-flex items-center gap-[7px] text-white text-[13px] font-semibold rounded-[9px] px-[17px] py-2.5 shrink-0" style={{ background: "#15171c" }}>
+      <span>⤓</span>Save contact
+    </a>
+  );
+}
+
+function SectionHead({ title, meta }: { title: string; meta?: string }) {
+  return (
+    <div className="flex items-baseline gap-2.5 mb-3.5">
+      <h2 className="font-serif font-semibold text-[18px]" style={{ fontFamily: SERIF, color: C.ink }}>{title}</h2>
+      {meta && <span className="text-[12px]" style={{ color: C.soft }}>{meta}</span>}
+    </div>
+  );
+}
+
+function TimelineItem({ first, last, verified, title, date, meta, note, description }: {
+  first: boolean; last: boolean; verified: boolean; title: string; date?: string; meta?: string; note?: string; description?: string;
+}) {
+  return (
+    <div className="flex gap-4 py-5" style={!first ? { borderTop: `1px solid ${C.line}` } : undefined}>
+      <div className="flex-none w-[10px] flex flex-col items-center pt-[5px]">
+        <span className="w-[9px] h-[9px] rounded-full" style={{ background: verified ? C.blue : C.dotIdle }} />
+        {!last && <span className="flex-1 w-[1.5px] mt-1.5" style={{ background: C.connector }} />}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline justify-between gap-3.5">
+          <div className="font-serif font-semibold text-[16px]" style={{ fontFamily: SERIF, color: C.ink }}>{title}</div>
+          {date && <div className="text-[12px] whitespace-nowrap" style={{ color: C.faint }}>{date}</div>}
+        </div>
+        <div className="flex items-center gap-2 mt-[3px] flex-wrap">
+          {meta && <span className="text-[13px]" style={{ color: "#52524c" }}>{meta}</span>}
+          {verified && <VerifiedTag note={note} />}
+        </div>
+        {description && <ReadMore text={description} className="mt-2 text-[12.5px] leading-[1.55]" lines={4} style={{ color: C.muted }} />}
+      </div>
+    </div>
+  );
+}
+
+function VerifiedTag({ note }: { note?: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full text-[10px] font-semibold px-2 py-0.5" style={{ background: C.greenSoft, color: C.green }}>
+      <span className="inline-flex items-center justify-center w-3 h-3 rounded-full text-white text-[7px]" style={{ background: C.green }}>✓</span>
+      {note ? `Verified · ${note}` : "Verified"}
+    </span>
+  );
+}
+
+function ListCard({ items }: { items: Array<{ key: string; title: string; sub?: string; meta?: string; verified?: boolean }> }) {
+  return (
+    <div className="bg-white rounded-2xl border shadow-sm px-[22px] py-5 flex flex-col gap-4" style={{ borderColor: C.cardBorder }}>
+      {items.map((it) => (
+        <div key={it.key}>
+          <div className="flex items-center gap-[7px]">
+            <div className="font-serif font-semibold text-[14.5px]" style={{ fontFamily: SERIF, color: C.ink }}>{it.title}</div>
+            {it.verified && <span className="inline-flex items-center justify-center w-[15px] h-[15px] rounded-full text-white text-[9px]" style={{ background: C.green }}>✓</span>}
+          </div>
+          {it.sub && <div className="text-[13px] mt-0.5" style={{ color: "#52524c" }}>{it.sub}</div>}
+          {it.meta && <div className="text-[12px] mt-px" style={{ color: C.faint }}>{it.meta}</div>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MvCard({ label, text, dark }: { label: string; text: string; dark?: boolean }) {
+  return (
+    <div className="rounded-2xl border shadow-sm p-5" style={dark ? { background: C.ink, borderColor: C.ink } : { background: "#fff", borderColor: C.cardBorder }}>
+      <div className="text-[10.5px] font-semibold uppercase tracking-[0.14em]" style={{ color: dark ? "#8a93a6" : C.blue }}>{label}</div>
+      <p className="mt-2 font-serif italic text-[15px] leading-snug" style={{ fontFamily: SERIF, color: dark ? "#fff" : C.ink }}>&ldquo;{text}&rdquo;</p>
+    </div>
+  );
+}
+
+function splitLang(s: string): { name: string; level: string } {
+  const m = /^(.*?)\s*[([（]\s*(.+?)\s*[)\]）]\s*$/.exec(s.trim());
+  return m ? { name: m[1].trim(), level: m[2].trim() } : { name: s.trim(), level: "" };
 }

@@ -11,13 +11,13 @@ const CLAMP: Record<number, string> = {
 };
 
 export function ReadMore({
-  text, className, lines = 4, threshold = 240,
-}: { text: string; className?: string; lines?: 2 | 3 | 4 | 5 | 6; threshold?: number }) {
+  text, className, lines = 4, threshold = 240, style,
+}: { text: string; className?: string; lines?: 2 | 3 | 4 | 5 | 6; threshold?: number; style?: React.CSSProperties }) {
   const [open, setOpen] = useState(false);
   const longish = text.length > threshold;
   return (
     <div>
-      <p className={cn(className, "whitespace-pre-line", !open && longish && CLAMP[lines])}>{text}</p>
+      <p className={cn(className, "whitespace-pre-line", !open && longish && CLAMP[lines])} style={style}>{text}</p>
       {longish && (
         <button
           type="button"
