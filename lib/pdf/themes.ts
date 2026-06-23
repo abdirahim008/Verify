@@ -42,6 +42,28 @@ export const CV_THEMES: Record<string, PdfTheme[]> = {
     { id: "burgundy", label: "Burgundy",  swatch: ["#532330", "#ffffff"], overrides: { accent: "#532330" } },
     { id: "sand",     label: "Sand",      swatch: ["#ece6da", "#16130f"], overrides: { accent: "#ece6da" } },
   ],
+  editorial: [
+    { id: "ink", label: "Ink", swatch: ["#16130f", "#ffffff"], overrides: {} },
+  ],
+  statement: [
+    { id: "ink", label: "Ink", swatch: ["#16130f", "#ffffff"], overrides: {} },
+  ],
+  endnote: [
+    { id: "teal",     label: "Deep Teal", swatch: ["#1d3b3b", "#ffffff"], overrides: { accent: "#1d3b3b" } },
+    { id: "navy",     label: "Ink Navy",  swatch: ["#20304d", "#ffffff"], overrides: { accent: "#20304d" } },
+    { id: "charcoal", label: "Charcoal",  swatch: ["#262626", "#ffffff"], overrides: { accent: "#262626" } },
+    { id: "forest",   label: "Forest",    swatch: ["#243d31", "#ffffff"], overrides: { accent: "#243d31" } },
+    { id: "burgundy", label: "Burgundy",  swatch: ["#532330", "#ffffff"], overrides: { accent: "#532330" } },
+    { id: "sand",     label: "Sand",      swatch: ["#ece6da", "#16130f"], overrides: { accent: "#ece6da" } },
+  ],
+  frame: [
+    { id: "navy",     label: "Ink Navy",  swatch: ["#20304d", "#ffffff"], overrides: { accent: "#20304d" } },
+    { id: "teal",     label: "Deep Teal", swatch: ["#1d3b3b", "#ffffff"], overrides: { accent: "#1d3b3b" } },
+    { id: "charcoal", label: "Charcoal",  swatch: ["#262626", "#ffffff"], overrides: { accent: "#262626" } },
+    { id: "forest",   label: "Forest",    swatch: ["#243d31", "#ffffff"], overrides: { accent: "#243d31" } },
+    { id: "burgundy", label: "Burgundy",  swatch: ["#532330", "#ffffff"], overrides: { accent: "#532330" } },
+    { id: "sand",     label: "Sand",      swatch: ["#ece6da", "#16130f"], overrides: { accent: "#ece6da" } },
+  ],
 };
 
 export const COMPANY_THEMES: Record<string, PdfTheme[]> = {

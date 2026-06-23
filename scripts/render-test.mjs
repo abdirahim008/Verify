@@ -189,6 +189,10 @@ const CHECK_FONTS = {
   profile: ["SpaceGrotesk"],
   grid: ["Archivo"],
   crest: ["Marcellus"],
+  editorial: ["Spectral"],
+  statement: ["Bodoni"],
+  endnote: ["Newsreader"],
+  frame: ["Cormorant"],
 };
 // Fonts that mean a glyph fell back to a SYSTEM font — fails the test
 // because serverless chromium has no system fonts (would render tofu).
@@ -218,7 +222,7 @@ async function renderAndCheck(path, outName, cookie, requiredFonts, minPages) {
   console.log(`${ok ? "OK" : "PROBLEM"} — ${(buf.length / 1024).toFixed(0)}KB, ${pages} page(s), fonts: ${fonts}${banned.length ? `, system fallbacks: ${banned.join(",")}` : ""}`);
 }
 
-for (const t of ["classic", "profile", "grid", "crest"]) {
+for (const t of ["classic", "profile", "grid", "crest", "editorial", "statement", "endnote", "frame"]) {
   await renderAndCheck(`/api/cv/${t}`, `cv-${t}`, cookieHeader, CHECK_FONTS[t], 1);
 }
 // Company templates render 3 fixed pages each; all share Serif 4 + Public

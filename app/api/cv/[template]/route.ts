@@ -8,6 +8,10 @@ import { ClassicCV } from "@/components/cv/ClassicCV";
 import { ProfileCV } from "@/components/cv/ProfileCV";
 import { GridCV } from "@/components/cv/GridCV";
 import { CrestCV } from "@/components/cv/CrestCV";
+import { EditorialCV } from "@/components/cv/EditorialCV";
+import { StatementCV } from "@/components/cv/StatementCV";
+import { EndnoteCV } from "@/components/cv/EndnoteCV";
+import { FrameCV } from "@/components/cv/FrameCV";
 
 // PDF endpoint must run on Node (puppeteer-core + chromium-min). Edge can't
 // host a headless browser.
@@ -48,11 +52,39 @@ const CREST_FONTS =
   "&family=Hanken+Grotesk:wght@400;500;600;700" +
   "&display=swap";
 
+const EDITORIAL_FONTS =
+  "https://fonts.googleapis.com/css2" +
+  "?family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500" +
+  "&family=Public+Sans:wght@400;500;600;700" +
+  "&display=swap";
+
+const STATEMENT_FONTS =
+  "https://fonts.googleapis.com/css2" +
+  "?family=Bodoni+Moda:ital,wght@0,500;0,600;1,500" +
+  "&family=Karla:wght@400;500;600;700" +
+  "&display=swap";
+
+const ENDNOTE_FONTS =
+  "https://fonts.googleapis.com/css2" +
+  "?family=Archivo:wght@500;600;700;800" +
+  "&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400" +
+  "&display=swap";
+
+const FRAME_FONTS =
+  "https://fonts.googleapis.com/css2" +
+  "?family=Cormorant+Garamond:wght@500;600" +
+  "&family=Public+Sans:wght@400;500;600;700" +
+  "&display=swap";
+
 const TEMPLATES = {
-  classic: { name: "Classic", component: ClassicCV, fonts: CLASSIC_FONTS },
-  profile: { name: "Profile", component: ProfileCV, fonts: PROFILE_FONTS },
-  grid:    { name: "Grid",    component: GridCV,    fonts: GRID_FONTS },
-  crest:   { name: "Crest",   component: CrestCV,   fonts: CREST_FONTS },
+  classic:   { name: "Classic",   component: ClassicCV,   fonts: CLASSIC_FONTS },
+  profile:   { name: "Profile",   component: ProfileCV,   fonts: PROFILE_FONTS },
+  grid:      { name: "Grid",      component: GridCV,      fonts: GRID_FONTS },
+  crest:     { name: "Crest",     component: CrestCV,     fonts: CREST_FONTS },
+  editorial: { name: "Editorial", component: EditorialCV, fonts: EDITORIAL_FONTS },
+  statement: { name: "Statement", component: StatementCV, fonts: STATEMENT_FONTS },
+  endnote:   { name: "Endnote",   component: EndnoteCV,   fonts: ENDNOTE_FONTS },
+  frame:     { name: "Frame",     component: FrameCV,     fonts: FRAME_FONTS },
 } as const;
 
 export async function GET(

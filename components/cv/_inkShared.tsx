@@ -32,6 +32,22 @@ export function VerifiedMark({ note, size = 9 }: { note?: string; size?: number 
   );
 }
 
+// Colour-band templates (Crest/Endnote/Frame) take an adjustable accent;
+// the on-band text/line colours derive from its luminance (light text on
+// dark bands, dark on light). Mirrors the handoff's renderVals().
+export function bandColors(accent: string) {
+  const hex = (accent || "#20304d").replace("#", "");
+  const r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16);
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  const dark = lum < 0.6;
+  return {
+    accent: accent || "#20304d",
+    onBand: dark ? "#ffffff" : "#1a1a1a",
+    onBandMuted: dark ? "rgba(255,255,255,0.70)" : "#5a544c",
+    bandLine: dark ? "rgba(255,255,255,0.28)" : "rgba(0,0,0,0.18)",
+  };
+}
+
 // "Eleanor Whitfield" → "EW"; single token → first two letters.
 export function initials(name: string): string {
   const t = name.trim().split(/\s+/).filter(Boolean);
