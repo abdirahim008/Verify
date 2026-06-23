@@ -10,6 +10,9 @@ import {
   companyClientSchema, type CompanyClientValues,
   companyTeamSchema, type CompanyTeamValues,
   companyCertificationSchema, type CompanyCertificationValues,
+  companyCeoSchema, type CompanyCeoValues,
+  companyValueSchema, type CompanyValueValues,
+  companyServiceSchema, type CompanyServiceValues,
   toIntOrNull, toNumOrNull,
 } from "@/lib/schemas";
 
@@ -32,10 +35,16 @@ export async function saveCompanyBasics(values: CompanyBasicsValues) {
       profile_id: userId,
       company_name: v.company_name,
       logo_url: v.logo_url || null,
+      tagline: v.tagline || null,
+      cover_statement: v.cover_statement || null,
+      locations: v.locations ?? [],
       country: v.country || null,
       registration_number: v.registration_number || null,
       registration_country: v.registration_country || null,
       founded_year: toIntOrNull(v.founded_year),
+      staff_count: toIntOrNull(v.staff_count),
+      countries_count: toIntOrNull(v.countries_count),
+      projects_count: toIntOrNull(v.projects_count),
       website: v.website || null,
       email: v.email || null,
       phone: v.phone || null,
@@ -139,6 +148,7 @@ export async function addCompanyClient(values: CompanyClientValues) {
   const { error } = await supabase.from("company_clients").insert({
     profile_id: userId,
     client_name: v.client_name,
+    category: v.category || null,
     display_public: !!v.display_public,
     note: v.note || null,
   });
@@ -150,6 +160,7 @@ export async function updateCompanyClient(id: string, values: CompanyClientValue
   const { supabase } = await authedClient();
   const { error } = await supabase.from("company_clients").update({
     client_name: v.client_name,
+    category: v.category || null,
     display_public: !!v.display_public,
     note: v.note || null,
   }).eq("id", id);
@@ -171,6 +182,7 @@ export async function addCompanyTeamMember(values: CompanyTeamValues) {
     profile_id: userId,
     person_name: v.person_name,
     role: v.role || null,
+    units: v.units ?? [],
     reports_to: v.reports_to || null,
   });
   if (error) throw new Error(error.message);
@@ -182,8 +194,89 @@ export async function updateCompanyTeamMember(id: string, values: CompanyTeamVal
   const { error } = await supabase.from("company_team").update({
     person_name: v.person_name,
     role: v.role || null,
+    units: v.units ?? [],
     reports_to: v.reports_to || null,
   }).eq("id", id);
+  if (error) throw new Error(error.message);
+  bust();
+}
+
+// ─── CEO message + organogram top label ────────────────────────────
+export async function saveCompanyCeo(values: CompanyCeoValues) {
+  const v = companyCeoSchema.parse(values);
+  const { supabase, userId } = await authedClient();
+  const { error } = await supabase.from("company_details").upsert({
+    profile_id: userId,
+    ceo_name: v.ceo_name || null,
+    ceo_title: v.ceo_title || null,
+    ceo_photo_url: v.ceo_photo_url || null,
+    ceo_quote: v.ceo_quote || null,
+    ceo_message: v.ceo_message || null,
+    board_name: v.board_name || null,
+  }, { onConflict: "profile_id" });
+  if (error) throw new Error(error.message);
+  bust();
+}
+
+// ─── sectors (services moved to the company_services table) ─────────
+export async function saveCompanySectors(sectors: string[]) {
+  const v = companyOfferingsSchema.parse({ sectors, core_services: [] });
+  const { supabase, userId } = await authedClient();
+  const { error } = await supabase
+    .from("company_details")
+    .upsert({ profile_id: userId, sectors: v.sectors }, { onConflict: "profile_id" });
+  if (error) throw new Error(error.message);
+  bust();
+}
+
+// ─── values ─────────────────────────────────────────────────────────
+export async function addCompanyValue(values: CompanyValueValues) {
+  const v = companyValueSchema.parse(values);
+  const { supabase, userId } = await authedClient();
+  const { error } = await supabase.from("company_values").insert({
+    profile_id: userId, name: v.name, description: v.description || null,
+  });
+  if (error) throw new Error(error.message);
+  bust();
+}
+export async function updateCompanyValue(id: string, values: CompanyValueValues) {
+  const v = companyValueSchema.parse(values);
+  const { supabase } = await authedClient();
+  const { error } = await supabase.from("company_values").update({
+    name: v.name, description: v.description || null,
+  }).eq("id", id);
+  if (error) throw new Error(error.message);
+  bust();
+}
+export async function deleteCompanyValue(id: string) {
+  const { supabase } = await authedClient();
+  const { error } = await supabase.from("company_values").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  bust();
+}
+
+// ─── services (name + description) ─────────────────────────────────
+export async function addCompanyService(values: CompanyServiceValues) {
+  const v = companyServiceSchema.parse(values);
+  const { supabase, userId } = await authedClient();
+  const { error } = await supabase.from("company_services").insert({
+    profile_id: userId, name: v.name, description: v.description || null,
+  });
+  if (error) throw new Error(error.message);
+  bust();
+}
+export async function updateCompanyService(id: string, values: CompanyServiceValues) {
+  const v = companyServiceSchema.parse(values);
+  const { supabase } = await authedClient();
+  const { error } = await supabase.from("company_services").update({
+    name: v.name, description: v.description || null,
+  }).eq("id", id);
+  if (error) throw new Error(error.message);
+  bust();
+}
+export async function deleteCompanyService(id: string) {
+  const { supabase } = await authedClient();
+  const { error } = await supabase.from("company_services").delete().eq("id", id);
   if (error) throw new Error(error.message);
   bust();
 }

@@ -81,19 +81,55 @@ export const languagesSchema = z.object({
   languages: z.array(z.string().trim().min(1).max(80)).max(30),
 });
 
+// Non-negative integer entered as a string (form input); actions coerce.
+const countStr = z.string()
+  .refine((v) => v === "" || /^\d{1,7}$/.test(v), "Numbers only")
+  .optional();
+
 // ─── Company schemas ───────────────────────────────────────────────
 export const companyBasicsSchema = z.object({
   company_name: z.string().trim().min(1, "Required").max(200),
   logo_url: z.string().url("Use a full URL").or(z.literal("")).optional(),
+  tagline: optTrimmed,
+  cover_statement: z.string().trim().max(400).optional(),
+  locations: z.array(z.string().trim().min(1).max(80)).max(20),
   country: optTrimmed,
   registration_number: optTrimmed,
   registration_country: optTrimmed,
   founded_year: yearStr,
+  staff_count: countStr,
+  countries_count: countStr,
+  projects_count: countStr,
   website: z.string().trim().max(200).optional(),
   email: z.string().email("Invalid email").or(z.literal("")).optional(),
   phone: optTrimmed,
 });
 export type CompanyBasicsValues = z.infer<typeof companyBasicsSchema>;
+
+// Message from the CEO + the organogram's top label.
+export const companyCeoSchema = z.object({
+  ceo_name: optTrimmed,
+  ceo_title: optTrimmed,
+  ceo_photo_url: z.string().url("Use a full URL").or(z.literal("")).optional(),
+  ceo_quote: z.string().trim().max(600).optional(),
+  ceo_message: z.string().trim().max(5000).optional(),
+  board_name: optTrimmed,
+});
+export type CompanyCeoValues = z.infer<typeof companyCeoSchema>;
+
+// A company value (name + short blurb).
+export const companyValueSchema = z.object({
+  name: z.string().trim().min(1, "Required").max(80),
+  description: z.string().trim().max(400).optional(),
+});
+export type CompanyValueValues = z.infer<typeof companyValueSchema>;
+
+// A detailed service (name + description).
+export const companyServiceSchema = z.object({
+  name: z.string().trim().min(1, "Required").max(120),
+  description: z.string().trim().max(600).optional(),
+});
+export type CompanyServiceValues = z.infer<typeof companyServiceSchema>;
 
 export const companyAboutSchema = z.object({
   about: z.string().trim().max(5000).optional(),
@@ -123,6 +159,8 @@ export type CompanyProjectValues = z.infer<typeof companyProjectSchema>;
 
 export const companyClientSchema = z.object({
   client_name: z.string().trim().min(1, "Required").max(200),
+  // Free-text group label, e.g. "Multilateral & Donors", "Government".
+  category: optTrimmed,
   display_public: z.boolean().optional(),
   note: optTrimmed,
 });
@@ -131,6 +169,8 @@ export type CompanyClientValues = z.infer<typeof companyClientSchema>;
 export const companyTeamSchema = z.object({
   person_name: z.string().trim().min(1, "Required").max(120),
   role: optTrimmed,
+  // Department/unit tags shown under each leader in the organogram.
+  units: z.array(z.string().trim().min(1).max(60)).max(12),
   reports_to: z.string().optional().nullable(),
 });
 export type CompanyTeamValues = z.infer<typeof companyTeamSchema>;

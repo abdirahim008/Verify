@@ -5,11 +5,11 @@ export async function loadCompanyProfile(userId: string) {
   if (!supabase) {
     return {
       profile: null, basics: null,
-      projects: [], clients: [], team: [], certifications: [],
+      projects: [], clients: [], team: [], certifications: [], values: [], services: [],
     };
   }
   const [
-    profileRes, basicsRes, projectsRes, clientsRes, teamRes, certsRes,
+    profileRes, basicsRes, projectsRes, clientsRes, teamRes, certsRes, valuesRes, servicesRes,
   ] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
     supabase.from("company_details").select("*").eq("profile_id", userId).maybeSingle(),
@@ -17,6 +17,8 @@ export async function loadCompanyProfile(userId: string) {
     supabase.from("company_clients").select("*").eq("profile_id", userId).order("order_index").order("client_name"),
     supabase.from("company_team").select("*").eq("profile_id", userId).order("order_index").order("created_at"),
     supabase.from("company_certifications").select("*").eq("profile_id", userId).order("year", { ascending: false, nullsFirst: false }),
+    supabase.from("company_values").select("*").eq("profile_id", userId).order("order_index").order("created_at"),
+    supabase.from("company_services").select("*").eq("profile_id", userId).order("order_index").order("created_at"),
   ]);
 
   return {
@@ -26,6 +28,8 @@ export async function loadCompanyProfile(userId: string) {
     clients: clientsRes.data ?? [],
     team: teamRes.data ?? [],
     certifications: certsRes.data ?? [],
+    values: valuesRes.data ?? [],
+    services: servicesRes.data ?? [],
   };
 }
 

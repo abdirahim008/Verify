@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    @page { size: A4; margin: 0; }
+    [data-band] { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    @media print {
+      [data-role="workspace"] { background: #fff !important; padding: 0 !important; min-width: 0 !important; display: block !important; }
+      [data-role="page"] { box-shadow: none !important; }
+    }
+  </style>
+</helmet>
+<div data-role="workspace" style="background:#e9e7e2; min-height:100vh; min-width:max-content; box-sizing:border-box; padding:48px; display:flex; justify-content:center; font-family:'Public Sans', sans-serif;">
+  <div data-role="page" data-screen-label="CV 8 — Header + Footer Band (Color)" style="width:794px; min-height:1123px; background:#ffffff; box-shadow:0 6px 32px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06); box-sizing:border-box; color:#3a352f; display:flex; flex-direction:column;">
+
+    <header data-band style="background:{{ accent }}; padding:34px 56px 30px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:28px;">
+        <div>
+          <h1 style="margin:0; font-family:'Cormorant Garamond', serif; font-weight:600; font-size:48px; letter-spacing:0.01em; color:{{ onBand }}; line-height:1.0;">Eleanor Whitfield</h1>
+          <div style="margin-top:8px; font-size:11.5px; font-weight:500; text-transform:uppercase; letter-spacing:0.3em; color:{{ onBandMuted }};">Senior Project Manager</div>
+        </div>
+        <div style="text-align:right; font-size:11.5px; line-height:1.75; color:{{ onBandMuted }}; white-space:nowrap;">London, United Kingdom<br>+44 20 7946 0823<br>eleanor.whitfield@email.com<br>eleanorwhitfield.com</div>
+      </div>
+    </header>
+
+    <div style="padding:28px 56px 30px; flex:1;">
+
+      <p style="margin:0 0 24px; font-size:13px; line-height:1.6; color:#3a352f;">Senior project manager with nine years leading cross-functional programs across technology and operations. Known for delivering complex initiatives on time and on budget while building teams that last.</p>
+
+      <section style="margin-bottom:22px;">
+        <div style="font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.2em; color:#16130f; border-bottom:1px solid #16130f; padding-bottom:6px; margin-bottom:14px;">Experience</div>
+
+        <div style="margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; gap:14px;">
+            <div style="font-weight:700; font-size:14.5px; color:#16130f; white-space:nowrap;">Senior Project Manager</div>
+            <div style="font-size:11.5px; font-weight:500; color:#8a847c; letter-spacing:0.03em; white-space:nowrap;">2021 — Present</div>
+          </div>
+          <div style="font-size:12.5px; color:#6a645c; margin-top:2px;">Meridian Group · London</div>
+          <ul style="margin:8px 0 0; padding:0; list-style:none;">
+            <li style="display:flex; gap:10px; font-size:13px; line-height:1.5; color:#3a352f; margin-bottom:4px;"><span style="flex:none; width:8px; height:1.5px; background:#16130f; margin-top:9px;"></span><span>Led a 14-person team delivering a £4.2M platform migration three weeks ahead of schedule.</span></li>
+            <li style="display:flex; gap:10px; font-size:13px; line-height:1.5; color:#3a352f; margin-bottom:4px;"><span style="flex:none; width:8px; height:1.5px; background:#16130f; margin-top:9px;"></span><span>Introduced a quarterly planning rhythm that cut delivery slippage 38% across five product lines.</span></li>
+            <li style="display:flex; gap:10px; font-size:13px; line-height:1.5; color:#3a352f;"><span style="flex:none; width:8px; height:1.5px; background:#16130f; margin-top:9px;"></span><span>Mentored four project managers, two promoted to senior roles within 18 months.</span></li>
+          </ul>
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; gap:14px;">
+            <div style="font-weight:700; font-size:14.5px; color:#16130f; white-space:nowrap;">Project Manager</div>
+            <div style="font-size:11.5px; font-weight:500; color:#8a847c; letter-spacing:0.03em; white-space:nowrap;">2017 — 2021</div>
+          </div>
+          <div style="font-size:12.5px; color:#6a645c; margin-top:2px;">Lumen &amp; Co. · Manchester</div>
+          <ul style="margin:8px 0 0; padding:0; list-style:none;">
+            <li style="display:flex; gap:10px; font-size:13px; line-height:1.5; color:#3a352f; margin-bottom:4px;"><span style="flex:none; width:8px; height:1.5px; background:#16130f; margin-top:9px;"></span><span>Managed a 12-engagement portfolio worth £6M in annual revenue.</span></li>
+            <li style="display:flex; gap:10px; font-size:13px; line-height:1.5; color:#3a352f;"><span style="flex:none; width:8px; height:1.5px; background:#16130f; margin-top:9px;"></span><span>Built the company's first PMO, standardising delivery across 30+ staff.</span></li>
+          </ul>
+        </div>
+
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; gap:14px;">
+            <div style="font-weight:700; font-size:14.5px; color:#16130f; white-space:nowrap;">Operations Coordinator</div>
+            <div style="font-size:11.5px; font-weight:500; color:#8a847c; letter-spacing:0.03em; white-space:nowrap;">2014 — 2017</div>
+          </div>
+          <div style="font-size:12.5px; color:#6a645c; margin-top:2px;">Brightwater Ltd. · Leeds</div>
+          <ul style="margin:8px 0 0; padding:0; list-style:none;">
+            <li style="display:flex; gap:10px; font-size:13px; line-height:1.5; color:#3a352f;"><span style="flex:none; width:8px; height:1.5px; background:#16130f; margin-top:9px;"></span><span>Streamlined procurement workflows, cutting cycle time 22% across three depots.</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:36px; margin-bottom:22px;">
+        <section>
+          <div style="font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.2em; color:#16130f; border-bottom:1px solid #16130f; padding-bottom:6px; margin-bottom:12px;">Education</div>
+          <div style="margin-bottom:9px;">
+            <div style="font-weight:700; font-size:13px; color:#16130f;">MSc, Management</div>
+            <div style="font-size:12.5px; color:#6a645c;">University of Edinburgh · 2013–2014</div>
+          </div>
+          <div>
+            <div style="font-weight:700; font-size:13px; color:#16130f;">BA (Hons), Business Administration</div>
+            <div style="font-size:12.5px; color:#6a645c;">University of Leeds · 2010–2013</div>
+          </div>
+          <div style="font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.2em; color:#16130f; border-bottom:1px solid #16130f; padding-bottom:6px; margin:20px 0 12px;">Languages</div>
+          <div style="display:flex; flex-direction:column; gap:7px; font-size:12.5px;">
+            <div style="display:flex; justify-content:space-between;"><span style="color:#16130f;">English</span><span style="color:#8a847c;">Native</span></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:#16130f;">French</span><span style="color:#8a847c;">Fluent</span></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:#16130f;">Spanish</span><span style="color:#8a847c;">Intermediate</span></div>
+          </div>
+        </section>
+        <section>
+          <div style="font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.2em; color:#16130f; border-bottom:1px solid #16130f; padding-bottom:6px; margin-bottom:12px;">Skills</div>
+          <div style="display:flex; flex-direction:column; gap:6px; font-size:12.5px; color:#3a352f;">
+            <span>Program Management</span><span>Stakeholder Engagement</span><span>Agile &amp; Scrum</span><span>Budgeting &amp; Forecasting</span><span>Risk Management</span><span>Vendor Negotiation</span><span>Change Management</span>
+          </div>
+          <div style="font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.2em; color:#16130f; border-bottom:1px solid #16130f; padding-bottom:6px; margin:20px 0 12px;">Certifications</div>
+          <div style="display:flex; flex-direction:column; gap:8px; font-size:12px;">
+            <div><span style="color:#16130f; font-weight:600;">PMP</span> <span style="color:#8a847c;">· PMI · 2020</span></div>
+            <div><span style="color:#16130f; font-weight:600;">PRINCE2 Practitioner</span> <span style="color:#8a847c;">· Axelos · 2018</span></div>
+            <div><span style="color:#16130f; font-weight:600;">Certified ScrumMaster</span> <span style="color:#8a847c;">· Scrum Alliance · 2016</span></div>
+          </div>
+        </section>
+      </div>
+
+      <section>
+        <div style="font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.2em; color:#16130f; border-bottom:1px solid #16130f; padding-bottom:6px; margin-bottom:13px;">Referees</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:36px;">
+          <div>
+            <div style="font-weight:700; font-size:13px; color:#16130f;">Daniel Okafor</div>
+            <div style="font-size:12px; color:#6a645c;">Director of Operations, Meridian Group</div>
+            <div style="font-size:11.5px; color:#8a847c; margin-top:2px;">d.okafor@email.com · +44 20 7946 0100</div>
+          </div>
+          <div>
+            <div style="font-weight:700; font-size:13px; color:#16130f;">Priya Anand</div>
+            <div style="font-size:12px; color:#6a645c;">Managing Partner, Lumen &amp; Co.</div>
+            <div style="font-size:11.5px; color:#8a847c; margin-top:2px;">priya.anand@email.com · +44 161 496 0200</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <footer data-band style="background:{{ accent }}; padding:18px 56px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:20px;">
+        <div style="font-family:'Cormorant Garamond', serif; font-weight:600; font-size:17px; letter-spacing:0.02em; color:{{ onBand }}; white-space:nowrap;">Eleanor Whitfield</div>
+        <div style="font-size:11px; letter-spacing:0.04em; color:{{ onBandMuted }}; white-space:nowrap;">London, UK&nbsp;&nbsp;·&nbsp;&nbsp;+44 20 7946 0823&nbsp;&nbsp;·&nbsp;&nbsp;eleanorwhitfield.com</div>
+      </div>
+    </footer>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;: {&quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#20304d&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;#20304d&quot;, &quot;#1d3b3b&quot;, &quot;#262626&quot;, &quot;#243d31&quot;, &quot;#532330&quot;, &quot;#ece6da&quot;]}}">
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent || '#20304d';
+    const hex = accent.replace('#', '');
+    const r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16);
+    const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    const dark = lum < 0.6;
+    return {
+      accent,
+      onBand: dark ? '#ffffff' : '#1a1a1a',
+      onBandMuted: dark ? 'rgba(255,255,255,0.70)' : '#5a544c',
+      bandLine: dark ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.18)'
+    };
+  }
+}
+</script>
+</body>
+</html>
