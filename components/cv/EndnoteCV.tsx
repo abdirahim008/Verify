@@ -34,6 +34,18 @@ export function EndnoteCV({ data }: { data: CVData; theme?: Record<string, strin
         <div className="body">
           {summary && <p className="summary">{summary}</p>}
 
+          {educations.length > 0 && (
+            <section className="sec">
+              <div className="h2">Education</div>
+              {educations.map((e, i) => (
+                <div key={i} className="edu">
+                  <div className="edu-qual">{e.qualification}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
+                  <div className="edu-inst">{[e.institution, e.field, e.dateRange].filter(Boolean).join(" · ")}</div>
+                </div>
+              ))}
+            </section>
+          )}
+
           {experiences.length > 0 && (
             <section className="sec">
               <div className="h2">Experience</div>
@@ -52,20 +64,9 @@ export function EndnoteCV({ data }: { data: CVData; theme?: Record<string, strin
 
           <div className="grid">
             <section>
-              {educations.length > 0 && (
-                <>
-                  <div className="h2">Education</div>
-                  {educations.map((e, i) => (
-                    <div key={i} className="edu">
-                      <div className="edu-qual">{e.qualification}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
-                      <div className="edu-inst">{[e.institution, e.field, e.dateRange].filter(Boolean).join(" · ")}</div>
-                    </div>
-                  ))}
-                </>
-              )}
               {certifications.length > 0 && (
                 <>
-                  <div className="h2" style={{ marginTop: educations.length ? "20px" : "0" }}>Certifications</div>
+                  <div className="h2">Certifications</div>
                   <div className="certs">
                     {certifications.map((c, i) => (
                       <div key={i}><span style={{ color: INK.ink }}>{c.name}</span>{(c.issuer || c.year) && <span className="faint"> — {[c.issuer, c.year].filter(Boolean).join(" · ")}</span>}{c.verified && <>&nbsp;&nbsp;<VerifiedMark note="" /></>}</div>

@@ -30,6 +30,24 @@ export function ClassicCV({ data }: { data: CVData; theme?: Record<string, strin
 
         {summary && <p className="summary">{summary}</p>}
 
+        {educations.length > 0 && (
+          <section className="sec">
+            <h2 className="h2">Education</h2>
+            {educations.map((e, i) => (
+              <div key={i} className="edu-row">
+                <div>
+                  <div className="edu-qual">{e.qualification}</div>
+                  <div className="edu-inst">
+                    {e.institution}{e.field ? ` · ${e.field}` : ""}
+                    {e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}
+                  </div>
+                </div>
+                {e.dateRange && <div className="dates">{e.dateRange}</div>}
+              </div>
+            ))}
+          </section>
+        )}
+
         {experiences.length > 0 && (
           <section className="sec">
             <h2 className="h2">Experience</h2>
@@ -44,24 +62,6 @@ export function ClassicCV({ data }: { data: CVData; theme?: Record<string, strin
                   {e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}
                 </div>
                 <Bullets text={e.description} />
-              </div>
-            ))}
-          </section>
-        )}
-
-        {educations.length > 0 && (
-          <section className="sec">
-            <h2 className="h2">Education</h2>
-            {educations.map((e, i) => (
-              <div key={i} className="edu-row">
-                <div>
-                  <div className="edu-qual">{e.qualification}</div>
-                  <div className="edu-inst">
-                    {e.institution}{e.field ? ` · ${e.field}` : ""}
-                    {e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}
-                  </div>
-                </div>
-                {e.dateRange && <div className="dates">{e.dateRange}</div>}
               </div>
             ))}
           </section>

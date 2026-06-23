@@ -80,6 +80,21 @@ export function ProfileCV({ data }: { data: CVData; theme?: Record<string, strin
             </div>
           )}
 
+          {educations.length > 0 && (
+            <div className="mn-sec">
+              <div className="mn-h">Education</div>
+              {educations.map((e, i) => (
+                <div key={i} className="edu-row">
+                  <div>
+                    <div className="edu-qual">{e.qualification}</div>
+                    <div className="edu-inst">{e.institution}{e.field ? ` · ${e.field}` : ""}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
+                  </div>
+                  {e.dateRange && <div className="dates">{e.dateRange}</div>}
+                </div>
+              ))}
+            </div>
+          )}
+
           {experiences.length > 0 && (
             <div className="mn-sec">
               <div className="mn-h">Experience</div>
@@ -94,21 +109,6 @@ export function ProfileCV({ data }: { data: CVData; theme?: Record<string, strin
                     {e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}
                   </div>
                   <Bullets text={e.description} />
-                </div>
-              ))}
-            </div>
-          )}
-
-          {educations.length > 0 && (
-            <div className="mn-sec">
-              <div className="mn-h">Education</div>
-              {educations.map((e, i) => (
-                <div key={i} className="edu-row">
-                  <div>
-                    <div className="edu-qual">{e.qualification}</div>
-                    <div className="edu-inst">{e.institution}{e.field ? ` · ${e.field}` : ""}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
-                  </div>
-                  {e.dateRange && <div className="dates">{e.dateRange}</div>}
                 </div>
               ))}
             </div>

@@ -35,6 +35,21 @@ export function GridCV({ data }: { data: CVData; theme?: Record<string, string> 
 
         <div className="cols">
           <div className="col col-l">
+            {educations.length > 0 && (
+              <>
+                <SecHead n={num()} label="Education" />
+                {educations.map((e, i) => (
+                  <div key={i} className="edu">
+                    <div className="edu-qual">{e.qualification}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
+                    <div className="row">
+                      <span className="edu-inst">{e.institution}{e.field ? ` · ${e.field}` : ""}</span>
+                      {e.dateRange && <span className="dates">{e.dateRange}</span>}
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+
             {experiences.length > 0 && (
               <>
                 <SecHead n={num()} label="Experience" />
@@ -46,21 +61,6 @@ export function GridCV({ data }: { data: CVData; theme?: Record<string, string> 
                       {e.dateRange && <span className="dates">{e.dateRange}</span>}
                     </div>
                     <Bullets text={e.description} />
-                  </div>
-                ))}
-              </>
-            )}
-
-            {educations.length > 0 && (
-              <>
-                <SecHead n={num()} label="Education" />
-                {educations.map((e, i) => (
-                  <div key={i} className="edu">
-                    <div className="edu-qual">{e.qualification}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
-                    <div className="row">
-                      <span className="edu-inst">{e.institution}{e.field ? ` · ${e.field}` : ""}</span>
-                      {e.dateRange && <span className="dates">{e.dateRange}</span>}
-                    </div>
                   </div>
                 ))}
               </>

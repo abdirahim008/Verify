@@ -34,6 +34,18 @@ export function FrameCV({ data, theme }: { data: CVData; theme?: Record<string, 
         <div className="body">
           {summary && <p className="summary">{summary}</p>}
 
+          {educations.length > 0 && (
+            <section className="sec">
+              <div className="h2">Education</div>
+              {educations.map((e, i) => (
+                <div key={i} className="edu">
+                  <div className="edu-qual">{e.qualification}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
+                  <div className="edu-inst">{[e.institution, e.field, e.dateRange].filter(Boolean).join(" · ")}</div>
+                </div>
+              ))}
+            </section>
+          )}
+
           {experiences.length > 0 && (
             <section className="sec">
               <div className="h2">Experience</div>
@@ -52,20 +64,9 @@ export function FrameCV({ data, theme }: { data: CVData; theme?: Record<string, 
 
           <div className="grid">
             <section>
-              {educations.length > 0 && (
-                <>
-                  <div className="h2">Education</div>
-                  {educations.map((e, i) => (
-                    <div key={i} className="edu">
-                      <div className="edu-qual">{e.qualification}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
-                      <div className="edu-inst">{[e.institution, e.field, e.dateRange].filter(Boolean).join(" · ")}</div>
-                    </div>
-                  ))}
-                </>
-              )}
               {languages.length > 0 && (
                 <>
-                  <div className="h2" style={{ marginTop: educations.length ? "20px" : "0" }}>Languages</div>
+                  <div className="h2">Languages</div>
                   <div className="langs">
                     {languages.map((l, i) => {
                       const { name, level } = splitLang(l);

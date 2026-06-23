@@ -44,6 +44,20 @@ export function StatementCV({ data }: { data: CVData; theme?: Record<string, str
             </Row>
           )}
 
+          {educations.length > 0 && (
+            <Row label="Education" last={false}>
+              {educations.map((e, i) => (
+                <div key={i} className="edu-row">
+                  <div>
+                    <div className="edu-qual">{e.qualification}</div>
+                    <div className="edu-inst">{e.institution}{e.field ? ` · ${e.field}` : ""}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
+                  </div>
+                  {e.dateRange && <div className="dates">{e.dateRange}</div>}
+                </div>
+              ))}
+            </Row>
+          )}
+
           {experiences.length > 0 && (
             <Row label="Experience" last={false}>
               {experiences.map((e, i) => (
@@ -54,20 +68,6 @@ export function StatementCV({ data }: { data: CVData; theme?: Record<string, str
                   </div>
                   <div className="exp-org">{[e.organization, e.location].filter(Boolean).join(", ")}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
                   <Bullets text={e.description} />
-                </div>
-              ))}
-            </Row>
-          )}
-
-          {educations.length > 0 && (
-            <Row label="Education" last={false}>
-              {educations.map((e, i) => (
-                <div key={i} className="edu-row">
-                  <div>
-                    <div className="edu-qual">{e.qualification}</div>
-                    <div className="edu-inst">{e.institution}{e.field ? ` · ${e.field}` : ""}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
-                  </div>
-                  {e.dateRange && <div className="dates">{e.dateRange}</div>}
                 </div>
               ))}
             </Row>
