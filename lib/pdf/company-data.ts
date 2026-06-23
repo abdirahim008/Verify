@@ -15,22 +15,38 @@ export interface CompanyProject {
 export interface CompanyTeamMember {
   id: string; name: string; role: string;
   reportsTo: string | null;
+  units: string[];              // department tags shown under each leader
 }
 export interface CompanyCert {
   name: string; issuer: string; year: string;
   verified: boolean; verifiedNote: string;
 }
+export interface CompanyValue { name: string; description: string; }
+export interface CompanyServiceFull { name: string; description: string; }
+export interface CompanyClientGroup { category: string; clients: string[]; }
+export interface CompanyCeo {
+  name: string; title: string; photoUrl: string; quote: string; message: string;
+}
 
 export interface CompanyData {
   name: string; tagline: string;
+  coverStatement: string;
   logoUrl: string;
   about: string; mission: string; vision: string;
   country: string; registrationNumber: string;
   foundedYear: string; website: string; email: string; phone: string;
-  sectors: string[]; services: string[];
+  locations: string[];
+  staffCount: string; countriesCount: string; projectsCount: string;
+  sectors: string[];
+  services: string[];                  // names only (legacy templates)
+  servicesFull: CompanyServiceFull[];  // name + description (new templates)
+  values: CompanyValue[];
   projects: CompanyProject[];
-  clients: string[]; // public-only
+  clients: string[];                   // flat public list (legacy templates)
+  clientGroups: CompanyClientGroup[];  // grouped by category (new templates)
   team: CompanyTeamMember[];
+  boardName: string;
+  ceo: CompanyCeo;
   certifications: CompanyCert[];
   year: number;
 }
@@ -47,25 +63,46 @@ export async function loadCompanyDataForPdf(userId: string): Promise<CompanyData
   const supabase = createSupabaseServerClient();
   if (!supabase) return null;
 
-  const [basicsRes, projectsRes, clientsRes, teamRes, certsRes] = await Promise.all([
+  const [basicsRes, projectsRes, clientsRes, teamRes, certsRes, servicesRes, valuesRes] = await Promise.all([
     supabase.from("company_details").select("*").eq("profile_id", userId).maybeSingle(),
     supabase.from("company_projects").select("*").eq("profile_id", userId)
       .order("year_end", { ascending: false, nullsFirst: false }),
     supabase.from("company_clients").select("*").eq("profile_id", userId)
       .eq("display_public", true)
-      .order("client_name"),
+      .order("order_index").order("client_name"),
     supabase.from("company_team").select("*").eq("profile_id", userId)
       .order("order_index").order("created_at"),
     supabase.from("company_certifications").select("*").eq("profile_id", userId)
       .order("year", { ascending: false, nullsFirst: false }),
+    supabase.from("company_services").select("name, description").eq("profile_id", userId)
+      .order("order_index").order("created_at"),
+    supabase.from("company_values").select("name, description").eq("profile_id", userId)
+      .order("order_index").order("created_at"),
   ]);
 
   const b = basicsRes.data;
   if (!b?.company_name) return null;
 
+  // Group public clients by category, preserving insertion order. Rows with
+  // no category collapse under a single "Clients" heading.
+  const clientRows = clientsRes.data ?? [];
+  const groupOrder: string[] = [];
+  const groupMap = new Map<string, string[]>();
+  for (const c of clientRows) {
+    const cat = ((c.category as string | null) ?? "").trim() || "Clients";
+    if (!groupMap.has(cat)) { groupMap.set(cat, []); groupOrder.push(cat); }
+    groupMap.get(cat)!.push(c.client_name);
+  }
+  const clientGroups = groupOrder.map((category) => ({ category, clients: groupMap.get(category)! }));
+
+  const servicesFull: CompanyServiceFull[] = (servicesRes.data ?? []).map((s) => ({
+    name: s.name, description: (s.description as string | null) ?? "",
+  }));
+
   return {
     name: b.company_name,
-    tagline: "", // future: a dedicated tagline field. For now keep blank.
+    tagline: b.tagline ?? "",
+    coverStatement: b.cover_statement ?? "",
     logoUrl: b.logo_url ?? "",
     about: b.about ?? "",
     mission: b.mission ?? "",
@@ -76,8 +113,14 @@ export async function loadCompanyDataForPdf(userId: string): Promise<CompanyData
     website: b.website ?? "",
     email: b.email ?? "",
     phone: b.phone ?? "",
+    locations: b.locations ?? [],
+    staffCount: b.staff_count != null ? String(b.staff_count) : "",
+    countriesCount: b.countries_count != null ? String(b.countries_count) : "",
+    projectsCount: b.projects_count != null ? String(b.projects_count) : "",
     sectors: b.sectors ?? [],
-    services: b.core_services ?? [],
+    services: servicesFull.map((s) => s.name),
+    servicesFull,
+    values: (valuesRes.data ?? []).map((v) => ({ name: v.name, description: (v.description as string | null) ?? "" })),
     projects: (projectsRes.data ?? []).map((p) => ({
       name: p.project_name,
       client: p.client_name ?? "",
@@ -89,13 +132,23 @@ export async function loadCompanyDataForPdf(userId: string): Promise<CompanyData
       verified: !!p.verified,
       verifiedNote: p.verified_note ?? "",
     })),
-    clients: (clientsRes.data ?? []).map((c) => c.client_name),
+    clients: clientRows.map((c) => c.client_name),
+    clientGroups,
     team: (teamRes.data ?? []).map((t) => ({
       id: t.id,
       name: t.person_name,
       role: t.role ?? "",
       reportsTo: t.reports_to ?? null,
+      units: t.units ?? [],
     })),
+    boardName: b.board_name ?? "",
+    ceo: {
+      name: b.ceo_name ?? "",
+      title: b.ceo_title ?? "",
+      photoUrl: b.ceo_photo_url ?? "",
+      quote: b.ceo_quote ?? "",
+      message: b.ceo_message ?? "",
+    },
     certifications: (certsRes.data ?? []).map((c) => ({
       name: c.name,
       issuer: c.issuer ?? "",

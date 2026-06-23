@@ -92,7 +92,40 @@ export const COMPANY_THEMES: Record<string, PdfTheme[]> = {
     { id: "ink",    label: "Monochrome",    swatch: ["#0e1116", "#fbfbfa"],
       overrides: { accent: "#0e1116" } },
   ],
+  // The five "Company Profile System" layouts share one accent picker — a
+  // single adjustable `accent` per template (the design's renderVals derives
+  // every other colour role from it). Each list leads with that template's
+  // own default accent, then offers the same curated set.
+  ...companyAccentThemes(),
 };
+
+// Build the accent-only theme lists for the five new company templates. Each
+// gets the same five curated accents, ordered so the template's design
+// default comes first (becomes the picker's initial selection).
+function companyAccentThemes(): Record<string, PdfTheme[]> {
+  const NAVY = "#20304d", TEAL = "#1d3b3b", CHARCOAL = "#262626", FOREST = "#243d31", OXBLOOD = "#532330";
+  const meta: Record<string, [string, string]> = {
+    navy: ["navy", "Ink Navy"], teal: ["teal", "Deep Teal"], charcoal: ["charcoal", "Charcoal"],
+    forest: ["forest", "Forest"], oxblood: ["oxblood", "Oxblood"],
+  };
+  const hex: Record<string, string> = { navy: NAVY, teal: TEAL, charcoal: CHARCOAL, forest: FOREST, oxblood: OXBLOOD };
+  const order: Record<string, string[]> = {
+    standard:   ["navy", "teal", "charcoal", "forest", "oxblood"],
+    dossier:    ["teal", "navy", "charcoal", "forest", "oxblood"],
+    banner:     ["navy", "teal", "charcoal", "forest", "oxblood"],
+    broadsheet: ["forest", "navy", "teal", "charcoal", "oxblood"],
+    bento:      ["oxblood", "navy", "teal", "charcoal", "forest"],
+  };
+  const out: Record<string, PdfTheme[]> = {};
+  for (const [tpl, ids] of Object.entries(order)) {
+    out[tpl] = ids.map((id) => ({
+      id: meta[id][0], label: meta[id][1],
+      swatch: [hex[id], "#ffffff"] as [string, string],
+      overrides: { accent: hex[id] },
+    }));
+  }
+  return out;
+}
 
 // Resolve a theme id (e.g. from a query param) to its override map.
 // Unknown ids fall back to the template's default — never throws, so a

@@ -20,7 +20,7 @@ export function CompanyDownloadModal({ open, onClose }: { open: boolean; onClose
           <div>
             <p className="section-eyebrow text-sienna">Download your profile</p>
             <h2 className="font-serif text-[22px] tracking-tightish mt-1">Pick a template</h2>
-            <p className="text-[12.5px] text-muted mt-1">Same details, three registers. Choose a colour, preview on screen, then download.</p>
+            <p className="text-[12.5px] text-muted mt-1">Same details, eight registers. Choose a colour, preview on screen, then download.</p>
           </div>
           <button onClick={onClose} aria-label="Close" className="w-8 h-8 rounded-full hover:bg-border-soft text-muted text-[18px] leading-none shrink-0">×</button>
         </header>
