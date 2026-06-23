@@ -91,12 +91,12 @@ async function IndividualBuilder({ userId }: { userId: string }) {
       }} />,
     },
     {
-      id: "experience", label: "Experience", count: data.experiences.length, done: data.experiences.length >= 1,
-      node: <ExperienceCard items={data.experiences} pendingIds={pendingExp} />,
-    },
-    {
       id: "education", label: "Education", count: data.educations.length, done: data.educations.length >= 1,
       node: <EducationCard items={data.educations} pendingIds={pendingEdu} />,
+    },
+    {
+      id: "experience", label: "Experience", count: data.experiences.length, done: data.experiences.length >= 1,
+      node: <ExperienceCard items={data.experiences} pendingIds={pendingExp} />,
     },
     {
       id: "skills", label: "Skills", count: data.skills.length, done: data.skills.length >= 3,

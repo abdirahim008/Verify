@@ -5,6 +5,7 @@ import { loadPublicProfile, viewerContext } from "@/lib/public-profile";
 import { SahanMark } from "@/components/SahanMark";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { Button } from "@/components/Button";
+import { ReadMore } from "@/components/ReadMore";
 
 // Public profile page. No (app) layout — accessible to logged-out viewers.
 // Visibility is filtered at the data layer per CLAUDE.md §10.
@@ -77,8 +78,22 @@ function IndividualProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPub
 
       {p.summary && (
         <section className="mt-8">
-          <p className="text-[15px] leading-relaxed text-ink-soft max-w-2xl whitespace-pre-line">{p.summary}</p>
+          <ReadMore text={p.summary} className="text-[15px] leading-relaxed text-ink-soft max-w-2xl" lines={5} />
         </section>
+      )}
+
+      {p.educations.length > 0 && (
+        <Section title="Education">
+          {p.educations.map((e) => (
+            <article key={e.id} className="card mb-3">
+              <div className="flex flex-wrap items-baseline gap-2">
+                <h3 className="font-serif text-[17px] tracking-tightish">{e.qualification}{e.field ? ` · ${e.field}` : ""}</h3>
+                {e.verified && <VerifiedBadge note={e.verifiedNote || undefined} />}
+              </div>
+              <p className="text-[13px] text-ink-soft mt-1"><span className="font-medium">{e.institution}</span>{e.dateRange && <> · <span className="text-muted">{e.dateRange}</span></>}</p>
+            </article>
+          ))}
+        </Section>
       )}
 
       {p.experiences.length > 0 && (
@@ -92,21 +107,7 @@ function IndividualProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPub
               <p className="text-[13px] text-ink-soft mt-1">
                 <span className="font-medium">{e.organization}</span>{e.location && <> · {e.location}</>}{e.dateRange && <> · <span className="text-muted">{e.dateRange}</span></>}
               </p>
-              {e.description && <p className="text-[14px] text-ink-soft mt-2 leading-relaxed">{e.description}</p>}
-            </article>
-          ))}
-        </Section>
-      )}
-
-      {p.educations.length > 0 && (
-        <Section title="Education">
-          {p.educations.map((e) => (
-            <article key={e.id} className="card mb-3">
-              <div className="flex flex-wrap items-baseline gap-2">
-                <h3 className="font-serif text-[17px] tracking-tightish">{e.qualification}{e.field ? ` · ${e.field}` : ""}</h3>
-                {e.verified && <VerifiedBadge note={e.verifiedNote || undefined} />}
-              </div>
-              <p className="text-[13px] text-ink-soft mt-1"><span className="font-medium">{e.institution}</span>{e.dateRange && <> · <span className="text-muted">{e.dateRange}</span></>}</p>
+              {e.description && <ReadMore text={e.description} className="text-[14px] text-ink-soft mt-2 leading-relaxed" lines={4} />}
             </article>
           ))}
         </Section>
@@ -161,7 +162,7 @@ function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublic
 
       {p.about && (
         <Section title="About">
-          <p className="text-[15px] leading-relaxed text-ink-soft max-w-2xl whitespace-pre-line break-words">{p.about}</p>
+          <ReadMore text={p.about} className="text-[15px] leading-relaxed text-ink-soft max-w-2xl break-words" lines={5} />
         </Section>
       )}
 
@@ -210,7 +211,7 @@ function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublic
                 {proj.verified && <VerifiedBadge note={proj.verifiedNote || undefined} />}
               </div>
               <p className="text-[13px] text-ink-soft mt-1 italic">{[proj.client_name, proj.sector, proj.dateRange].filter(Boolean).join(" · ")}</p>
-              {proj.scope && <p className="mt-2 text-[14px] text-ink-soft leading-relaxed">{proj.scope}</p>}
+              {proj.scope && <ReadMore text={proj.scope} className="mt-2 text-[14px] text-ink-soft leading-relaxed" lines={4} />}
             </article>
           ))}
         </Section>
