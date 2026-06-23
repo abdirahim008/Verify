@@ -4,7 +4,7 @@
 //    sections that are empty — your real edits are never overwritten).
 // 2. Mints a session for that user via the admin generateLink → verifyOtp
 //    flow, then builds the @supabase/ssr cookie format by hand.
-// 3. Downloads /api/cv/{editorial,sidebar,mono} from the running dev
+// 3. Downloads /api/cv/{classic,profile,grid,crest} from the running dev
 //    server and checks: HTTP 200, %PDF magic, page count, and that the
 //    intended display fonts actually embedded (their names appear in the
 //    PDF font dictionaries — if Chromium fell back to system fonts they
@@ -185,9 +185,10 @@ mkdirSync("test-output", { recursive: true });
 // Names as they appear in embedded font dictionaries (Type 3 subsets use
 // hyphenated family names; CID subsets use camel case).
 const CHECK_FONTS = {
-  editorial: ["Fraunces", "Newsreader"],
-  sidebar: ["Archivo"],
-  mono: ["Space-Grotesk", "IBMPlexMono"],
+  classic: ["Cormorant"],
+  profile: ["SpaceGrotesk"],
+  grid: ["Archivo"],
+  crest: ["Marcellus"],
 };
 // Fonts that mean a glyph fell back to a SYSTEM font — fails the test
 // because serverless chromium has no system fonts (would render tofu).
@@ -217,7 +218,7 @@ async function renderAndCheck(path, outName, cookie, requiredFonts, minPages) {
   console.log(`${ok ? "OK" : "PROBLEM"} — ${(buf.length / 1024).toFixed(0)}KB, ${pages} page(s), fonts: ${fonts}${banned.length ? `, system fallbacks: ${banned.join(",")}` : ""}`);
 }
 
-for (const t of ["editorial", "sidebar", "mono"]) {
+for (const t of ["classic", "profile", "grid", "crest"]) {
   await renderAndCheck(`/api/cv/${t}`, `cv-${t}`, cookieHeader, CHECK_FONTS[t], 1);
 }
 // Company templates render 3 fixed pages each; all share Serif 4 + Public
@@ -229,7 +230,7 @@ for (const t of ["wadani", "annual", "minimal"]) {
 // Themed + preview spot-checks: a non-default palette per kind must
 // render, and ?preview=1 must serve inline (for the iframe preview).
 for (const [path, cookie] of [
-  ["/api/cv/editorial?theme=forest&preview=1", cookieHeader],
+  ["/api/cv/crest?theme=teal&preview=1", cookieHeader],
   ["/api/company/annual?theme=burgundy&preview=1", companyCookie],
 ]) {
   process.stdout.write(`→ ${path} ... `);

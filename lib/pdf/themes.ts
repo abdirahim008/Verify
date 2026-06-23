@@ -20,36 +20,27 @@ export interface PdfTheme {
   overrides: Record<string, string>;
 }
 
+// White-page CV templates. Classic / Profile / Grid are strictly
+// monochrome — a single "ink" entry so the picker stays hidden. Crest has
+// an adjustable header-band accent (its only colour); the override sets
+// `accent`, and CrestCV derives on-band text from its luminance.
 export const CV_THEMES: Record<string, PdfTheme[]> = {
-  editorial: [
-    { id: "ink",      label: "Ink & Cream",      swatch: ["#0d3b66", "#f7f3eb"],
-      overrides: {} },
-    { id: "forest",   label: "Forest & Cream",   swatch: ["#1d5c43", "#f6f4ec"],
-      overrides: { sienna: "#1d5c43", cream: "#f6f4ec", rule: "#d8d3c0" } },
-    { id: "oxblood",  label: "Oxblood & Ivory",  swatch: ["#6d2433", "#f9f5ef"],
-      overrides: { sienna: "#6d2433", cream: "#f9f5ef", rule: "#e0d6c8" } },
-    { id: "graphite", label: "Graphite & White", swatch: ["#2e2e2b", "#ffffff"],
-      overrides: { sienna: "#2e2e2b", cream: "#ffffff", rule: "#e3e1da" } },
+  classic: [
+    { id: "ink", label: "Ink", swatch: ["#16130f", "#ffffff"], overrides: {} },
   ],
-  sidebar: [
-    { id: "atlantic",   label: "Atlantic",   swatch: ["#091e36", "#c3cedb"],
-      overrides: {} },
-    { id: "rainforest", label: "Rainforest", swatch: ["#0a2b1f", "#bfd6c8"],
-      overrides: { tealDark: "#0a2b1f", teal: "#0e3a2a", sand: "#bfd6c8", dim: "#8fa89b", rule: "#1c4a38", ruleSb: "#15382a" } },
-    { id: "charcoal",   label: "Charcoal",   swatch: ["#282c34", "#c9cdd6"],
-      overrides: { tealDark: "#282c34", teal: "#343943", sand: "#c9cdd6", dim: "#9aa1ad", rule: "#474d59", ruleSb: "#393f4a" } },
-    { id: "oxblood",    label: "Oxblood",    swatch: ["#2a0f18", "#d8bfc6"],
-      overrides: { tealDark: "#2a0f18", teal: "#3a1622", sand: "#d8bfc6", dim: "#a98f97", rule: "#55222f", ruleSb: "#431a26" } },
+  profile: [
+    { id: "ink", label: "Ink", swatch: ["#16130f", "#ffffff"], overrides: {} },
   ],
-  mono: [
-    { id: "blue",   label: "Signal Blue",   swatch: ["#0a5cad", "#fbfaf6"],
-      overrides: {} },
-    { id: "signal", label: "Signal Orange", swatch: ["#d9530b", "#fbfaf6"],
-      overrides: { accent: "#d9530b" } },
-    { id: "forest", label: "Forest",        swatch: ["#1d6647", "#fbfaf6"],
-      overrides: { accent: "#1d6647" } },
-    { id: "ink",    label: "Monochrome",    swatch: ["#131311", "#fbfaf6"],
-      overrides: { accent: "#131311" } },
+  grid: [
+    { id: "ink", label: "Ink", swatch: ["#16130f", "#ffffff"], overrides: {} },
+  ],
+  crest: [
+    { id: "navy",     label: "Ink Navy",  swatch: ["#20304d", "#ffffff"], overrides: { accent: "#20304d" } },
+    { id: "teal",     label: "Deep Teal", swatch: ["#1d3b3b", "#ffffff"], overrides: { accent: "#1d3b3b" } },
+    { id: "charcoal", label: "Charcoal",  swatch: ["#262626", "#ffffff"], overrides: { accent: "#262626" } },
+    { id: "forest",   label: "Forest",    swatch: ["#243d31", "#ffffff"], overrides: { accent: "#243d31" } },
+    { id: "burgundy", label: "Burgundy",  swatch: ["#532330", "#ffffff"], overrides: { accent: "#532330" } },
+    { id: "sand",     label: "Sand",      swatch: ["#ece6da", "#16130f"], overrides: { accent: "#ece6da" } },
   ],
 };
 

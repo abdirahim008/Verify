@@ -4,9 +4,10 @@ import { createSupabaseRouteClient } from "@/lib/supabase/route";
 import { loadCVData } from "@/lib/pdf/data";
 import { renderPdf } from "@/lib/pdf/render";
 import { resolveThemeOverrides } from "@/lib/pdf/themes";
-import { EditorialCV } from "@/components/cv/EditorialCV";
-import { SidebarCV } from "@/components/cv/SidebarCV";
-import { MonoCV } from "@/components/cv/MonoCV";
+import { ClassicCV } from "@/components/cv/ClassicCV";
+import { ProfileCV } from "@/components/cv/ProfileCV";
+import { GridCV } from "@/components/cv/GridCV";
+import { CrestCV } from "@/components/cv/CrestCV";
 
 // PDF endpoint must run on Node (puppeteer-core + chromium-min). Edge can't
 // host a headless browser.
@@ -23,30 +24,35 @@ export const maxDuration = 60;
 // ranges (opsz + wght) so Fraunces' optical sizing and the in-between
 // weights (e.g. 540) resolve exactly. Loading only what each template
 // uses keeps headless Chromium's fetches tight.
-const EDITORIAL_FONTS =
+const CLASSIC_FONTS =
   "https://fonts.googleapis.com/css2" +
-  "?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600" +
-  "&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600" +
-  "&family=IBM+Plex+Sans:wght@400;500;600;700" +
+  "?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500" +
+  "&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400" +
   "&display=swap";
 
-const SIDEBAR_FONTS =
+const PROFILE_FONTS =
   "https://fonts.googleapis.com/css2" +
-  "?family=Archivo:wght@400..800" +
+  "?family=Space+Grotesk:wght@400;500;600;700" +
+  "&family=Hanken+Grotesk:wght@400;500;600;700" +
+  "&display=swap";
+
+const GRID_FONTS =
+  "https://fonts.googleapis.com/css2" +
+  "?family=Archivo:wght@400;500;600;700;800" +
   "&family=IBM+Plex+Sans:wght@400;500;600" +
   "&display=swap";
 
-const MONO_FONTS =
+const CREST_FONTS =
   "https://fonts.googleapis.com/css2" +
-  "?family=Space+Grotesk:wght@400..700" +
-  "&family=IBM+Plex+Sans:wght@400;500;600" +
-  "&family=IBM+Plex+Mono:wght@400;500" +
+  "?family=Marcellus" +
+  "&family=Hanken+Grotesk:wght@400;500;600;700" +
   "&display=swap";
 
 const TEMPLATES = {
-  editorial: { name: "Editorial", component: EditorialCV, fonts: EDITORIAL_FONTS },
-  sidebar:   { name: "Sidebar",   component: SidebarCV,   fonts: SIDEBAR_FONTS },
-  mono:      { name: "Mono",      component: MonoCV,      fonts: MONO_FONTS },
+  classic: { name: "Classic", component: ClassicCV, fonts: CLASSIC_FONTS },
+  profile: { name: "Profile", component: ProfileCV, fonts: PROFILE_FONTS },
+  grid:    { name: "Grid",    component: GridCV,    fonts: GRID_FONTS },
+  crest:   { name: "Crest",   component: CrestCV,   fonts: CREST_FONTS },
 } as const;
 
 export async function GET(
