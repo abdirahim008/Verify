@@ -83,7 +83,7 @@ export async function renderCard(
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
-    await page.setViewport({ width: 520, height: 900, deviceScaleFactor: options.scale ?? 3 });
+    await page.setViewport({ width: 860, height: 600, deviceScaleFactor: options.scale ?? 3 });
     await page.setContent(html, { waitUntil: "networkidle0", timeout: 25000 }).catch(() => {});
     await Promise.race([
       page.evaluateHandle("document.fonts.ready"),
