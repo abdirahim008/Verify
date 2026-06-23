@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import QRCode from "qrcode";
 import { createSupabaseRouteClient } from "@/lib/supabase/route";
 import { loadIndividualProfile } from "@/lib/profile-data";
+import { loadCompanyProfile } from "@/lib/company-data";
 import { renderCard } from "@/lib/pdf/render";
 import { BusinessCard, type BusinessCardData } from "@/components/cv/BusinessCard";
 
@@ -31,21 +32,7 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
 
   const { data: profile } = await supabase.from("profiles").select("account_type").eq("id", user.id).maybeSingle();
-  if (profile?.account_type === "company") {
-    return NextResponse.json({ error: "The business card is for individual profiles." }, { status: 400 });
-  }
-
-  const data = await loadIndividualProfile(user.id);
-  const b = data.basics;
-  if (!b?.full_name) {
-    return NextResponse.json({ error: "Add your name and contact details before downloading a card." }, { status: 400 });
-  }
-
-  const latest = data.experiences[0];
-  const verified =
-    data.experiences.filter((x) => x.verified).length +
-    data.educations.filter((x) => x.verified).length +
-    data.certifications.filter((x) => x.verified).length;
+  const isCompany = profile?.account_type === "company";
 
   const profileUrl = `${url.origin}/u/${user.id}`;
   const qrDataUrl = await QRCode.toDataURL(profileUrl, {
@@ -53,19 +40,57 @@ export async function GET(req: NextRequest) {
     color: { dark: "#16130f", light: "#00000000" },
   });
 
-  const cardData: BusinessCardData = {
-    name: b.full_name,
-    role: b.headline || latest?.title || "",
-    org: latest?.organization || "",
-    email: b.email || "",
-    phone: b.phone || "",
-    location: b.location || "",
-    photoUrl: b.photo_url || "",
-    verified: verified > 0,
-    profileUrl,
-    profileLabel: url.host,
-    qrDataUrl,
-  };
+  let cardData: BusinessCardData;
+
+  if (isCompany) {
+    const data = await loadCompanyProfile(user.id);
+    const b = data.basics;
+    if (!b?.company_name) {
+      return NextResponse.json({ error: "Add your company name and contact details before downloading a card." }, { status: 400 });
+    }
+    const verified =
+      data.projects.filter((x) => x.verified).length +
+      data.certifications.filter((x) => x.verified).length;
+    const sectors: string[] = b.sectors ?? [];
+    const founded = b.founded_year ? `Est. ${b.founded_year}` : "";
+    cardData = {
+      name: b.company_name,
+      role: b.tagline || sectors[0] || "",
+      org: [b.country, founded].filter(Boolean).join(" · ") || sectors.slice(0, 2).join(" · "),
+      email: b.email || "",
+      phone: b.phone || "",
+      location: b.country || b.locations?.[0] || "",
+      photoUrl: b.logo_url || "",
+      verified: verified > 0,
+      profileUrl,
+      profileLabel: url.host,
+      qrDataUrl,
+    };
+  } else {
+    const data = await loadIndividualProfile(user.id);
+    const b = data.basics;
+    if (!b?.full_name) {
+      return NextResponse.json({ error: "Add your name and contact details before downloading a card." }, { status: 400 });
+    }
+    const latest = data.experiences[0];
+    const verified =
+      data.experiences.filter((x) => x.verified).length +
+      data.educations.filter((x) => x.verified).length +
+      data.certifications.filter((x) => x.verified).length;
+    cardData = {
+      name: b.full_name,
+      role: b.headline || latest?.title || "",
+      org: latest?.organization || "",
+      email: b.email || "",
+      phone: b.phone || "",
+      location: b.location || "",
+      photoUrl: b.photo_url || "",
+      verified: verified > 0,
+      profileUrl,
+      profileLabel: url.host,
+      qrDataUrl,
+    };
+  }
 
   let buf: Buffer;
   try {
@@ -79,7 +104,7 @@ export async function GET(req: NextRequest) {
   return new NextResponse(body, {
     headers: {
       "Content-Type": format === "pdf" ? "application/pdf" : "image/png",
-      "Content-Disposition": contentDisposition(`${b.full_name} - Sahan card.${format}`),
+      "Content-Disposition": contentDisposition(`${cardData.name} - Sahan card.${format}`),
       "Content-Length": String(body.byteLength),
       "Cache-Control": "private, no-store",
     },

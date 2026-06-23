@@ -246,6 +246,7 @@ async function CompanyBuilder({ userId }: { userId: string }) {
       eyebrow="Your company"
       title="Company profile"
       publicHref={`/u/${userId}`}
+      businessCard
       sections={sections}
       minCore={{
         passed: minCore,
