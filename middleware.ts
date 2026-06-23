@@ -28,8 +28,9 @@ export async function middleware(request: NextRequest) {
     url.searchParams.set("next", path);
     return NextResponse.redirect(url);
   }
-  // Logged-in users hitting auth pages bounce to /home.
-  if (user && (path === "/login" || path === "/signup")) {
+  // Logged-in users hitting the marketing landing or auth pages bounce to
+  // /home — the landing page is for logged-out visitors only.
+  if (user && (path === "/" || path === "/login" || path === "/signup")) {
     const url = request.nextUrl.clone();
     url.pathname = "/home";
     return NextResponse.redirect(url);

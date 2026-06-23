@@ -2,306 +2,285 @@ import Link from "next/link";
 import { SahanMark } from "@/components/SahanMark";
 import { Button } from "@/components/Button";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
-import { HeroLoginForm } from "@/components/landing/HeroLoginForm";
+import { AuthCard } from "@/components/landing/AuthCard";
+import { FeatureShowcase } from "@/components/landing/FeatureShowcase";
+import { CV_TEMPLATES } from "@/components/templates/CvThumbnails";
 
+// Public marketing landing. Logged-out visitors (and crawlers) land here;
+// logged-in users are redirected to /home by middleware.ts. The signup/sign-in
+// forms live inline in the hero via <AuthCard />.
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-cream">
       <SiteHeader />
-
-      {/* ── Hero ───────────────────────────────────────────────────── */}
-      <section className="relative">
-        <div className="mx-auto max-w-6xl px-5 sm:px-10 pt-10 sm:pt-16 pb-12 sm:pb-20 grid gap-10 lg:grid-cols-[1.35fr_1fr] lg:items-start">
-          <div>
-            <p className="inline-flex items-center gap-2 text-[12.5px] text-ink-soft">
-              <span className="w-1.5 h-1.5 rounded-full bg-sienna" aria-hidden />
-              Verified professional profile &middot; for the humanitarian &amp; engineering sector
-            </p>
-            <h1 className="font-serif font-medium text-[44px] sm:text-[68px] leading-[1.04] tracking-[-0.025em] mt-5">
-              Your work, <em className="text-sienna font-medium">verified</em>
-              <br />
-              by the people you did
-              <br />
-              it for.
-            </h1>
-            <p className="mt-6 max-w-xl text-[15px] sm:text-[16.5px] text-ink-soft leading-relaxed">
-              Sahan is a verified professional profile platform for the Horn of Africa — built for the consultants, engineers, programme staff and firms whose work changes lives but never sits cleanly in a LinkedIn box.
-            </p>
-
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Link href="/signup?type=individual">
-                <Button kind="sienna" size="lg">Get started — free →</Button>
-              </Link>
-              <Link href="/signup?type=company">
-                <Button kind="secondary" size="lg">I&apos;m signing up as a company</Button>
-              </Link>
-            </div>
-
-            {/* Honest trust signals — real product facts, not a fabricated
-                headcount. Restore a usage number here once it's genuinely
-                true. */}
-            <ul className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12.5px] text-muted">
-              <Check>Free CV &amp; profile</Check>
-              <Check>Works on any phone</Check>
-              <Check>A4, print-clean PDF</Check>
-              <Check>No ads, no spam</Check>
-            </ul>
-          </div>
-
-          <div className="lg:pl-4 lg:-mt-2"><HeroLoginForm /></div>
-        </div>
-      </section>
-
-      {/* ── Trust band — partners (text-only, factual listing) ─────── */}
-      <section className="bg-paper border-y border-border">
-        <div className="mx-auto max-w-6xl px-5 sm:px-10 py-8">
-          <p className="section-eyebrow">Verification partners &amp; trusted by teams at</p>
-          <ul className="mt-4 flex flex-wrap items-center gap-x-8 gap-y-3 text-[15px] sm:text-[16px] font-semibold text-ink-soft">
-            {["UNICEF", "World Bank", "UNHCR", "IOM", "FCDO", "ReliefWeb", "AfDB", "EU"].map((p) => (
-              <li key={p}>{p}</li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      {/* ── Why Sahan ──────────────────────────────────────────────── */}
-      <section id="features" className="bg-cream">
-        <div className="mx-auto max-w-6xl px-5 sm:px-10 pt-14 sm:pt-20 pb-6 sm:pb-10">
-          <p className="section-eyebrow text-sienna">Why Sahan</p>
-          <h2 className="font-serif text-[28px] sm:text-[40px] tracking-[-0.02em] mt-3 max-w-3xl leading-[1.15]">
-            A LinkedIn was never built for our sector.
-            <br />
-            <span className="text-muted">So we built one that is.</span>
-          </h2>
-
-          <div className="mt-9 grid gap-5 md:grid-cols-3">
-            <Pillar
-              icon={<TrustIcon />}
-              title="Verification you can trust"
-              body="Every claim is verified by the employer that issued it — not by us. A badge sits next to the specific role, project, or qualification it attests to."
-            />
-            <Pillar
-              icon={<DocIcon />}
-              title="CVs and profiles that match the bar"
-              body="Editorial PDF templates tuned for the humanitarian and engineering sectors. Export to A4. Recruiters will think you hired a designer."
-            />
-            <Pillar
-              icon={<BuildingIcon />}
-              title="Built for companies, too"
-              body="Civil-engineering firms, NGOs, and consultancies maintain a verified profile of selected projects and team — the same one used in tender packs."
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* ── Verification process (anchor target) ───────────────────── */}
-      <section id="verification" className="bg-cream">
-        <div className="mx-auto max-w-6xl px-5 sm:px-10 pt-6 pb-16 sm:pb-24">
-          <div className="grid gap-px bg-border rounded-[10px] overflow-hidden md:grid-cols-4">
-            <Step n="01" title="Build your profile" body="Structured sections, live PDF preview, no copy-paste from a CV." />
-            <Step n="02" title="Request verification" body="Pick a claim. Sahan contacts the employer that issued it." />
-            <Step n="03" title="Get a badge per claim" body="Verified marks live next to the specific role or project." />
-            <Step n="04" title="Share or export" body="Public profile URL, or A4 PDF in three editorial templates." />
-          </div>
-
-          <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_1.1fr] items-start">
-            <div>
-              <p className="section-eyebrow text-sienna">How verification works</p>
-              <h3 className="font-serif text-[26px] sm:text-[34px] tracking-[-0.02em] mt-2 leading-[1.15]">
-                A green check next to the <em className="text-sienna">specific</em> claim that was checked.
-              </h3>
-              <p className="mt-4 text-[14.5px] text-ink-soft leading-relaxed max-w-md">
-                Verification on Sahan isn&apos;t a vague global badge. You pick a single experience, project, or qualification and submit it for review. An admin contacts the issuing employer or client. When confirmed, the badge sits inline next to that one claim — both on your profile and on the PDF.
-              </p>
-              <ul className="mt-5 space-y-2.5 text-[13.5px]">
-                <Check>Per-claim, never global</Check>
-                <Check>Employer-confirmed, not self-asserted</Check>
-                <Check>Referee contacts stay private</Check>
-                <Check>Evidence stays in an admin-only bucket</Check>
-              </ul>
-            </div>
-            <div className="card">
-              <p className="section-eyebrow">From the Editorial CV</p>
-              <article className="mt-3">
-                <div className="flex flex-wrap items-baseline gap-2">
-                  <span className="font-serif text-[17px] font-medium">Senior Health Coordinator</span>
-                  <span className="font-serif text-[17px] italic text-sienna">· UNICEF Somalia</span>
-                  <VerifiedBadge note="UNICEF Somalia" />
-                </div>
-                <p className="text-[12px] text-muted mt-1">Mogadishu &middot; Mar 2021 — Present</p>
-                <p className="text-[13.5px] text-ink-soft leading-[1.6] mt-2 text-justify hyphens-auto">
-                  Lead a team of fourteen across Banadir, Lower Shabelle and Middle Shabelle. Designed the cold-chain expansion that brought routine immunisation to 64 previously unreached settlements.
-                </p>
-              </article>
-              <div className="mt-6 pt-5 border-t border-border-soft text-[12.5px] text-muted">
-                Same role, no badge: a claim. <span className="text-ink-soft">With the badge: a record.</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Templates (anchor target) ──────────────────────────────── */}
-      <section id="templates" className="bg-paper border-y border-border">
-        <div className="mx-auto max-w-6xl px-5 sm:px-10 py-14 sm:py-20">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="section-eyebrow text-sienna">Templates</p>
-              <h2 className="font-serif text-[28px] sm:text-[40px] tracking-[-0.02em] mt-2 max-w-2xl leading-[1.15]">
-                Six templates, designed with intent.
-              </h2>
-              <p className="mt-2 text-[14.5px] text-ink-soft max-w-xl leading-relaxed">
-                Same structured data, different register. Switch any time — your changes flow into every template.
-              </p>
-            </div>
-            <Link href="/signup">
-              <Button kind="secondary" size="md">Create an account to download</Button>
-            </Link>
-          </div>
-
-          <div className="mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <TemplateCard
-              name="Editorial"
-              kind="CV"
-              tagline="Magazine register. Drop cap. Cream paper."
-              pairing="Fraunces · Newsreader"
-              ready
-              mini={<EditorialMini />}
-            />
-            <TemplateCard
-              name="Sidebar"
-              kind="CV"
-              tagline="Two columns. Built for executives."
-              pairing="Archivo · IBM Plex Sans"
-              mini={<SidebarMini />}
-            />
-            <TemplateCard
-              name="Mono"
-              kind="CV"
-              tagline="Minimalist, technical, single accent."
-              pairing="Space Grotesk · IBM Plex Mono"
-              mini={<MonoMini />}
-            />
-            <TemplateCard
-              name="Wadani"
-              kind="Company"
-              tagline="Bid-ready. Cover + about + projects."
-              pairing="Source Serif 4 · Public Sans"
-              mini={<CompanyMini />}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* ── Simple + mobile + satisfying output (the niche pitch) ──── */}
-      <section id="how" className="bg-paper border-y border-border">
-        <div className="mx-auto max-w-6xl px-5 sm:px-10 py-14 sm:py-20">
-          <div className="max-w-2xl">
-            <p className="section-eyebrow text-sienna">Simple in, beautiful out</p>
-            <h2 className="font-serif text-[28px] sm:text-[40px] tracking-[-0.02em] mt-3 leading-[1.13]">
-              Not another design tool you fight with.
-            </h2>
-            <p className="mt-4 text-[15px] sm:text-[16px] text-ink-soft leading-relaxed">
-              You shouldn&apos;t need design skills, a laptop, or an afternoon to produce a professional CV or company profile. With Sahan you fill in plain fields — once — and download a genuinely elegant PDF. Update anything later and regenerate in a tap. The hard part is done for you.
-            </p>
-          </div>
-
-          <div className="mt-9 grid gap-5 md:grid-cols-3">
-            <Pillar
-              icon={<PhoneIcon />}
-              title="Built for your phone"
-              body="Most people here build their profile on a phone, so that's how Sahan is built — no app to install, no desktop required. Fill in, preview the real PDF on-screen, download."
-            />
-            <Pillar
-              icon={<BoltIcon />}
-              title="Minutes, not afternoons"
-              body="Reach the minimum core — name, one experience, one skill — and your CV is ready to download. Enrich it whenever you like; nothing is ever re-typed."
-            />
-            <Pillar
-              icon={<SparkIcon />}
-              title="Output that looks designed"
-              body="A4, embedded fonts, print-clean, with curated colour themes. Recruiters and tender panels see a polished document — not a form someone filled in."
-            />
-          </div>
-
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            <Link href="/signup?type=individual"><Button kind="primary" size="md">Start your CV — free</Button></Link>
-            <Link href="/guides" className="text-[13.5px] text-sienna font-medium hover:underline">Read the guides →</Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── About (anchor target) ──────────────────────────────────── */}
-      <section id="about" className="bg-cream">
-        <div className="mx-auto max-w-6xl px-5 sm:px-10 py-14 sm:py-20">
-          <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr] items-start">
-            <div>
-              <p className="section-eyebrow text-sienna">About</p>
-              <h2 className="font-serif text-[28px] sm:text-[40px] tracking-[-0.02em] mt-2 leading-[1.15]">
-                Built where the work is.
-              </h2>
-              <p className="mt-4 text-[14.5px] text-ink-soft leading-relaxed max-w-md">
-                Sahan is built for the East Africa humanitarian and engineering sector — a context where a one-line LinkedIn job title leaves out almost everything that matters: which donor, which region, which actual outcome.
-              </p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <AboutCard
-                eyebrow="Mission"
-                body="Make verifiable professional records the default in our sector, so the right people get hired for the right work."
-              />
-              <AboutCard
-                eyebrow="Vision"
-                body="A Horn of Africa where every consultant, engineer and firm has a record that earns trust at first glance."
-                accent
-              />
-              <AboutCard
-                eyebrow="Privacy"
-                body="Sensitive fields are private by default. Referee contacts never leave admin review. Evidence is admin-only."
-              />
-              <AboutCard
-                eyebrow="No scraping"
-                body="We never scrape, copy or repost third-party content. Our feed uses only legitimate, attributed syndication."
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
+      <Hero />
+      <TrustStrip />
+      <FeatureShowcase />
+      <HowItWorks />
+      <VerifiedShowcase />
+      <Templates />
+      <PhonePitch />
+      <ClosingCta />
       <SiteFooter />
     </div>
   );
 }
 
-// ── chrome ──────────────────────────────────────────────────────────
-
+// ── Header ───────────────────────────────────────────────────────────────
 function SiteHeader() {
   return (
-    <header className="sticky top-0 z-30 backdrop-blur bg-paper/85 border-b border-border">
-      <div className="mx-auto max-w-6xl flex items-center justify-between px-5 sm:px-10 h-[60px] gap-4">
+    <header className="sticky top-0 z-30 backdrop-blur bg-cream/85 border-b border-border/70">
+      <div className="mx-auto max-w-6xl flex items-center justify-between px-5 sm:px-8 h-[60px] gap-4">
         <Link href="/" aria-label="Sahan home"><SahanMark /></Link>
-        {/* Marketing nav stays inline at lg+ only — at md (tablet portrait)
-            the 5-item link row + CTAs would overflow the content area. */}
-        <nav className="hidden lg:flex items-center gap-6 text-[13px] text-ink-soft">
-          <Link href="/signup?type=individual" className="hover:text-ink">For individuals</Link>
-          <Link href="/signup?type=company" className="hover:text-ink">For organisations</Link>
-          <Link href="#verification" className="hover:text-ink">Verification</Link>
-          <Link href="#templates" className="hover:text-ink">Templates</Link>
-          <Link href="/guides" className="hover:text-ink">Guides</Link>
+        <nav className="hidden lg:flex items-center gap-7 text-[13px] text-ink-soft">
+          <a href="#how" className="hover:text-ink transition">How it works</a>
+          <a href="#verification" className="hover:text-ink transition">Verification</a>
+          <a href="#templates" className="hover:text-ink transition">Templates</a>
+          <Link href="/guides" className="hover:text-ink transition">Guides</Link>
         </nav>
         <div className="flex items-center gap-2 sm:gap-3">
-          <Link href="#signin" className="text-[13px] text-ink-soft hover:text-ink hidden sm:inline-flex">Sign in</Link>
-          <Link href="/signup">
-            <Button kind="sienna" size="sm" className="rounded-full px-5 min-h-[44px]">Join now</Button>
+          <Link href="/login" className="text-[13px] text-ink-soft hover:text-ink hidden sm:inline-flex min-h-[36px] items-center px-1">
+            Sign in
           </Link>
+          <a href="#get-started">
+            <Button kind="sienna" size="sm" className="rounded-full px-5 min-h-[44px]">Get started</Button>
+          </a>
         </div>
       </div>
     </header>
   );
 }
 
+// ── Hero ─────────────────────────────────────────────────────────────────
+function Hero() {
+  return (
+    <section className="relative overflow-hidden">
+      {/* Soft layered backdrop — subtle, print-paper feel. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-sienna-soft/50 blur-3xl" />
+        <div className="absolute top-40 -left-20 h-64 w-64 rounded-full bg-verified-soft/40 blur-3xl" />
+      </div>
+
+      <div className="relative mx-auto max-w-6xl px-5 sm:px-8 pt-12 sm:pt-16 pb-14 sm:pb-20 grid gap-10 lg:grid-cols-[1.05fr_minmax(0,440px)] lg:gap-14 items-start">
+        <div className="min-w-0">
+          <p className="inline-flex items-center gap-2 rounded-full border border-border bg-paper/70 px-3 py-1 text-[12px] text-ink-soft">
+            <span className="w-1.5 h-1.5 rounded-full bg-verified" aria-hidden />
+            For the Horn of Africa&apos;s humanitarian &amp; engineering sector
+          </p>
+
+          <h1 className="font-serif font-medium text-[38px] sm:text-[54px] lg:text-[60px] leading-[1.04] tracking-[-0.025em] mt-5">
+            Your work, <em className="text-sienna font-medium not-italic underline decoration-sienna/25 underline-offset-[6px]">verified</em> by the people you did it for.
+          </h1>
+
+          <p className="mt-5 max-w-xl text-[15px] sm:text-[17px] text-ink-soft leading-relaxed">
+            Sahan turns your experience into a structured, verifiable record — then a genuinely elegant CV or company profile you can download in a tap. Built for the consultants, engineers, programme staff and firms whose work never fit a LinkedIn box.
+          </p>
+
+          <ul className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
+            <Check>Free CV &amp; profile</Check>
+            <Check>Works on any phone</Check>
+            <Check>A4, print-clean PDF</Check>
+            <Check>No ads, no spam</Check>
+          </ul>
+
+          {/* On mobile the auth card sits right below this; this row gives a
+              secondary nudge without competing with it. */}
+          <div className="mt-8 hidden lg:flex items-center gap-4 text-[13px] text-muted">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-verified" /> Verified per-claim, never a vague global badge
+            </span>
+          </div>
+        </div>
+
+        <div className="min-w-0 lg:pt-1">
+          <AuthCard />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Trust strip ──────────────────────────────────────────────────────────
+function TrustStrip() {
+  return (
+    <section className="bg-paper border-y border-border">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8 py-7">
+        <p className="section-eyebrow">Built around the records that matter to teams at</p>
+        <ul className="mt-3.5 flex flex-wrap items-center gap-x-7 gap-y-2.5 text-[14px] sm:text-[15.5px] font-semibold text-ink-soft/90">
+          {["UNICEF", "World Bank", "UNHCR", "IOM", "FCDO", "ReliefWeb", "AfDB", "EU"].map((p) => (
+            <li key={p}>{p}</li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+// ── How it works ─────────────────────────────────────────────────────────
+function HowItWorks() {
+  const steps = [
+    { n: "01", title: "Build your profile", body: "Fill in structured sections once — experience, projects, education. Preview the real PDF on screen as you go." },
+    { n: "02", title: "Request verification", body: "Pick a single claim. An admin contacts the employer or client that issued it. Referee contacts stay private." },
+    { n: "03", title: "Share or export", body: "Publish a public profile link, or download an A4 PDF in three editorial templates — verified badges inline." },
+  ];
+  return (
+    <section id="how" className="bg-cream">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8 pt-14 sm:pt-20 pb-6">
+        <p className="section-eyebrow text-sienna">How it works</p>
+        <h2 className="font-serif text-[28px] sm:text-[40px] tracking-[-0.02em] mt-3 max-w-2xl leading-[1.13]">
+          From a blank form to a verified record — in three steps.
+        </h2>
+        <div className="mt-9 grid gap-4 md:grid-cols-3">
+          {steps.map((s) => (
+            <article key={s.n} className="relative rounded-2xl border border-border bg-paper p-6">
+              <span className="font-serif text-[34px] text-sienna/30 leading-none">{s.n}</span>
+              <h3 className="font-serif text-[19px] tracking-tightish mt-3">{s.title}</h3>
+              <p className="mt-2 text-[13.5px] text-ink-soft leading-relaxed">{s.body}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Verified showcase (the differentiator) ───────────────────────────────
+function VerifiedShowcase() {
+  return (
+    <section id="verification" className="bg-cream">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8 pt-8 pb-16 sm:pb-24">
+        <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:gap-12 items-center">
+          <div className="min-w-0">
+            <p className="section-eyebrow text-sienna">Why a Sahan profile is different</p>
+            <h2 className="font-serif text-[26px] sm:text-[38px] tracking-[-0.02em] mt-3 leading-[1.13]">
+              A green check next to the <em className="text-sienna not-italic">specific</em> claim that was checked.
+            </h2>
+            <p className="mt-4 text-[14.5px] text-ink-soft leading-relaxed max-w-md">
+              Verification isn&apos;t a vague global badge. You pick one experience, project or qualification and submit it for review. When the issuing employer confirms it, the badge sits inline next to that one claim — on your profile and on the PDF.
+            </p>
+            <ul className="mt-5 space-y-2.5 text-[13.5px]">
+              <Check>Per-claim, never global</Check>
+              <Check>Employer-confirmed, not self-asserted</Check>
+              <Check>Referee contacts stay private</Check>
+              <Check>Evidence kept in an admin-only bucket</Check>
+            </ul>
+          </div>
+
+          <div className="min-w-0 rounded-2xl border border-border bg-paper p-6 sm:p-7 shadow-[0_24px_60px_-40px_rgba(28,28,28,0.4)]">
+            <p className="section-eyebrow">From the Editorial CV</p>
+            <article className="mt-3">
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <span className="font-serif text-[18px] font-medium">Senior Health Coordinator</span>
+                <span className="font-serif text-[18px] italic text-sienna">· UNICEF Somalia</span>
+                <VerifiedBadge note="UNICEF Somalia" />
+              </div>
+              <p className="text-[12px] text-muted mt-1">Mogadishu · Mar 2021 — Present</p>
+              <p className="text-[13.5px] text-ink-soft leading-[1.6] mt-2.5">
+                Led a team of fourteen across Banadir, Lower Shabelle and Middle Shabelle. Designed the cold-chain expansion that brought routine immunisation to 64 previously unreached settlements.
+              </p>
+            </article>
+            <div className="mt-6 pt-5 border-t border-border-soft text-[12.5px] text-muted">
+              Same role, no badge: a claim. <span className="text-ink-soft font-medium">With the badge: a record.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Templates ────────────────────────────────────────────────────────────
+function Templates() {
+  return (
+    <section id="templates" className="bg-paper border-y border-border">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8 py-14 sm:py-20">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="section-eyebrow text-sienna">CV templates</p>
+            <h2 className="font-serif text-[28px] sm:text-[40px] tracking-[-0.02em] mt-2 max-w-2xl leading-[1.13]">
+              Eight registers. One set of details.
+            </h2>
+            <p className="mt-2 text-[14.5px] text-ink-soft max-w-xl leading-relaxed">
+              Same structured data, a different look in each. Switch any time — your edits flow into every template. Companies get a matching set of profile templates.
+            </p>
+          </div>
+          <a href="#get-started">
+            <Button kind="secondary" size="md">Create an account to download</Button>
+          </a>
+        </div>
+
+        <div className="mt-9 grid gap-5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+          {CV_TEMPLATES.map(({ id, name, tagline, Thumb }) => (
+            <article key={id} className="rounded-2xl border border-border bg-cream/50 overflow-hidden flex flex-col">
+              <div className="h-48 flex items-center justify-center bg-[#f1ede4]">
+                <div className="drop-shadow-[0_8px_20px_rgba(0,0,0,0.14)] scale-90 sm:scale-100"><Thumb /></div>
+              </div>
+              <div className="p-4 flex-1 flex flex-col">
+                <h3 className="font-serif text-[16.5px] tracking-tightish">{name}</h3>
+                <p className="text-[12px] text-ink-soft mt-0.5">{tagline}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Phone pitch ──────────────────────────────────────────────────────────
+function PhonePitch() {
+  return (
+    <section id="about" className="bg-cream">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8 py-14 sm:py-20">
+        <div className="max-w-2xl">
+          <p className="section-eyebrow text-sienna">Simple in, beautiful out</p>
+          <h2 className="font-serif text-[28px] sm:text-[40px] tracking-[-0.02em] mt-3 leading-[1.12]">
+            Not another design tool you fight with.
+          </h2>
+          <p className="mt-4 text-[15px] sm:text-[16px] text-ink-soft leading-relaxed">
+            You shouldn&apos;t need design skills, a laptop, or an afternoon to produce a professional CV or company profile. Fill in plain fields — once — and download a genuinely elegant PDF. Update anything later and regenerate in a tap.
+          </p>
+        </div>
+        <div className="mt-9 grid gap-5 md:grid-cols-3">
+          <Pillar icon={<PhoneIcon />} title="Built for your phone" body="Most people here build their profile on a phone, so that's how Sahan is built. No app to install. Fill in, preview the real PDF, download." />
+          <Pillar icon={<BoltIcon />} title="Minutes, not afternoons" body="Reach the minimum core — name, one experience, one skill — and your CV is ready. Enrich it whenever; nothing is ever re-typed." />
+          <Pillar icon={<SparkIcon />} title="Output that looks designed" body="A4, embedded fonts, print-clean, with curated colour themes. Panels see a polished document — not a form someone filled in." />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Closing CTA ──────────────────────────────────────────────────────────
+function ClosingCta() {
+  return (
+    <section className="bg-cream pb-16 sm:pb-24">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        <div className="rounded-3xl bg-ink text-paper px-6 sm:px-12 py-12 sm:py-16 text-center relative overflow-hidden">
+          <div aria-hidden className="pointer-events-none absolute -top-16 -right-10 h-56 w-56 rounded-full bg-sienna/30 blur-3xl" />
+          <p className="section-eyebrow text-sienna-soft relative">Free to start</p>
+          <h2 className="font-serif text-[30px] sm:text-[44px] tracking-[-0.02em] mt-3 leading-[1.1] relative">
+            Build the record your work deserves.
+          </h2>
+          <p className="mt-4 text-[15px] text-paper/75 max-w-xl mx-auto leading-relaxed relative">
+            Create a free profile, download an elegant CV or company profile today, and add verified badges when you&apos;re ready.
+          </p>
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-3 relative">
+            <a href="#get-started">
+              <Button kind="sienna" size="lg" className="min-h-[48px] px-7">Get started — free →</Button>
+            </a>
+            <Link href="/guides" className="text-[13.5px] text-paper/80 hover:text-paper underline underline-offset-4 min-h-[44px] inline-flex items-center px-2">
+              Read the guides
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Footer (SEO-rich; internal links help long-tail guide pages rank) ────
 function SiteFooter() {
-  // Guide links here do double duty: useful navigation + internal links
-  // that help search engines discover and rank the long-tail pages.
   const cvGuides = [
     ["Humanitarian CV template", "/guides/humanitarian-cv-template"],
     ["NGO CV template", "/guides/ngo-cv-template"],
@@ -318,10 +297,10 @@ function SiteFooter() {
 
   return (
     <footer className="bg-paper border-t border-border">
-      <div className="mx-auto max-w-6xl px-5 sm:px-10 py-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 text-[13px]">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8 py-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 text-[13px]">
         <div>
           <SahanMark size={18} />
-          <p className="mt-3 text-muted max-w-[22ch] leading-relaxed">
+          <p className="mt-3 text-muted max-w-[24ch] leading-relaxed">
             Verified profiles, elegant CVs and company profiles — built for Somalia &amp; East Africa.
           </p>
         </div>
@@ -344,16 +323,15 @@ function SiteFooter() {
         <div>
           <p className="section-eyebrow">Product</p>
           <ul className="mt-3 space-y-1.5 text-ink-soft">
-            <li><Link href="/signup?type=individual" className="hover:text-ink">Build a CV</Link></li>
-            <li><Link href="/signup?type=company" className="hover:text-ink">Build a company profile</Link></li>
-            <li><Link href="/guides" className="hover:text-ink">All guides</Link></li>
+            <li><a href="#get-started" className="hover:text-ink">Create an account</a></li>
             <li><Link href="/login" className="hover:text-ink">Sign in</Link></li>
+            <li><Link href="/guides" className="hover:text-ink">All guides</Link></li>
           </ul>
         </div>
       </div>
       <div className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-5 sm:px-10 py-4 flex flex-col sm:flex-row sm:items-center gap-2 text-[12px] text-muted">
-          <span>&copy; {new Date().getFullYear()} Sahan &middot; Mogadishu &middot; Nairobi</span>
+        <div className="mx-auto max-w-6xl px-5 sm:px-8 py-4 flex flex-col sm:flex-row sm:items-center gap-2 text-[12px] text-muted">
+          <span>&copy; {new Date().getFullYear()} Sahan · Mogadishu · Nairobi</span>
           <span className="sm:ml-auto">Made with restraint, for the Horn of Africa.</span>
         </div>
       </div>
@@ -361,33 +339,13 @@ function SiteFooter() {
   );
 }
 
-// ── composables ─────────────────────────────────────────────────────
-
+// ── Composables ──────────────────────────────────────────────────────────
 function Pillar({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
   return (
-    <article className="card border border-border bg-paper">
-      <div className="w-9 h-9 rounded-md bg-sienna-soft text-sienna flex items-center justify-center">{icon}</div>
+    <article className="rounded-2xl border border-border bg-paper p-6">
+      <div className="w-9 h-9 rounded-lg bg-sienna-soft text-sienna flex items-center justify-center">{icon}</div>
       <h3 className="font-serif text-[19px] tracking-tightish mt-4">{title}</h3>
       <p className="mt-2 text-[13.5px] text-ink-soft leading-relaxed">{body}</p>
-    </article>
-  );
-}
-
-function Step({ n, title, body }: { n: string; title: string; body: string }) {
-  return (
-    <div className="bg-paper p-5">
-      <span className="text-[11.5px] text-muted font-medium tracking-wide">{n}</span>
-      <h3 className="font-serif text-[16.5px] tracking-tightish mt-1">{title}</h3>
-      <p className="mt-2 text-[12.5px] text-ink-soft leading-relaxed">{body}</p>
-    </div>
-  );
-}
-
-function AboutCard({ eyebrow, body, accent }: { eyebrow: string; body: string; accent?: boolean }) {
-  return (
-    <article className={`rounded-[10px] p-5 ${accent ? "bg-ink text-paper" : "bg-paper border border-border"}`}>
-      <p className={`section-eyebrow ${accent ? "text-sienna-soft" : ""}`}>{eyebrow}</p>
-      <p className={`mt-2 text-[13.5px] leading-relaxed ${accent ? "text-paper/80" : "text-ink-soft"}`}>{body}</p>
     </article>
   );
 }
@@ -404,132 +362,7 @@ function Check({ children }: { children: React.ReactNode }) {
   );
 }
 
-function TemplateCard({
-  name, kind, tagline, pairing, ready, mini,
-}: { name: string; kind: "CV" | "Company"; tagline: string; pairing: string; ready?: boolean; mini?: React.ReactNode }) {
-  return (
-    <article className="rounded-[12px] border border-border bg-cream/50 overflow-hidden flex flex-col">
-      <div className="h-44 flex items-center justify-center bg-[#f6f2ea]">
-        {mini ?? <span className="text-muted text-[12px]">Preview soon</span>}
-      </div>
-      <div className="p-4 flex-1 flex flex-col">
-        <div className="flex items-baseline justify-between gap-2">
-          <h3 className="font-serif text-[18px] tracking-tightish">{name}</h3>
-          <span className="text-[10px] uppercase tracking-[0.14em] text-muted">{kind}</span>
-        </div>
-        <p className="text-[12.5px] text-ink-soft mt-1">{tagline}</p>
-        <p className="text-[11px] text-muted mt-1.5">{pairing}</p>
-        <div className="mt-auto pt-3">
-          {ready ? (
-            <span className="inline-flex items-center gap-1.5 text-[11.5px] text-verified font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-verified" />
-              Available now
-            </span>
-          ) : (
-            <span className="text-[11.5px] text-muted">Coming next</span>
-          )}
-        </div>
-      </div>
-    </article>
-  );
-}
-
-// Mini previews — small placeholder mockups for each template card.
-function EditorialMini() {
-  return (
-    <div className="w-28 h-40 bg-[#f6f2ea] shadow-md p-2.5 text-[#1a1a17]" style={{ fontFamily: "Source Serif 4, Georgia, serif" }}>
-      <div className="text-[4px] uppercase tracking-[0.18em] text-[#6e7480]">Curriculum vitae</div>
-      <div className="mt-2 leading-[0.95]" style={{ fontSize: 13, fontWeight: 350, letterSpacing: "-0.035em" }}>
-        Ifrah<br /><em className="text-[#0d3b66] font-light">Abdi.</em>
-      </div>
-      <div className="text-[4.5px] italic text-[#3a3a3d] mt-0.5">Senior Health Coordinator</div>
-      <div className="h-px bg-[#dcd6c8] my-1.5" />
-      <div className="text-[4px] leading-[1.4] text-[#3a3a3d] line-clamp-5">
-        <span className="float-left text-[#0d3b66] italic font-light" style={{ fontSize: 12, lineHeight: 0.85, marginRight: 1 }}>P</span>
-        ublic health practitioner with eleven years coordinating maternal, newborn and child health.
-      </div>
-    </div>
-  );
-}
-function SidebarMini() {
-  return (
-    <div className="w-28 h-40 shadow-md flex" style={{ fontFamily: "system-ui, sans-serif" }}>
-      <div className="w-10 bg-[#0f3a3a] text-white p-2 text-[4px] leading-[1.3]">
-        <div className="font-bold tracking-tight" style={{ fontSize: 7 }}>Ifrah<br />Abdi</div>
-        <div className="mt-2 opacity-70 text-[3.5px]">Health</div>
-        <div className="mt-1 opacity-70 text-[3.5px]">Mogadishu</div>
-        <div className="mt-3 text-[3.5px] uppercase tracking-wider opacity-60">Skills</div>
-        <div className="mt-1 space-y-0.5 text-[3.5px] opacity-80"><div>Cold-chain</div><div>BHA</div><div>DHIS2</div></div>
-      </div>
-      <div className="flex-1 bg-white p-2 text-[#1a1a17]">
-        <div style={{ fontSize: 8, fontWeight: 700 }}>Senior Health Coordinator</div>
-        <div className="text-[4px] text-[#6e7480] mt-0.5">UNICEF Somalia · 2021—</div>
-        <div className="h-px bg-[#e5e7eb] my-1.5" />
-        <div className="text-[4px] leading-[1.4] text-[#3a3a3d] line-clamp-6">
-          Lead a team of fourteen across Banadir and Lower Shabelle. Designed the cold-chain expansion.
-        </div>
-      </div>
-    </div>
-  );
-}
-function MonoMini() {
-  return (
-    <div className="w-28 h-40 bg-white shadow-md p-2.5 text-[#111]" style={{ fontFamily: "system-ui, sans-serif" }}>
-      <div className="flex items-baseline justify-between text-[3.5px] uppercase tracking-[0.2em] text-[#6e7480]">
-        <span>CV</span><span>—</span>
-      </div>
-      <div className="mt-3 leading-tight" style={{ fontSize: 13, fontWeight: 600, letterSpacing: "-0.02em" }}>
-        Ifrah Abdi<span className="text-[#d97706]">.</span>
-      </div>
-      <div className="text-[4px] text-[#6e7480] mt-0.5">Senior Health Coordinator</div>
-      <div className="h-px bg-black my-1.5" />
-      <div className="grid grid-cols-[12px_1fr] gap-x-1.5 gap-y-0.5 text-[3.5px]">
-        <span className="text-[#d97706]">21—</span><span>UNICEF Somalia</span>
-        <span className="text-[#d97706]">17—</span><span>Save the Children</span>
-        <span className="text-[#d97706]">14—</span><span>SRCS</span>
-      </div>
-    </div>
-  );
-}
-function CompanyMini() {
-  return (
-    <div className="w-28 h-40 shadow-md text-[#e8edf3] p-2 relative overflow-hidden" style={{ background: "linear-gradient(165deg, #0a1a2e 0%, #0e2a4a 55%, #0c1f38 100%)", fontFamily: "system-ui, sans-serif" }}>
-      <div className="text-[3.5px] uppercase tracking-[0.2em] opacity-70">Company profile</div>
-      <div className="mt-6 leading-[0.92]" style={{ fontSize: 13, fontWeight: 300, letterSpacing: "-0.04em", fontFamily: "Source Serif 4, Georgia, serif" }}>
-        Wadani<br />Engineering<br /><em className="opacity-70">Group.</em>
-      </div>
-      <div className="absolute bottom-2 left-2 right-2 pt-1.5 border-t border-white/20 text-[3.5px] uppercase tracking-wider opacity-70">
-        Civil infrastructure
-      </div>
-    </div>
-  );
-}
-
-// ── icons ───────────────────────────────────────────────────────────
-
-function TrustIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z" />
-      <path d="M9 12l2 2 4-4" />
-    </svg>
-  );
-}
-function DocIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z" />
-      <path d="M14 3v5h5M9 13h6M9 17h6" />
-    </svg>
-  );
-}
-function BuildingIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h.01M15 17h.01" />
-    </svg>
-  );
-}
+// ── Icons ────────────────────────────────────────────────────────────────
 function PhoneIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
