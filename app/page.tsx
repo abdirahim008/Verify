@@ -291,7 +291,7 @@ function SiteHeader() {
         <div className="flex items-center gap-2 sm:gap-3">
           <Link href="#signin" className="text-[13px] text-ink-soft hover:text-ink hidden sm:inline-flex">Sign in</Link>
           <Link href="/signup">
-            <Button kind="sienna" size="sm" className="rounded-full px-4">Join now</Button>
+            <Button kind="sienna" size="sm" className="rounded-full px-5 min-h-[44px]">Join now</Button>
           </Link>
         </div>
       </div>

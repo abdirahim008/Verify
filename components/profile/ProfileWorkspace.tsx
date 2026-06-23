@@ -73,7 +73,10 @@ export function ProfileWorkspace({
   return (
     <div className="grid gap-6 lg:grid-cols-[212px_1fr_300px] items-start">
       {/* ── Left sidebar: section navigation ─────────────────────────── */}
-      <aside className="lg:sticky lg:top-6">
+      {/* min-w-0 lets the horizontal section-nav (overflow-x-auto) actually
+          scroll on mobile/tablet instead of expanding the grid column and
+          forcing the whole page to overflow horizontally. */}
+      <aside className="min-w-0 lg:sticky lg:top-6">
         <div className="px-1">
           <p className="section-eyebrow text-sienna">{eyebrow}</p>
           <h1 className="font-serif text-[22px] tracking-tightish mt-1 leading-tight">{title}</h1>
@@ -129,7 +132,7 @@ export function ProfileWorkspace({
       </main>
 
       {/* ── Right rail: completeness, download, verified ─────────────── */}
-      <div>{rail}</div>
+      <div className="min-w-0">{rail}</div>
     </div>
   );
 }

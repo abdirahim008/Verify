@@ -12,10 +12,13 @@ const KIND: Record<Kind, string> = {
   quiet: "bg-border-soft text-ink border border-border hover:bg-border",
   danger: "bg-transparent text-red-700 border border-red-300 hover:bg-red-50",
 };
+// min-h floors keep every button a comfortable touch target on mobile
+// (36 / 40 / 44 — the latter meets the 44px Apple HIG guideline) while the
+// padding still governs the resting look on desktop.
 const SIZE: Record<Size, string> = {
-  sm: "px-3 py-1.5 text-[12.5px] rounded-md",
-  md: "px-4 py-2 text-[13.5px] rounded-[7px]",
-  lg: "px-5 py-3 text-[14.5px] rounded-lg",
+  sm: "px-3 py-1.5 min-h-[36px] text-[12.5px] rounded-md",
+  md: "px-4 py-2 min-h-[40px] text-[13.5px] rounded-[7px]",
+  lg: "px-5 py-3 min-h-[44px] text-[14.5px] rounded-lg",
 };
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

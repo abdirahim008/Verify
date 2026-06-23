@@ -19,7 +19,7 @@ export default function GuidesLayout({ children }: { children: React.ReactNode }
           <nav className="flex items-center gap-3 text-[13px] text-ink-soft">
             <Link href="/guides" className="hidden sm:inline hover:text-ink">Guides</Link>
             <Link href="/login" className="hidden sm:inline hover:text-ink">Sign in</Link>
-            <Link href="/signup"><Button kind="sienna" size="sm" className="rounded-full px-4">Get started — free</Button></Link>
+            <Link href="/signup"><Button kind="sienna" size="sm" className="rounded-full px-5 min-h-[44px]">Get started — free</Button></Link>
           </nav>
         </div>
       </header>

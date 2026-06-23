@@ -52,7 +52,7 @@ export function BasicsCard({ initial }: Props) {
             <button
               type="button"
               onClick={() => setEditing(true)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-white/15 hover:bg-white/25 text-white text-[12.5px] font-medium px-3 py-1.5 transition backdrop-blur-sm"
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/15 hover:bg-white/25 text-white text-[12.5px] font-medium px-3.5 min-h-[36px] transition backdrop-blur-sm"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 20h4l10-10a2 2 0 00-3-3L5 17v3z" /><path d="M13.5 6.5l3 3" /></svg>
               Edit
