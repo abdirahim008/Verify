@@ -110,11 +110,6 @@ export function FrameCV({ data, theme }: { data: CVData; theme?: Record<string, 
             </section>
           )}
         </div>
-
-        <footer className="foot" data-band>
-          <div className="foot-name">{fullName}</div>
-          {contact.length > 0 && <div className="foot-contact">{contact.join("  ·  ")}</div>}
-        </footer>
       </div>
     </>
   );
@@ -132,15 +127,13 @@ function Bullets({ text }: { text: string }) {
 }
 
 const styles = (C: ReturnType<typeof bandColors>) => `
-/* Header band bleeds to the top + sides on page 1 (@page:first top/sides 0).
-   The slim footer band is full-width and sticks to the foot of the content
-   area via margin-top:auto, sitting just above the 14mm bottom margin (a
-   flowed band can't bleed into the margin band without paginating, so it
-   keeps a clean bottom margin). Body keeps a 14mm top margin on every page. */
+/* The colour header band bleeds to the top + sides on page 1 (@page:first
+   zeroes page 1's top/side margins); every page keeps 14mm top/bottom text
+   margins, horizontal handled by the band/body padding. */
 @page { size: A4; margin: 14mm 0; }
 @page :first { margin: 0 0 14mm; }
 [data-band] { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-.page { min-height: 269mm; color: ${INK.body}; font-family: ${BODY}; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; }
+.page { color: ${INK.body}; font-family: ${BODY}; -webkit-font-smoothing: antialiased; }
 
 .band { background: ${C.accent}; padding: 32px 56px 28px; }
 .band-row { display: flex; justify-content: space-between; align-items: center; gap: 28px; }
@@ -179,8 +172,4 @@ const styles = (C: ReturnType<typeof bandColors>) => `
 .ref-name { font-weight: 700; font-size: 13px; color: ${INK.ink}; }
 .ref-role { font-size: 12px; color: ${INK.muted}; }
 .ref-contact { font-size: 11.5px; color: ${INK.faint}; margin-top: 2px; }
-
-.foot { background: ${C.accent}; padding: 16px 56px; margin-top: auto; break-inside: avoid; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
-.foot-name { font-family: ${DISPLAY}; font-weight: 600; font-size: 17px; letter-spacing: 0.02em; color: ${C.onBand}; white-space: nowrap; }
-.foot-contact { font-size: 11px; letter-spacing: 0.04em; color: ${C.onBandMuted}; white-space: nowrap; }
 `;

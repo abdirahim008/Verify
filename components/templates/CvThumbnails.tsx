@@ -166,15 +166,20 @@ export function EndnoteThumb() {
       <rect x="11" y="41" width="20" height="3" fill="#16130f" />
       <rect x="11" y="48" width="74" height="2" fill="#cfc9c0" />
       <rect x="11" y="53" width="62" height="2" fill="#cfc9c0" />
-      <rect x="11" y="64" width="20" height="3" fill="#16130f" />
-      <rect x="11" y="71" width="70" height="2" fill="#cfc9c0" />
-      <rect x="11" y="76" width="58" height="2" fill="#cfc9c0" />
-      <rect x="1" y="99" width="98" height="40" fill="#1d3b3b" />
-      <rect x="11" y="108" width="18" height="2.5" fill="#ffffff" opacity="0.5" />
-      <rect x="11" y="117" width="30" height="2.5" fill="#ffffff" opacity="0.9" />
-      <rect x="11" y="123" width="26" height="2" fill="#ffffff" opacity="0.45" />
-      <rect x="56" y="117" width="30" height="2.5" fill="#ffffff" opacity="0.9" />
-      <rect x="56" y="123" width="22" height="2" fill="#ffffff" opacity="0.45" />
+      <rect x="11" y="62" width="18" height="3" fill="#16130f" />
+      <rect x="56" y="62" width="18" height="3" fill="#16130f" />
+      <line x1="11" y1="69" x2="48" y2="69" stroke="#d7d3cc" strokeWidth="0.8" />
+      <line x1="56" y1="69" x2="89" y2="69" stroke="#d7d3cc" strokeWidth="0.8" />
+      <rect x="11" y="74" width="34" height="2" fill="#cfc9c0" />
+      <rect x="11" y="79" width="28" height="2" fill="#cfc9c0" />
+      <rect x="56" y="74" width="32" height="2" fill="#cfc9c0" />
+      <rect x="56" y="79" width="26" height="2" fill="#cfc9c0" />
+      <rect x="11" y="92" width="20" height="3" fill="#16130f" />
+      <line x1="11" y1="99" x2="89" y2="99" stroke="#d7d3cc" strokeWidth="0.8" />
+      <rect x="11" y="104" width="30" height="2.5" fill="#16130f" />
+      <rect x="11" y="109" width="34" height="2" fill="#cfc9c0" />
+      <rect x="56" y="104" width="30" height="2.5" fill="#16130f" />
+      <rect x="56" y="109" width="32" height="2" fill="#cfc9c0" />
     </Card>
   );
 }
@@ -195,9 +200,11 @@ export function FrameThumb() {
       <rect x="11" y="84" width="70" height="2" fill="#cfc9c0" />
       <rect x="11" y="95" width="20" height="3" fill="#16130f" />
       <rect x="11" y="102" width="64" height="2" fill="#cfc9c0" />
-      <rect x="1" y="116" width="98" height="23" fill="#20304d" />
-      <rect x="11" y="124" width="24" height="3" fill="#ffffff" opacity="0.85" />
-      <rect x="60" y="125" width="28" height="2" fill="#ffffff" opacity="0.5" />
+      <rect x="11" y="107" width="56" height="2" fill="#cfc9c0" />
+      <rect x="11" y="118" width="20" height="3" fill="#16130f" />
+      <line x1="11" y1="125" x2="89" y2="125" stroke="#d7d3cc" strokeWidth="0.8" />
+      <rect x="11" y="130" width="30" height="2" fill="#cfc9c0" />
+      <rect x="56" y="130" width="28" height="2" fill="#cfc9c0" />
     </Card>
   );
 }
@@ -216,6 +223,6 @@ export const CV_TEMPLATES: CvTemplateMeta[] = [
   { id: "grid", name: "The Grid", tagline: "Two column · numbered", Thumb: GridThumb },
   { id: "statement", name: "The Statement", tagline: "Bordered masthead · photo", Thumb: StatementThumb },
   { id: "crest", name: "The Crest", tagline: "Colour header band", Thumb: CrestThumb },
-  { id: "endnote", name: "The Endnote", tagline: "Colour footer band", Thumb: EndnoteThumb },
-  { id: "frame", name: "The Frame", tagline: "Colour header + footer", Thumb: FrameThumb },
+  { id: "endnote", name: "The Endnote", tagline: "Two column · referees", Thumb: EndnoteThumb },
+  { id: "frame", name: "The Frame", tagline: "Colour header band · serif", Thumb: FrameThumb },
 ];
