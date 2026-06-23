@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { QRCodeCanvas } from "qrcode.react";
 
 // "Share" affordance for the profile builder. Shows a QR code (and a copy /
@@ -13,7 +14,10 @@ export function ShareProfile({ publicHref, businessCard }: { publicHref: string;
   const [url, setUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [card, setCard] = useState<{ status: "idle" | "loading" | "error"; format?: "png" | "pdf"; msg?: string }>({ status: "idle" });
+  const [mounted, setMounted] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") setUrl(new URL(publicHref, window.location.origin).toString());
@@ -75,8 +79,8 @@ export function ShareProfile({ publicHref, businessCard }: { publicHref: string;
         <QrGlyph /> Share
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6" role="dialog" aria-modal aria-label="Share your profile">
+      {open && mounted && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6" role="dialog" aria-modal aria-label="Share your profile">
           <button aria-label="Close" onClick={() => setOpen(false)} className="absolute inset-0 bg-ink/60 backdrop-blur-sm" />
           <div className="relative w-full sm:max-w-md bg-paper rounded-t-2xl sm:rounded-2xl shadow-xl p-6 max-h-[92dvh] overflow-y-auto">
             <div className="flex items-start justify-between gap-3">
@@ -127,7 +131,8 @@ export function ShareProfile({ publicHref, businessCard }: { publicHref: string;
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );
