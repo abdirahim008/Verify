@@ -29,3 +29,7 @@ Thumbs.db
 
 # pdf.js worker — copied from node_modules on postinstall
 /public/pdf.worker.min.mjs
+
+# Local design handoff extractions (not committed)
+.handoff*
+test-output/
