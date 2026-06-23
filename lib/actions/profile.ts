@@ -10,6 +10,7 @@ import {
   refereeSchema, type RefereeValues,
   skillSchema, languagesSchema, toIntOrNull,
 } from "@/lib/schemas";
+import { sanitizeCategories } from "@/lib/jobs/sectors";
 
 // Common helper: get the current user + a supabase client, or throw a
 // uniform error string the client form can display.
@@ -77,6 +78,20 @@ export async function saveLanguages(values: { languages: string[] }) {
   const { error } = await supabase
     .from("individual_details")
     .upsert({ profile_id: userId, languages: v.languages }, { onConflict: "profile_id" });
+  if (error) throw new Error(error.message);
+  bust();
+}
+
+// ─── career categories (lives on profiles.career_categories) ─────────────
+// Drives the personalised jobs feed on /home. Sanitised against the known
+// SomKenJobs sector taxonomy so we never persist an arbitrary string.
+export async function saveCareerCategories(values: { categories: string[] }) {
+  const clean = sanitizeCategories(values.categories);
+  const { supabase, userId } = await authedClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ career_categories: clean })
+    .eq("id", userId);
   if (error) throw new Error(error.message);
   bust();
 }

@@ -11,6 +11,7 @@ import { SkillsCard } from "@/components/profile/sections/SkillsCard";
 import { CertificationsCard } from "@/components/profile/sections/CertificationsCard";
 import { LanguagesCard } from "@/components/profile/sections/LanguagesCard";
 import { RefereesCard } from "@/components/profile/sections/RefereesCard";
+import { CareerInterestsCard } from "@/components/profile/sections/CareerInterestsCard";
 import { CompletenessRail } from "@/components/profile/CompletenessRail";
 import { ProfileWorkspace, type WorkspaceSection } from "@/components/profile/ProfileWorkspace";
 // Company sections
@@ -115,6 +116,12 @@ async function IndividualBuilder({ userId }: { userId: string }) {
         items={data.referees}
         experiences={data.experiences.map((e) => ({ id: e.id, title: e.title, organization: e.organization }))}
       />,
+    },
+    {
+      id: "interests", label: "Career interests",
+      count: data.profile?.career_categories?.length ?? 0,
+      done: (data.profile?.career_categories?.length ?? 0) >= 1,
+      node: <CareerInterestsCard initial={data.profile?.career_categories ?? []} />,
     },
   ];
 

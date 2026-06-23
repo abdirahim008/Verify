@@ -5,6 +5,8 @@ import { Button } from "@/components/Button";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { loadIndividualProfile, hasMinimumCore, profileCompleteness } from "@/lib/profile-data";
 import { loadApprovedFeed } from "@/lib/feed-data";
+import { fetchJobs, selectJobs } from "@/lib/jobs/feed";
+import { JobsCard } from "@/components/home/JobsCard";
 
 export const metadata = { title: "Home" };
 
@@ -16,18 +18,22 @@ export default async function HomePage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, account_type, display_name")
+    .select("id, account_type, display_name, career_categories")
     .eq("id", user.id)
     .maybeSingle();
 
   const displayName = profile?.display_name || user.email || "";
   const isCompany = profile?.account_type === "company";
+  const careerCategories: string[] = profile?.career_categories ?? [];
 
   // Show real completeness for individuals; company side lands in Milestone 6.
-  const [data, feed] = await Promise.all([
+  // Jobs are personalised for individuals only (companies have no interests).
+  const [data, feed, jobs] = await Promise.all([
     !isCompany ? loadIndividualProfile(user.id) : Promise.resolve(null),
     loadApprovedFeed(6),
+    !isCompany ? fetchJobs() : Promise.resolve([]),
   ]);
+  const matchedJobs = selectJobs(jobs, careerCategories, 4);
   const percent = data ? profileCompleteness(data) : 0;
   const minCore = data ? hasMinimumCore(data) : false;
   const verifiedCount = data
@@ -55,6 +61,8 @@ export default async function HomePage() {
             <Link href="/profile"><Button kind="primary" size="md">{minCore ? "Continue your profile" : "Start your profile"}</Button></Link>
           </div>
         </section>
+
+        {!isCompany && <JobsCard matched={matchedJobs} categories={careerCategories} />}
 
         <section>
           <div className="flex items-baseline justify-between gap-3">
