@@ -12,6 +12,7 @@ export function ShareProfile({ publicHref, businessCard }: { publicHref: string;
   const [open, setOpen] = useState(false);
   const [url, setUrl] = useState("");
   const [copied, setCopied] = useState(false);
+  const [card, setCard] = useState<{ status: "idle" | "loading" | "error"; format?: "png" | "pdf"; msg?: string }>({ status: "idle" });
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,6 +36,35 @@ export function ShareProfile({ publicHref, businessCard }: { publicHref: string;
     a.click();
   }
 
+  // The card is rendered server-side (Chromium) and takes a few seconds, so
+  // fetch it as a blob with a loading state instead of a bare <a download>:
+  // that gives feedback and surfaces any error rather than silently failing.
+  async function downloadCard(format: "png" | "pdf") {
+    if (card.status === "loading") return;
+    setCard({ status: "loading", format });
+    try {
+      const res = await fetch(`/api/card?format=${format}`, { cache: "no-store" });
+      if (!res.ok) {
+        let msg = "Couldn't generate the card. Please try again.";
+        try { const j = await res.json(); if (j?.error) msg = j.error; } catch { /* non-JSON */ }
+        setCard({ status: "error", msg });
+        return;
+      }
+      const blob = await res.blob();
+      const href = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = href;
+      a.download = `sahan-business-card.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(href);
+      setCard({ status: "idle" });
+    } catch {
+      setCard({ status: "error", msg: "Network error — please try again." });
+    }
+  }
+
   return (
     <>
       <button
@@ -48,7 +78,7 @@ export function ShareProfile({ publicHref, businessCard }: { publicHref: string;
       {open && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6" role="dialog" aria-modal aria-label="Share your profile">
           <button aria-label="Close" onClick={() => setOpen(false)} className="absolute inset-0 bg-ink/60 backdrop-blur-sm" />
-          <div className="relative w-full sm:max-w-md bg-paper rounded-t-2xl sm:rounded-2xl shadow-xl p-6">
+          <div className="relative w-full sm:max-w-md bg-paper rounded-t-2xl sm:rounded-2xl shadow-xl p-6 max-h-[92dvh] overflow-y-auto">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="section-eyebrow text-sienna">Share your profile</p>
@@ -86,9 +116,14 @@ export function ShareProfile({ publicHref, businessCard }: { publicHref: string;
                 <p className="section-eyebrow text-sienna">Business card</p>
                 <p className="mt-1 text-[12.5px] text-ink-soft leading-relaxed">A printable card with your name, contact details and this QR — ready to share or send to a printer.</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <a href="/api/card?format=png" download className="rounded-lg bg-ink text-paper text-[13px] font-semibold px-3.5 py-2 hover:bg-ink/90 transition">Download PNG</a>
-                  <a href="/api/card?format=pdf" download className="rounded-lg border border-border text-[13px] font-medium px-3.5 py-2 hover:bg-cream/60 transition">PDF for print</a>
+                  <button type="button" onClick={() => downloadCard("png")} disabled={card.status === "loading"} className="rounded-lg bg-ink text-paper text-[13px] font-semibold px-3.5 py-2 hover:bg-ink/90 transition disabled:opacity-60">
+                    {card.status === "loading" && card.format === "png" ? "Preparing…" : "Download PNG"}
+                  </button>
+                  <button type="button" onClick={() => downloadCard("pdf")} disabled={card.status === "loading"} className="rounded-lg border border-border text-[13px] font-medium px-3.5 py-2 hover:bg-cream/60 transition disabled:opacity-60">
+                    {card.status === "loading" && card.format === "pdf" ? "Preparing…" : "PDF for print"}
+                  </button>
                 </div>
+                {card.status === "error" && <p className="helper text-red-600 mt-2">{card.msg}</p>}
               </div>
             )}
           </div>
