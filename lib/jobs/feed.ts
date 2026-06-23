@@ -69,6 +69,20 @@ export function selectJobs(jobs: JobItem[], userCategories: string[], limit = 4)
   };
 }
 
+// Tenders / consultancies / RFPs — same feed, different intent. Useful to
+// consultants and (unlike regular jobs) to company accounts.
+const CONSULTANCY_RE = /\b(rfps?|request for proposals?|terms of reference|tor|tenders?|consultanc(?:y|ies)|expression of interest|eoi|call for proposals?)\b/i;
+
+export function isConsultancy(job: JobItem): boolean {
+  if (norm(job.sector ?? "") === "consultancies") return true;
+  if (job.categories.some((c) => norm(c) === "consultancies")) return true;
+  return CONSULTANCY_RE.test(job.title);
+}
+
+export function selectConsultancies(jobs: JobItem[], limit = 4): JobItem[] {
+  return jobs.filter(isConsultancy).slice(0, limit);
+}
+
 function jobScore(job: JobItem, wanted: Set<string>): number {
   const tags = new Set<string>();
   job.categories.forEach((c) => tags.add(norm(c)));

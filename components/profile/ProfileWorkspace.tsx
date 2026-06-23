@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { WorkspaceMode } from "./SectionChrome";
+import { ShareProfile } from "./ShareProfile";
 
 export interface WorkspaceSection {
   id: string;
@@ -75,10 +76,13 @@ export function ProfileWorkspace({
         <div className="px-1">
           <p className="section-eyebrow text-sienna">{eyebrow}</p>
           <h1 className="font-serif text-[22px] tracking-tightish mt-1 leading-tight">{title}</h1>
-          <Link href={publicHref} target="_blank" rel="noopener noreferrer"
-            className="inline-block mt-1.5 text-[12px] text-sienna font-medium hover:underline">
-            View public profile ↗
-          </Link>
+          <div className="mt-1.5 flex items-center gap-3">
+            <Link href={publicHref} target="_blank" rel="noopener noreferrer"
+              className="text-[12px] text-sienna font-medium hover:underline">
+              View public profile ↗
+            </Link>
+            <ShareProfile publicHref={publicHref} />
+          </div>
         </div>
 
         <nav aria-label="Profile sections"

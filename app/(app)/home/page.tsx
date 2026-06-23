@@ -3,8 +3,11 @@ import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Button } from "@/components/Button";
 import { loadApprovedFeed } from "@/lib/feed-data";
-import { fetchJobs, selectJobs } from "@/lib/jobs/feed";
+import { fetchJobs, selectJobs, selectConsultancies } from "@/lib/jobs/feed";
+import { fetchTraining } from "@/lib/feeds/training";
 import { JobsCard } from "@/components/home/JobsCard";
+import { TendersCard } from "@/components/home/TendersCard";
+import { TrainingCard } from "@/components/home/TrainingCard";
 import { labelFor } from "@/lib/jobs/sectors";
 
 export const metadata = { title: "Home" };
@@ -26,14 +29,17 @@ export default async function HomePage() {
   const careerCategories: string[] = profile?.career_categories ?? [];
   const noInterests = !isCompany && careerCategories.length === 0;
 
-  // Home is a curated landing — jobs + sector news. Profile state (CV
-  // readiness, completeness, verified counts) lives on /profile, not here.
-  // Jobs are personalised for individuals only (companies have no interests).
-  const [feed, jobs] = await Promise.all([
+  // Home is a curated landing — opportunities + sector news. Profile state
+  // (CV readiness, completeness, verified counts) lives on /profile, not here.
+  // The jobs feed is shared (also powers tenders, shown to companies too);
+  // only the personalised jobs card is individual-only.
+  const [feed, jobs, training] = await Promise.all([
     loadApprovedFeed(6),
-    !isCompany ? fetchJobs() : Promise.resolve([]),
+    fetchJobs(),
+    fetchTraining(4),
   ]);
   const matchedJobs = selectJobs(jobs, careerCategories, 4);
+  const tenders = selectConsultancies(jobs, 4);
 
   const { greeting, dateLabel } = nowInEAT();
 
@@ -64,6 +70,8 @@ export default async function HomePage() {
         </section>
 
         {!isCompany && <JobsCard matched={matchedJobs} categories={careerCategories} />}
+        <TendersCard items={tenders} />
+        <TrainingCard items={training} />
 
         <section>
           <div className="flex items-baseline justify-between gap-3">
