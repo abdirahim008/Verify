@@ -159,9 +159,16 @@ function Bullets({ text }: { text: string }) {
 }
 
 const styles = (C: ReturnType<typeof bandColors>) => `
-@page { size: A4; margin: 0; }
+/* The colour band must bleed to the very top + sides on page 1, but every
+   page still needs a bottom (and, on continuation pages, top) text margin so
+   nothing runs to the sheet edge. @page:first zeroes only page 1's top/side
+   margins (band full-bleed) while keeping its 16mm foot; later pages get
+   16mm top + bottom. Horizontal stays 0 — the body's own padding insets the
+   text, and the band reaches the side edges. */
+@page { size: A4; margin: 16mm 0; }
+@page :first { margin: 0 0 16mm; }
 [data-band] { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-.page { min-height: 297mm; color: ${INK.body}; font-family: ${BODY}; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; }
+.page { color: ${INK.body}; font-family: ${BODY}; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; }
 
 .band { background: ${C.accent}; padding: 34px 56px 22px; }
 .band-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 30px; }

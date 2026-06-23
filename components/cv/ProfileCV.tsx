@@ -146,10 +146,13 @@ function Bullets({ text }: { text: string }) {
 }
 
 const styles = `
-@page { size: A4; margin: 0; }
-.page { min-height: 297mm; display: flex; color: ${INK.body}; font-family: ${BODY}; -webkit-font-smoothing: antialiased; }
+/* Vertical @page margins give every page real top/bottom text spacing (so
+   continuation pages don't run to the sheet edge); horizontal is handled by
+   the column padding. */
+@page { size: A4; margin: 14mm 0; }
+.page { min-height: 269mm; display: flex; color: ${INK.body}; font-family: ${BODY}; -webkit-font-smoothing: antialiased; }
 
-.sb { width: 240px; flex: none; border-right: 1px solid ${INK.hair}; padding: 44px 28px; }
+.sb { width: 240px; flex: none; border-right: 1px solid ${INK.hair}; padding: 0 28px; }
 .sb-photo { width: 116px; height: 116px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 6px; border: 1px solid #c4bfb6; }
 .sb-mono { width: 116px; height: 116px; border-radius: 50%; border: 1px solid #c4bfb6; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px; font-family: ${DISPLAY}; font-weight: 500; font-size: 34px; letter-spacing: 0.06em; color: ${INK.ink}; }
 .sb-sec { margin-top: 26px; }
@@ -163,7 +166,7 @@ const styles = `
 .sb-cert-meta { line-height: 1.3; margin-top: 1px; }
 .faint { color: ${INK.faint}; }
 
-.mn { flex: 1; padding: 44px 40px; min-width: 0; }
+.mn { flex: 1; padding: 0 40px; min-width: 0; }
 .name { margin: 0; font-family: ${DISPLAY}; font-weight: 600; font-size: 39px; letter-spacing: -0.01em; color: ${INK.ink}; line-height: 1.04; }
 .role { margin-top: 9px; font-weight: 500; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.24em; color: ${INK.muted}; }
 .mn-sec { margin-top: 22px; }

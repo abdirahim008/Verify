@@ -150,8 +150,11 @@ function Bullets({ text }: { text: string }) {
 }
 
 const styles = `
-@page { size: A4; margin: 0; }
-.page { min-height: 297mm; padding: 52px; color: ${INK.body}; font-family: ${BODY}; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; }
+/* Vertical @page margins give every page real top/bottom text spacing (so
+   continuation pages don't run to the sheet edge); horizontal is handled by
+   the .page side padding. */
+@page { size: A4; margin: 14mm 0; }
+.page { min-height: 269mm; padding: 0 52px; color: ${INK.body}; font-family: ${BODY}; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; }
 
 .hd { display: flex; justify-content: space-between; align-items: flex-end; gap: 28px; }
 .name { margin: 0; font-family: ${DISPLAY}; font-weight: 800; font-size: 50px; letter-spacing: -0.025em; line-height: 0.95; color: ${INK.ink}; }
