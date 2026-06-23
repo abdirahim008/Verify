@@ -8,7 +8,9 @@ import { SectionCard, Field, NewItemPanel } from "../SectionCard";
 import { companyClientSchema, type CompanyClientValues } from "@/lib/schemas";
 import { addCompanyClient, updateCompanyClient, deleteCompanyClient } from "@/lib/actions/company";
 
-interface ClientRow { id: string; client_name: string; display_public: boolean; note: string | null }
+interface ClientRow { id: string; client_name: string; category: string | null; display_public: boolean; note: string | null }
+
+const CLIENT_GROUPS = ["Multilateral & Donors", "Government", "Private & Non-Profit"];
 
 export function CompanyClientsCard({ items }: { items: ClientRow[] }) {
   const [adding, setAdding] = useState(false);
@@ -71,6 +73,7 @@ function ClientRowDisplay({ item, onEdit }: { item: ClientRow; onEdit: () => voi
             <span className="text-[10.5px] uppercase tracking-[0.14em] text-muted">Private</span>
           )}
         </div>
+        {item.category && <div className="text-[12px] text-sienna mt-0.5">{item.category}</div>}
         {item.note && <div className="text-[12.5px] text-muted mt-1">{item.note}</div>}
       </div>
       <div className="flex gap-1 shrink-0">
@@ -99,6 +102,7 @@ function ClientForm({
     resolver: zodResolver(companyClientSchema),
     defaultValues: {
       client_name: initial?.client_name ?? "",
+      category: initial?.category ?? "",
       display_public: initial?.display_public ?? false,
       note: initial?.note ?? "",
     },
@@ -116,6 +120,10 @@ function ClientForm({
     <form onSubmit={handleSubmit(submit)} className="grid gap-4" noValidate>
       <Field label="Client name" error={errors.client_name?.message}>
         <input className="field" {...register("client_name")} />
+      </Field>
+      <Field label="Group" error={errors.category?.message} hint="Clients are grouped under this heading on the PDF.">
+        <input className="field" list="client-groups" placeholder="e.g. Multilateral & Donors" {...register("category")} />
+        <datalist id="client-groups">{CLIENT_GROUPS.map((g) => <option key={g} value={g} />)}</datalist>
       </Field>
       <Field label="Note (private)" error={errors.note?.message} hint="Optional. Never shown on the PDF.">
         <input className="field" {...register("note")} />

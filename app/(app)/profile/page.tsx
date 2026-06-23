@@ -17,6 +17,9 @@ import { ProfileWorkspace, type WorkspaceSection } from "@/components/profile/Pr
 import { CompanyBasicsCard } from "@/components/profile/company/CompanyBasicsCard";
 import { CompanyAboutCard } from "@/components/profile/company/CompanyAboutCard";
 import { CompanyOfferingsCard } from "@/components/profile/company/CompanyOfferingsCard";
+import { CompanyValuesCard } from "@/components/profile/company/CompanyValuesCard";
+import { CompanyCeoCard } from "@/components/profile/company/CompanyCeoCard";
+import { CompanyServicesCard } from "@/components/profile/company/CompanyServicesCard";
 import { CompanyProjectsCard } from "@/components/profile/company/CompanyProjectsCard";
 import { CompanyClientsCard } from "@/components/profile/company/CompanyClientsCard";
 import { CompanyTeamCard } from "@/components/profile/company/CompanyTeamCard";
@@ -152,12 +155,11 @@ async function CompanyBuilder({ userId }: { userId: string }) {
     { label: "Add an about paragraph", done: (data.basics?.about?.length ?? 0) > 0 },
     { label: "Add a mission", done: Boolean(data.basics?.mission) },
     { label: "List your sectors", done: (data.basics?.sectors?.length ?? 0) >= 1 },
-    { label: "List core services", done: (data.basics?.core_services?.length ?? 0) >= 1 },
+    { label: "List your services", done: data.services.length >= 1 },
     { label: "Add 1 project", done: data.projects.length >= 1 },
     { label: "Add a team member", done: data.team.length >= 1 },
   ];
 
-  const sectorCount = (data.basics?.sectors?.length ?? 0) + (data.basics?.core_services?.length ?? 0);
   const sections: WorkspaceSection[] = [
     {
       id: "basics", label: "Basics", done: Boolean(data.basics?.company_name),
@@ -189,12 +191,29 @@ async function CompanyBuilder({ userId }: { userId: string }) {
       }} />,
     },
     {
-      id: "offerings", label: "Sectors & services", count: sectorCount,
-      done: (data.basics?.sectors?.length ?? 0) >= 1 && (data.basics?.core_services?.length ?? 0) >= 1,
-      node: <CompanyOfferingsCard initial={{
-        sectors: data.basics?.sectors ?? [],
-        core_services: data.basics?.core_services ?? [],
+      id: "offerings", label: "Sectors", count: data.basics?.sectors?.length ?? 0,
+      done: (data.basics?.sectors?.length ?? 0) >= 1,
+      node: <CompanyOfferingsCard initial={{ sectors: data.basics?.sectors ?? [] }} />,
+    },
+    {
+      id: "values", label: "Values", count: data.values.length, done: data.values.length >= 1,
+      node: <CompanyValuesCard items={data.values} />,
+    },
+    {
+      id: "ceo", label: "CEO message", done: Boolean(data.basics?.ceo_message || data.basics?.ceo_name),
+      node: <CompanyCeoCard initial={{
+        ceo_name: data.basics?.ceo_name ?? "",
+        ceo_title: data.basics?.ceo_title ?? "",
+        ceo_photo_url: data.basics?.ceo_photo_url ?? "",
+        ceo_quote: data.basics?.ceo_quote ?? "",
+        ceo_message: data.basics?.ceo_message ?? "",
+        board_name: data.basics?.board_name ?? "",
+        hasContent: Boolean(data.basics?.ceo_message || data.basics?.ceo_name),
       }} />,
+    },
+    {
+      id: "services", label: "Services", count: data.services.length, done: data.services.length >= 1,
+      node: <CompanyServicesCard items={data.services} />,
     },
     {
       id: "projects", label: "Selected projects", count: data.projects.length, done: data.projects.length >= 1,

@@ -3,46 +3,32 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/Button";
 import { SectionCard } from "../SectionCard";
-import { saveCompanyOfferings } from "@/lib/actions/company";
+import { saveCompanySectors } from "@/lib/actions/company";
 
-// Sectors + core_services are both string arrays on company_details. Single
-// card with two chip lists.
-export function CompanyOfferingsCard({ initial }: { initial: { sectors: string[]; core_services: string[] } }) {
+// Sectors are a string array on company_details. (Detailed services with
+// descriptions live in the separate Services card / company_services table.)
+export function CompanyOfferingsCard({ initial }: { initial: { sectors: string[] } }) {
   const [sectors, setSectors] = useState(initial.sectors);
-  const [services, setServices] = useState(initial.core_services);
 
   return (
     <SectionCard
       eyebrow="Section 3"
-      title="Sectors & core services"
-      description="What you operate in (sectors) and what you actually do (services). Both render side-by-side on the PDF."
-      defaultOpen={initial.sectors.length === 0 && initial.core_services.length === 0}
-      count={sectors.length + services.length}
+      title="Sectors"
+      description="The sectors you operate in. Rendered as a tidy list on the profile."
+      defaultOpen={initial.sectors.length === 0}
+      count={sectors.length}
     >
-      <div className="grid gap-6 sm:grid-cols-2">
-        <ChipList
-          label="Sectors"
-          items={sectors}
-          placeholder="e.g. Roads & bridges"
-          onChange={async (next) => {
-            const prev = sectors;
-            setSectors(next);
-            try { await saveCompanyOfferings({ sectors: next, core_services: services }); }
-            catch { setSectors(prev); }
-          }}
-        />
-        <ChipList
-          label="Core services"
-          items={services}
-          placeholder="e.g. Design & feasibility studies"
-          onChange={async (next) => {
-            const prev = services;
-            setServices(next);
-            try { await saveCompanyOfferings({ sectors, core_services: next }); }
-            catch { setServices(prev); }
-          }}
-        />
-      </div>
+      <ChipList
+        label="Sectors"
+        items={sectors}
+        placeholder="e.g. Roads & bridges"
+        onChange={async (next) => {
+          const prev = sectors;
+          setSectors(next);
+          try { await saveCompanySectors(next); }
+          catch { setSectors(prev); }
+        }}
+      />
     </SectionCard>
   );
 }
