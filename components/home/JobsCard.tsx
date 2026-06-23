@@ -65,11 +65,12 @@ export function JobsCard({ matched, categories }: { matched: MatchedJobs; catego
                   </span>
                 </span>
                 <span className="shrink-0 text-right">
-                  {job.deadline ? (
-                    <span className="block text-[11.5px] text-amber-700 font-medium">Closes {job.deadline}</span>
-                  ) : job.postedAt ? (
-                    <span className="block text-[11.5px] text-muted">{ago(job.postedAt)}</span>
-                  ) : null}
+                  {(() => {
+                    const dl = deadlineLabel(job);
+                    if (dl) return <span className={`block text-[11.5px] font-medium ${dl.urgent ? "text-amber-700" : "text-muted"}`}>{dl.text}</span>;
+                    if (job.postedAt) return <span className="block text-[11.5px] text-muted">{ago(job.postedAt)}</span>;
+                    return null;
+                  })()}
                   <span className="block text-[12.5px] font-medium text-sienna mt-2">View ↗</span>
                 </span>
               </a>
@@ -85,6 +86,22 @@ export function JobsCard({ matched, categories }: { matched: MatchedJobs; catego
 
 function Chip({ children }: { children: React.ReactNode }) {
   return <span className="border border-border rounded-full px-2.5 py-0.5 text-[11px] text-muted">{children}</span>;
+}
+
+// Prefer a countdown from the resolved deadline; fall back to the raw text
+// ("Closes Jul, 09") if we couldn't resolve a date. Returns null when the
+// deadline has already passed so a stale listing doesn't show "−3 days".
+function deadlineLabel(job: { deadlineISO: string | null; deadline: string | null }): { text: string; urgent: boolean } | null {
+  if (job.deadlineISO) {
+    const endOfDay = Date.parse(job.deadlineISO) + 86_400_000;
+    const days = Math.ceil((endOfDay - Date.now()) / 86_400_000);
+    if (days < 0) return null;
+    if (days === 0) return { text: "Closes today", urgent: true };
+    if (days === 1) return { text: "1 day left", urgent: true };
+    return { text: `${days} days left`, urgent: days <= 7 };
+  }
+  if (job.deadline) return { text: `Closes ${job.deadline}`, urgent: false };
+  return null;
 }
 
 function initials(s: string): string {

@@ -21,7 +21,8 @@ export interface JobItem {
   sector: string | null;
   categories: string[];      // every <category> tag, verbatim
   postedAt: string | null;   // ISO
-  deadline: string | null;   // free-text as printed in the listing
+  deadline: string | null;   // free-text as printed in the listing ("Jul, 09")
+  deadlineISO: string | null; // resolved to a date (year inferred from posting)
 }
 
 export async function fetchJobs(max = 40): Promise<JobItem[]> {
@@ -94,6 +95,8 @@ function parseFeed(xml: string): JobItem[] {
     const description = tag(block, "description");
     const categories = allTags(block, "category").map(decode).filter(Boolean);
     const pub = tag(block, "pubDate");
+    const postedAt = pub ? toIso(pub) : null;
+    const dl = parseDeadline(description, postedAt);
     items.push({
       title,
       link,
@@ -101,8 +104,9 @@ function parseFeed(xml: string): JobItem[] {
       location: field(description, "Location"),
       sector: field(description, "Sector"),
       categories,
-      postedAt: pub ? toIso(pub) : null,
-      deadline: deadline(description),
+      postedAt,
+      deadline: dl.text,
+      deadlineISO: dl.iso,
     });
   }
   return items;
@@ -133,14 +137,44 @@ function field(html: string, label: string): string | null {
   return v || null;
 }
 
-// Deadline is printed inconsistently; try a labelled field first, then a
-// loose "<Month> DD" near a deadline/closing keyword.
-function deadline(html: string): string | null {
-  const labelled = field(html, "Deadline") || field(html, "Closing date") || field(html, "Apply by");
-  if (labelled) return labelled;
-  const text = decode(html.replace(/<[^>]+>/g, " "));
-  const loose = /(?:deadline|closing date|apply by|closes?)[:\s]*([A-Za-z]{3,9}\.?,?\s*\d{1,2}(?:,?\s*\d{4})?)/i.exec(text);
-  return loose ? loose[1].trim() : null;
+// Deadlines live in the listing's prose, not a structured field, in a few
+// phrasings: "apply before the Jul, 09 deadline", "before Jul, 07", "closes
+// on Jul, 09". Always "<Mon>, DD" with no year. We pull the raw text and
+// resolve it to a date (inferring the year from the posting date).
+const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+const DATE = String.raw`(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?,?\s*\d{1,2}(?:,?\s*\d{4})?`;
+
+function parseDeadline(html: string, postedAtIso: string | null): { text: string | null; iso: string | null } {
+  const text = decode(html.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ");
+  const patterns = [
+    new RegExp(`before\\s+(?:the\\s+)?(${DATE})\\s+deadline`, "i"),
+    new RegExp(`(?:closes?|closing(?: date)?|deadline)(?:\\s+(?:on|is|date))?:?\\s+(?:the\\s+)?(${DATE})`, "i"),
+    new RegExp(`(?:open|available|accepted)\\s+until\\s+(?:the\\s+)?(${DATE})`, "i"),
+    new RegExp(`(?:apply|submit[^.]{0,40}?)\\s+(?:by|before)\\s+(?:the\\s+)?(${DATE})`, "i"),
+    new RegExp(`(?:before|until)\\s+(?:the\\s+)?(${DATE})`, "i"),
+    new RegExp(`(${DATE})\\s+deadline`, "i"),
+  ];
+  let raw: string | null = null;
+  for (const re of patterns) { const m = re.exec(text); if (m) { raw = m[1].trim(); break; } }
+  if (!raw) return { text: null, iso: null };
+  return { text: raw, iso: toDeadlineIso(raw, postedAtIso) };
+}
+
+function toDeadlineIso(raw: string, postedAtIso: string | null): string | null {
+  const m = /([A-Za-z]{3,9})\.?,?\s*(\d{1,2})(?:,?\s*(\d{4}))?/.exec(raw);
+  if (!m) return null;
+  const mon = MONTHS.indexOf(m[1].slice(0, 3).toLowerCase());
+  const day = Number(m[2]);
+  if (mon < 0 || day < 1 || day > 31) return null;
+  const fallbackYear = postedAtIso ? new Date(postedAtIso).getUTCFullYear() : new Date().getUTCFullYear();
+  let year = m[3] ? Number(m[3]) : fallbackYear;
+  // No explicit year: if the date lands clearly before the posting date, it
+  // rolls into the next year (posted late Dec, closes early Jan).
+  if (!m[3] && postedAtIso && Date.UTC(year, mon, day) < Date.parse(postedAtIso) - 2 * 86_400_000) {
+    year += 1;
+  }
+  const d = new Date(Date.UTC(year, mon, day));
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
 }
 
 function toIso(rfc: string): string | null {
