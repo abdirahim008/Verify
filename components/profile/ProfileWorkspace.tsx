@@ -15,10 +15,11 @@ export interface WorkspaceSection {
   node: React.ReactNode;
 }
 
-// Three-pane profile builder: a sticky left sidebar that switches which
-// single section is shown in the centre, plus the right rail. Every
-// section stays mounted (toggled with `hidden`) so switching never loses
-// in-progress form input.
+// Three-pane profile builder: a sticky left sidebar navigates the sections,
+// the centre stacks every section (so the column stays full), and the right
+// rail carries completeness + download. Clicking a sidebar item smooth-
+// scrolls to that section; a scroll-spy highlights whichever section is
+// currently in view.
 export function ProfileWorkspace({
   eyebrow, title, publicHref, sections, rail, minCore,
 }: {
@@ -30,6 +31,42 @@ export function ProfileWorkspace({
   minCore: { passed: boolean; label: string; hint: string };
 }) {
   const [active, setActive] = React.useState(sections[0]?.id ?? "");
+  // Suppress the scroll-spy briefly after a click so the smooth scroll lands
+  // on the clicked section without intermediate sections stealing the active
+  // state on the way past.
+  const lockRef = React.useRef(0);
+
+  React.useEffect(() => {
+    const els = sections
+      .map((s) => document.getElementById(`sec-${s.id}`))
+      .filter((el): el is HTMLElement => Boolean(el));
+    if (!els.length) return;
+
+    const visible = new Map<string, number>();
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          const id = (e.target as HTMLElement).dataset.sec ?? "";
+          if (e.isIntersecting) visible.set(id, e.boundingClientRect.top);
+          else visible.delete(id);
+        }
+        if (Date.now() < lockRef.current || visible.size === 0) return;
+        const topmost = [...visible.entries()].sort((a, b) => a[1] - b[1])[0][0];
+        setActive(topmost);
+      },
+      { rootMargin: "-110px 0px -55% 0px", threshold: 0 },
+    );
+    els.forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, [sections]);
+
+  function go(id: string) {
+    const el = document.getElementById(`sec-${id}`);
+    if (!el) return;
+    setActive(id);
+    lockRef.current = Date.now() + 800;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
     <div className="grid gap-6 lg:grid-cols-[212px_1fr_300px] items-start">
@@ -52,7 +89,7 @@ export function ProfileWorkspace({
               <button
                 key={s.id}
                 type="button"
-                onClick={() => setActive(s.id)}
+                onClick={() => go(s.id)}
                 aria-current={on ? "true" : undefined}
                 className={cn(
                   "shrink-0 lg:w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13.5px] transition whitespace-nowrap",
@@ -77,11 +114,11 @@ export function ProfileWorkspace({
         </div>
       </aside>
 
-      {/* ── Centre: the active section (all stay mounted) ────────────── */}
-      <main className="min-w-0">
+      {/* ── Centre: every section stacked ────────────────────────────── */}
+      <main className="min-w-0 space-y-4">
         <WorkspaceMode.Provider value={true}>
           {sections.map((s) => (
-            <div key={s.id} hidden={s.id !== active}>{s.node}</div>
+            <div key={s.id} id={`sec-${s.id}`} data-sec={s.id} className="scroll-mt-6">{s.node}</div>
           ))}
         </WorkspaceMode.Provider>
       </main>
