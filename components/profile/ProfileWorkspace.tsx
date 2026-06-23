@@ -22,7 +22,7 @@ export interface WorkspaceSection {
 // scrolls to that section; a scroll-spy highlights whichever section is
 // currently in view.
 export function ProfileWorkspace({
-  eyebrow, title, publicHref, sections, rail, minCore,
+  eyebrow, title, publicHref, sections, rail, minCore, businessCard,
 }: {
   eyebrow: string;
   title: string;
@@ -30,6 +30,7 @@ export function ProfileWorkspace({
   sections: WorkspaceSection[];
   rail: React.ReactNode;
   minCore: { passed: boolean; label: string; hint: string };
+  businessCard?: boolean;
 }) {
   const [active, setActive] = React.useState(sections[0]?.id ?? "");
   // Suppress the scroll-spy briefly after a click so the smooth scroll lands
@@ -81,7 +82,7 @@ export function ProfileWorkspace({
               className="text-[12px] text-sienna font-medium hover:underline">
               View public profile ↗
             </Link>
-            <ShareProfile publicHref={publicHref} />
+            <ShareProfile publicHref={publicHref} businessCard={businessCard} />
           </div>
         </div>
 

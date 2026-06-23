@@ -8,7 +8,7 @@ import { QRCodeCanvas } from "qrcode.react";
 // reachable by anyone, logged in or not, with per-section visibility applied.
 // The absolute URL is resolved on the client from window.location so it works
 // across localhost / preview / production without hard-coding a domain.
-export function ShareProfile({ publicHref }: { publicHref: string }) {
+export function ShareProfile({ publicHref, businessCard }: { publicHref: string; businessCard?: boolean }) {
   const [open, setOpen] = useState(false);
   const [url, setUrl] = useState("");
   const [copied, setCopied] = useState(false);
@@ -80,6 +80,17 @@ export function ShareProfile({ publicHref }: { publicHref: string }) {
               <button type="button" onClick={downloadPng} className="rounded-lg border border-border text-[13px] font-medium px-3.5 py-2 hover:bg-cream/60 transition">Download QR</button>
               <a href={url || publicHref} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-border text-[13px] font-medium px-3.5 py-2 hover:bg-cream/60 transition">Open profile ↗</a>
             </div>
+
+            {businessCard && (
+              <div className="mt-5 pt-4 border-t border-border-soft">
+                <p className="section-eyebrow text-sienna">Business card</p>
+                <p className="mt-1 text-[12.5px] text-ink-soft leading-relaxed">A printable card with your name, contact details and this QR — ready to share or send to a printer.</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <a href="/api/card?format=png" download className="rounded-lg bg-ink text-paper text-[13px] font-semibold px-3.5 py-2 hover:bg-ink/90 transition">Download PNG</a>
+                  <a href="/api/card?format=pdf" download className="rounded-lg border border-border text-[13px] font-medium px-3.5 py-2 hover:bg-cream/60 transition">PDF for print</a>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

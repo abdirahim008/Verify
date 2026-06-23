@@ -130,6 +130,7 @@ async function IndividualBuilder({ userId }: { userId: string }) {
       eyebrow="Your profile"
       title="Profile builder"
       publicHref={`/u/${userId}`}
+      businessCard
       sections={sections}
       minCore={{
         passed: minCore,
