@@ -415,11 +415,11 @@ function TimelineItem({ first, last, verified, title, date, meta, note, descript
   );
 }
 
-function VerifiedTag({ note }: { note?: string }) {
+function VerifiedTag(_props: { note?: string }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-full text-[10px] font-semibold px-2 py-0.5" style={{ background: C.greenSoft, color: C.green }}>
       <span className="inline-flex items-center justify-center w-3 h-3 rounded-full text-white text-[7px]" style={{ background: C.green }}>✓</span>
-      {note ? `Verified · ${note}` : "Verified"}
+      Verified
     </span>
   );
 }

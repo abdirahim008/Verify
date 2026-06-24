@@ -123,7 +123,7 @@ export default function GuidePage({ params }: { params: { slug: string } }) {
               <Feature>Update once, regenerate any time</Feature>
               <Feature>Verified badges, per claim</Feature>
             </ul>
-            <div className="mt-4"><VerifiedBadge note="UNICEF Somalia" /></div>
+            <div className="mt-4"><VerifiedBadge /></div>
           </section>
 
           {/* FAQ */}

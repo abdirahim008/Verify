@@ -230,14 +230,14 @@ function PageFoot({ data, page }: { data: CompanyData; page: string }) {
     </div>
   );
 }
-function VerifiedPill({ note, small }: { note: string; small?: boolean }) {
+function VerifiedPill({ small }: { note?: string; small?: boolean }) {
   return (
     <span className={small ? "vbadge vbadge-sm" : "vbadge"}>
       <svg width={small ? "8" : "9"} height={small ? "8" : "9"} viewBox="0 0 11 11" aria-hidden>
         <circle cx="5.5" cy="5.5" r="5.5" fill={BASE.verifiedFg} />
         <path d="M3 5.5 L4.7 7.2 L8 4" stroke="#fff" strokeWidth="1.4" fill="none" strokeLinecap="round" />
       </svg>
-      {note ? `Verified · ${note}` : "Verified"}
+      Verified
     </span>
   );
 }
