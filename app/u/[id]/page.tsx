@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { loadPublicProfile, viewerContext } from "@/lib/public-profile";
 import { ReadMore } from "@/components/ReadMore";
+import { ScopeList } from "@/components/ScopeList";
 
 // Public profile page — the QR / share destination, so it doubles as the
 // app's shop window. No (app) layout: reachable by logged-out viewers, with
@@ -291,7 +292,7 @@ function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublic
               <TimelineItem key={proj.id} first={i === 0} last={i === p.projects.length - 1} verified={proj.verified}
                 title={proj.project_name} date={proj.dateRange}
                 meta={[proj.client_name, proj.sector].filter(Boolean).join(" · ")} note={proj.verifiedNote}
-                description={proj.scope} />
+                description={proj.scope} descriptionAsList />
             ))}
           </SectionCard>
         </section>
@@ -411,8 +412,8 @@ function SectionCard({ title, meta, bodyClass, children }: {
   );
 }
 
-function TimelineItem({ first, last, verified, title, date, meta, note, description }: {
-  first: boolean; last: boolean; verified: boolean; title: string; date?: string; meta?: string; note?: string; description?: string;
+function TimelineItem({ first, last, verified, title, date, meta, note, description, descriptionAsList }: {
+  first: boolean; last: boolean; verified: boolean; title: string; date?: string; meta?: string; note?: string; description?: string; descriptionAsList?: boolean;
 }) {
   return (
     <div className="flex gap-4 py-5" style={!first ? { borderTop: `1px solid ${C.line}` } : undefined}>
@@ -429,7 +430,10 @@ function TimelineItem({ first, last, verified, title, date, meta, note, descript
           {meta && <span className="text-[13px]" style={{ color: "#52524c" }}>{meta}</span>}
           {verified && <VerifiedTag note={note} />}
         </div>
-        {description && <ReadMore text={description} className="mt-2 text-[12.5px] leading-[1.55]" lines={4} style={{ color: C.muted }} />}
+        {description && (descriptionAsList
+          ? <ScopeList text={description} dotColor={C.blue} className="mt-2 text-[12.5px] leading-[1.55]" style={{ color: C.muted }} />
+          : <ReadMore text={description} className="mt-2 text-[12.5px] leading-[1.55]" lines={4} style={{ color: C.muted }} />
+        )}
       </div>
     </div>
   );
