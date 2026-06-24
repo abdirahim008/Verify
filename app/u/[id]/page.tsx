@@ -146,72 +146,63 @@ function IndividualProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPub
 
       {/* Experience */}
       {p.experiences.length > 0 && (
-        <section className="mt-6">
-          <SectionHead title="Experience" meta={`${p.experiences.length} ${p.experiences.length === 1 ? "role" : "roles"}`} />
-          <div className="bg-white rounded-2xl border shadow-sm px-6 sm:px-[26px]" style={{ borderColor: C.cardBorder }}>
+        <section className="mt-4">
+          <SectionCard title="Experience" meta={`${p.experiences.length} ${p.experiences.length === 1 ? "role" : "roles"}`} bodyClass="px-6 sm:px-7">
             {p.experiences.map((e, i) => (
               <TimelineItem key={e.id} first={i === 0} last={i === p.experiences.length - 1} verified={e.verified}
                 title={e.title} date={e.dateRange}
                 meta={[e.organization, e.location].filter(Boolean).join(" · ")} note={e.verifiedNote}
                 description={e.description} />
             ))}
-          </div>
+          </SectionCard>
         </section>
       )}
 
       {/* Education + Certifications */}
       {(p.educations.length > 0 || p.certifications.length > 0) && (
-        <div className="grid sm:grid-cols-2 gap-[18px] mt-6">
+        <div className="grid sm:grid-cols-2 gap-4 mt-4">
           {p.educations.length > 0 && (
-            <section>
-              <SectionHead title="Education" />
-              <ListCard items={p.educations.map((e) => ({
+            <SectionCard title="Education" bodyClass="px-6 sm:px-7 py-5 flex flex-col gap-4">
+              <ListItems items={p.educations.map((e) => ({
                 key: e.id, title: e.qualification + (e.field ? `, ${e.field}` : ""), sub: e.institution, meta: e.dateRange, verified: e.verified,
               }))} />
-            </section>
+            </SectionCard>
           )}
           {p.certifications.length > 0 && (
-            <section>
-              <SectionHead title="Certifications" />
-              <ListCard items={p.certifications.map((c) => ({
+            <SectionCard title="Certifications" bodyClass="px-6 sm:px-7 py-5 flex flex-col gap-4">
+              <ListItems items={p.certifications.map((c) => ({
                 key: c.id, title: c.name, sub: c.issuer, meta: c.year, verified: c.verified,
               }))} />
-            </section>
+            </SectionCard>
           )}
         </div>
       )}
 
       {/* Skills + Languages */}
       {(p.skills.length > 0 || p.languages.length > 0) && (
-        <div className="grid sm:grid-cols-[1.4fr_1fr] gap-[18px] mt-6">
+        <div className="grid sm:grid-cols-[1.4fr_1fr] gap-4 mt-4">
           {p.skills.length > 0 && (
-            <section>
-              <SectionHead title="Skills" />
-              <div className="bg-white rounded-2xl border shadow-sm p-[22px] flex flex-wrap gap-2.5" style={{ borderColor: C.cardBorder }}>
-                {p.skills.map((s) => (
-                  <span key={s.id} className="rounded-full px-[15px] py-2 text-[12.5px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{s.name}</span>
-                ))}
-              </div>
-            </section>
+            <SectionCard title="Skills" bodyClass="px-6 sm:px-7 py-5 flex flex-wrap gap-2.5">
+              {p.skills.map((s) => (
+                <span key={s.id} className="rounded-full px-[15px] py-2 text-[12.5px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{s.name}</span>
+              ))}
+            </SectionCard>
           )}
           {p.languages.length > 0 && (
-            <section>
-              <SectionHead title="Languages" />
-              <div className="bg-white rounded-2xl border shadow-sm px-[22px] py-5 flex flex-col gap-3" style={{ borderColor: C.cardBorder }}>
-                {p.languages.map((l, i) => {
-                  const { name, level } = splitLang(l);
-                  return (
-                    <div key={i}>
-                      {i > 0 && <div className="h-px -mt-1.5 mb-3" style={{ background: C.line }} />}
-                      <div className="flex items-center justify-between">
-                        <span className="text-[13.5px]" style={{ color: C.ink }}>{name}</span>
-                        {level && <span className="text-[12px]" style={{ color: C.faint }}>{level}</span>}
-                      </div>
+            <SectionCard title="Languages" bodyClass="px-6 sm:px-7 py-5 flex flex-col gap-3">
+              {p.languages.map((l, i) => {
+                const { name, level } = splitLang(l);
+                return (
+                  <div key={i}>
+                    {i > 0 && <div className="h-px -mt-1.5 mb-3" style={{ background: C.line }} />}
+                    <div className="flex items-center justify-between">
+                      <span className="text-[13.5px]" style={{ color: C.ink }}>{name}</span>
+                      {level && <span className="text-[12px]" style={{ color: C.faint }}>{level}</span>}
                     </div>
-                  );
-                })}
-              </div>
-            </section>
+                  </div>
+                );
+              })}
+            </SectionCard>
           )}
         </div>
       )}
@@ -271,16 +262,15 @@ function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublic
       </header>
 
       {(p.mission || p.vision) && (
-        <div className="grid sm:grid-cols-2 gap-[18px] mt-6">
+        <div className="grid sm:grid-cols-2 gap-4 mt-4">
           {p.mission && <MvCard label="Mission" text={p.mission} />}
           {p.vision && <MvCard label="Vision" text={p.vision} dark />}
         </div>
       )}
 
       {p.ceo && (p.ceo.message || p.ceo.quote) && (
-        <section className="mt-6">
-          <SectionHead title="CEO message" />
-          <div className="bg-white rounded-2xl border shadow-sm p-6 sm:p-8 flex gap-5 sm:gap-6" style={{ borderColor: C.cardBorder }}>
+        <section className="mt-4">
+          <SectionCard title="CEO message" bodyClass="px-6 sm:px-7 py-6 flex gap-5 sm:gap-6">
             <div className="flex-none text-center w-[74px]">
               <CeoCircle ceo={p.ceo} size={74} />
               {p.ceo.name && <div className="font-semibold text-[12.5px] mt-2.5 leading-tight" style={{ color: C.ink }}>{p.ceo.name}</div>}
@@ -290,63 +280,57 @@ function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublic
               {p.ceo.quote && <div className="font-serif font-semibold text-[17px] leading-snug" style={{ fontFamily: SERIF, color: C.ink }}>{p.ceo.quote}</div>}
               {p.ceo.message && <ReadMore text={p.ceo.message} className={`text-[13.5px] leading-[1.6] ${p.ceo.quote ? "mt-2.5" : ""}`} lines={4} style={{ color: "#52524c" }} />}
             </div>
-          </div>
+          </SectionCard>
         </section>
       )}
 
       {p.projects.length > 0 && (
-        <section className="mt-6">
-          <SectionHead title="Selected projects" meta={`${p.projects.length}`} />
-          <div className="bg-white rounded-2xl border shadow-sm px-6 sm:px-[26px]" style={{ borderColor: C.cardBorder }}>
+        <section className="mt-4">
+          <SectionCard title="Selected projects" meta={`${p.projects.length}`} bodyClass="px-6 sm:px-7">
             {p.projects.map((proj, i) => (
               <TimelineItem key={proj.id} first={i === 0} last={i === p.projects.length - 1} verified={proj.verified}
                 title={proj.project_name} date={proj.dateRange}
                 meta={[proj.client_name, proj.sector].filter(Boolean).join(" · ")} note={proj.verifiedNote}
                 description={proj.scope} />
             ))}
-          </div>
+          </SectionCard>
         </section>
       )}
 
       {(p.sectors.length > 0 || p.services.length > 0) && (
-        <div className="grid sm:grid-cols-2 gap-[18px] mt-6">
+        <div className="grid sm:grid-cols-2 gap-4 mt-4">
           {p.sectors.length > 0 && (
-            <section><SectionHead title="Sectors" />
-              <div className="bg-white rounded-2xl border shadow-sm p-[22px] flex flex-wrap gap-2.5" style={{ borderColor: C.cardBorder }}>
-                {p.sectors.map((s) => <span key={s} className="rounded-full px-[15px] py-2 text-[12.5px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{s}</span>)}
-              </div>
-            </section>
+            <SectionCard title="Sectors" bodyClass="px-6 sm:px-7 py-5 flex flex-wrap gap-2.5">
+              {p.sectors.map((s) => <span key={s} className="rounded-full px-[15px] py-2 text-[12.5px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{s}</span>)}
+            </SectionCard>
           )}
           {p.services.length > 0 && (
-            <section><SectionHead title="Services" />
-              <div className="bg-white rounded-2xl border shadow-sm p-[22px] flex flex-wrap gap-2.5" style={{ borderColor: C.cardBorder }}>
-                {p.services.map((s) => <span key={s} className="rounded-full px-[15px] py-2 text-[12.5px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{s}</span>)}
-              </div>
-            </section>
+            <SectionCard title="Services" bodyClass="px-6 sm:px-7 py-5 flex flex-wrap gap-2.5">
+              {p.services.map((s) => <span key={s} className="rounded-full px-[15px] py-2 text-[12.5px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{s}</span>)}
+            </SectionCard>
           )}
         </div>
       )}
 
       {(p.team.length > 0 || p.ceo?.name) && (
-        <section className="mt-6">
-          <SectionHead title="Key personnel" meta={p.team.length ? `${p.team.length}` : undefined} />
-          <div className="bg-white rounded-2xl border shadow-sm px-6 sm:px-8 py-7" style={{ borderColor: C.cardBorder }}>
+        <section className="mt-4">
+          <SectionCard title="Key personnel" meta={p.team.length ? `${p.team.length}` : undefined} bodyClass="px-6 sm:px-7 py-7">
             <Organogram ceo={p.ceo} team={p.team} />
-          </div>
+          </SectionCard>
         </section>
       )}
 
       {p.certifications.length > 0 && (
-        <section className="mt-6">
-          <SectionHead title="Accreditations" />
-          <ListCard items={p.certifications.map((c) => ({ key: c.id, title: c.name, sub: c.issuer, meta: c.year, verified: c.verified }))} />
+        <section className="mt-4">
+          <SectionCard title="Accreditations" bodyClass="px-6 sm:px-7 py-5 flex flex-col gap-4">
+            <ListItems items={p.certifications.map((c) => ({ key: c.id, title: c.name, sub: c.issuer, meta: c.year, verified: c.verified }))} />
+          </SectionCard>
         </section>
       )}
 
       {p.publicClients.length > 0 && (
-        <section className="mt-6">
-          <SectionHead title="Selected clients" />
-          <div className="bg-white rounded-2xl border shadow-sm p-[22px] flex flex-wrap items-center gap-3" style={{ borderColor: C.cardBorder }}>
+        <section className="mt-4">
+          <SectionCard title="Selected clients" bodyClass="px-6 sm:px-7 py-5 flex flex-wrap items-center gap-3">
             {p.publicClients.map((c, i) => (
               c.logoUrl ? (
                 <span key={i} className="inline-flex items-center justify-center h-[52px] px-3.5 rounded-lg border bg-white" style={{ borderColor: C.chipBorder }}>
@@ -357,7 +341,7 @@ function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublic
                 <span key={i} className="inline-flex items-center h-[52px] rounded-full px-[15px] text-[12.5px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{c.name}</span>
               )
             ))}
-          </div>
+          </SectionCard>
         </section>
       )}
     </article>
@@ -410,11 +394,19 @@ function ContactActions({ name, headline, email, phone, org }: { name: string; h
   );
 }
 
-function SectionHead({ title, meta }: { title: string; meta?: string }) {
+// A self-contained section card: the header sits INSIDE the card, at the top,
+// above a hairline divider. This keeps the spacing between sections to a small,
+// even card-to-card margin (rather than the title floating in the gap).
+function SectionCard({ title, meta, bodyClass, children }: {
+  title: string; meta?: string; bodyClass?: string; children: React.ReactNode;
+}) {
   return (
-    <div className="flex items-baseline gap-2.5 mb-3.5">
-      <h2 className="font-serif font-semibold text-[18px]" style={{ fontFamily: SERIF, color: C.ink }}>{title}</h2>
-      {meta && <span className="text-[12px]" style={{ color: C.soft }}>{meta}</span>}
+    <div className="bg-white rounded-2xl border shadow-sm overflow-hidden" style={{ borderColor: C.cardBorder }}>
+      <div className="flex items-baseline gap-2.5 px-6 sm:px-7 pt-[18px] pb-3.5 border-b" style={{ borderColor: C.line }}>
+        <h2 className="font-serif font-semibold text-[18px]" style={{ fontFamily: SERIF, color: C.ink }}>{title}</h2>
+        {meta && <span className="text-[12px]" style={{ color: C.soft }}>{meta}</span>}
+      </div>
+      <div className={bodyClass ?? "px-6 sm:px-7 py-5"}>{children}</div>
     </div>
   );
 }
@@ -452,9 +444,11 @@ function VerifiedTag(_props: { note?: string }) {
   );
 }
 
-function ListCard({ items }: { items: Array<{ key: string; title: string; sub?: string; meta?: string; verified?: boolean }> }) {
+// Body-only list (no card wrapper) — rendered inside a SectionCard whose body
+// supplies the padding + `flex flex-col gap-4`.
+function ListItems({ items }: { items: Array<{ key: string; title: string; sub?: string; meta?: string; verified?: boolean }> }) {
   return (
-    <div className="bg-white rounded-2xl border shadow-sm px-[22px] py-5 flex flex-col gap-4" style={{ borderColor: C.cardBorder }}>
+    <>
       {items.map((it) => (
         <div key={it.key}>
           <div className="flex items-center gap-[7px]">
@@ -465,7 +459,7 @@ function ListCard({ items }: { items: Array<{ key: string; title: string; sub?: 
           {it.meta && <div className="text-[12px] mt-px" style={{ color: C.faint }}>{it.meta}</div>}
         </div>
       ))}
-    </div>
+    </>
   );
 }
 
