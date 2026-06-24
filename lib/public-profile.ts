@@ -41,8 +41,10 @@ export interface PublicCompany {
   email: string | null;
   phone: string | null;
   foundedYear: number | null;
+  tagline: string | null;
   sectors: string[];
   services: string[];
+  ceo: { name: string; title: string; photoUrl: string | null; quote: string; message: string } | null;
   visible: Set<string>;
   projects: Array<{ id: string; project_name: string; client_name: string; sector: string; valueLabel: string; dateRange: string; scope: string; verified: boolean; verifiedNote: string }>;
   team: Array<{ id: string; person_name: string; role: string }>;
@@ -95,8 +97,20 @@ export async function loadPublicProfile(
       email: visible.has("contact") ? b.email ?? null : null,
       phone: visible.has("contact") ? b.phone ?? null : null,
       foundedYear: b.founded_year ?? null,
+      tagline: b.tagline ?? null,
       sectors: visible.has("sectors") ? (b.sectors ?? []) : [],
       services: visible.has("sectors") ? (b.core_services ?? []) : [],
+      // CEO node (organogram top) + message. Grouped with the leadership /
+      // "team" visibility toggle. null when nothing to show or hidden.
+      ceo: visible.has("team") && (b.ceo_name || b.ceo_message || b.ceo_quote)
+        ? {
+            name: b.ceo_name ?? "",
+            title: b.ceo_title ?? "",
+            photoUrl: b.ceo_photo_url ?? null,
+            quote: b.ceo_quote ?? "",
+            message: b.ceo_message ?? "",
+          }
+        : null,
       visible,
       projects: visible.has("projects") ? (projRes.data ?? []).map((p) => ({
         id: p.id, project_name: p.project_name, client_name: p.client_name ?? "", sector: p.sector ?? "",

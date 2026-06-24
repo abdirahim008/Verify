@@ -222,7 +222,7 @@ function IndividualProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPub
 // ── Company ──
 function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublicProfile>>, { kind: "company" }> }) {
   const verified = p.projects.filter((x) => x.verified).length + p.certifications.filter((x) => x.verified).length;
-  const blueLine = p.sectors.slice(0, 3).join(" · ");
+  const blueLine = p.tagline || p.sectors.slice(0, 3).join(" · ");
   const stats = ([
     ["Projects", p.projects.length, C.ink],
     ["Verified", verified, C.green],
@@ -277,6 +277,23 @@ function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublic
         </div>
       )}
 
+      {p.ceo && (p.ceo.message || p.ceo.quote) && (
+        <section className="mt-6">
+          <SectionHead title="CEO message" />
+          <div className="bg-white rounded-2xl border shadow-sm p-6 sm:p-8 flex gap-5 sm:gap-6" style={{ borderColor: C.cardBorder }}>
+            <div className="flex-none text-center w-[74px]">
+              <CeoCircle ceo={p.ceo} size={74} />
+              {p.ceo.name && <div className="font-semibold text-[12.5px] mt-2.5 leading-tight" style={{ color: C.ink }}>{p.ceo.name}</div>}
+              {p.ceo.title && <div className="text-[11px] mt-0.5" style={{ color: C.muted }}>{p.ceo.title}</div>}
+            </div>
+            <div className="flex-1 min-w-0 pl-5 sm:pl-6" style={{ borderLeft: "2px solid #e0e6f2" }}>
+              {p.ceo.quote && <div className="font-serif font-semibold text-[17px] leading-snug" style={{ fontFamily: SERIF, color: C.ink }}>{p.ceo.quote}</div>}
+              {p.ceo.message && <ReadMore text={p.ceo.message} className={`text-[13.5px] leading-[1.6] ${p.ceo.quote ? "mt-2.5" : ""}`} lines={4} style={{ color: "#52524c" }} />}
+            </div>
+          </div>
+        </section>
+      )}
+
       {p.projects.length > 0 && (
         <section className="mt-6">
           <SectionHead title="Selected projects" meta={`${p.projects.length}`} />
@@ -310,26 +327,20 @@ function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublic
         </div>
       )}
 
-      {(p.team.length > 0 || p.certifications.length > 0) && (
-        <div className="grid sm:grid-cols-2 gap-[18px] mt-6">
-          {p.team.length > 0 && (
-            <section><SectionHead title="Key personnel" />
-              <div className="bg-white rounded-2xl border shadow-sm px-[22px] py-5 flex flex-col gap-4" style={{ borderColor: C.cardBorder }}>
-                {p.team.map((m) => (
-                  <div key={m.id}>
-                    <div className="font-serif font-semibold text-[14.5px]" style={{ fontFamily: SERIF, color: C.ink }}>{m.person_name}</div>
-                    {m.role && <div className="text-[13px] mt-0.5" style={{ color: C.muted }}>{m.role}</div>}
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-          {p.certifications.length > 0 && (
-            <section><SectionHead title="Accreditations" />
-              <ListCard items={p.certifications.map((c) => ({ key: c.id, title: c.name, sub: c.issuer, meta: c.year, verified: c.verified }))} />
-            </section>
-          )}
-        </div>
+      {(p.team.length > 0 || p.ceo?.name) && (
+        <section className="mt-6">
+          <SectionHead title="Key personnel" meta={p.team.length ? `${p.team.length}` : undefined} />
+          <div className="bg-white rounded-2xl border shadow-sm px-6 sm:px-8 py-7" style={{ borderColor: C.cardBorder }}>
+            <Organogram ceo={p.ceo} team={p.team} />
+          </div>
+        </section>
+      )}
+
+      {p.certifications.length > 0 && (
+        <section className="mt-6">
+          <SectionHead title="Accreditations" />
+          <ListCard items={p.certifications.map((c) => ({ key: c.id, title: c.name, sub: c.issuer, meta: c.year, verified: c.verified }))} />
+        </section>
       )}
 
       {p.publicClients.length > 0 && (
@@ -463,6 +474,67 @@ function MvCard({ label, text, dark }: { label: string; text: string; dark?: boo
     <div className="rounded-2xl border shadow-sm p-5" style={dark ? { background: C.ink, borderColor: C.ink } : { background: "#fff", borderColor: C.cardBorder }}>
       <div className="text-[10.5px] font-semibold uppercase tracking-[0.14em]" style={{ color: dark ? "#8a93a6" : C.blue }}>{label}</div>
       <p className="mt-2 font-serif italic text-[15px] leading-snug" style={{ fontFamily: SERIF, color: dark ? "#fff" : C.ink }}>&ldquo;{text}&rdquo;</p>
+    </div>
+  );
+}
+
+function personInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "·";
+  return (parts.length === 1 ? parts[0].slice(0, 2) : parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+// CEO avatar — uploaded photo, else initials in a blue gradient circle.
+function CeoCircle({ ceo, size }: { ceo: { name: string; photoUrl: string | null }; size: number }) {
+  if (ceo.photoUrl) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={ceo.photoUrl} alt="" className="rounded-full object-cover mx-auto" style={{ width: size, height: size }} />;
+  }
+  return (
+    <div className="rounded-full mx-auto flex items-center justify-center font-serif font-semibold text-white"
+      style={{ width: size, height: size, fontFamily: SERIF, fontSize: Math.round(size * 0.34), background: "linear-gradient(135deg,#3a64cf,#1c3f9e)" }}>
+      {personInitials(ceo.name)}
+    </div>
+  );
+}
+
+// Organogram: CEO at the top (dark card) with reporting lines down to the team
+// cards. Falls back to a plain card grid when there's no CEO. Responsive:
+// 1 col on phones, up to 3 across on wider screens.
+function Organogram({ ceo, team }: {
+  ceo: { name: string; title: string; photoUrl: string | null } | null;
+  team: Array<{ id: string; person_name: string; role: string }>;
+}) {
+  const hasCeo = Boolean(ceo?.name);
+  const gridCls = team.length === 1 ? "grid-cols-1"
+    : team.length === 2 ? "grid-cols-1 sm:grid-cols-2"
+    : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3";
+  return (
+    <div className="flex flex-col items-center">
+      {hasCeo && ceo && (
+        <>
+          <div className="w-[230px] max-w-full rounded-xl px-[18px] py-[15px] text-center text-white" style={{ background: "#15171c" }}>
+            <CeoCircle ceo={ceo} size={42} />
+            <div className="font-serif font-semibold text-[15.5px] mt-2.5 leading-tight" style={{ fontFamily: SERIF }}>{ceo.name}</div>
+            <div className="text-[10px] tracking-[0.16em] uppercase mt-[3px]" style={{ color: "#8a93a6" }}>{ceo.title || "Chief Executive Officer"}</div>
+          </div>
+          {team.length > 0 && <div className="w-[1.5px] h-5" style={{ background: C.connector }} />}
+        </>
+      )}
+      {team.length > 0 && (
+        <div className={`grid gap-4 w-full ${gridCls}`}>
+          {team.map((m) => (
+            <div key={m.id} className="flex flex-col items-center">
+              {hasCeo && <div className="w-[1.5px] h-4" style={{ background: C.connector }} />}
+              <div className="w-full rounded-xl border p-4 text-center" style={{ borderColor: C.cardBorder }}>
+                <div className="w-[38px] h-[38px] mx-auto rounded-full flex items-center justify-center font-serif font-semibold text-[14px]" style={{ background: "#eef1f6", color: "#46506a", fontFamily: SERIF }}>{personInitials(m.person_name)}</div>
+                <div className="font-serif font-semibold text-[14.5px] mt-2.5 leading-tight" style={{ fontFamily: SERIF, color: C.ink }}>{m.person_name}</div>
+                {m.role && <div className="text-[12px] mt-1" style={{ color: C.blue }}>{m.role}</div>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
