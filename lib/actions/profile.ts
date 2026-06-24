@@ -30,6 +30,15 @@ function monthToDate(s: string | undefined | null) {
 
 function bust() { revalidatePath("/profile"); revalidatePath("/home"); }
 
+// Lightweight "bust" for optimistic chip/array saves (languages, skills,
+// career interests) where the editing card already reflects the change locally.
+// We deliberately do NOT revalidate "/profile": since that's the route the user
+// is on, revalidating it forces an immediate full re-render of the profile
+// builder (re-querying every section) on EVERY chip add — the cause of the lag.
+// The public profile (/u/[id]) is force-dynamic and the PDF is generated on
+// demand, so nothing here needs eager revalidation.
+function bustOptimistic() { /* no-op: optimistic UI owns the immediate update */ }
+
 // ─── basics ─────────────────────────────────────────────────────────────
 export async function saveBasics(values: BasicsValues) {
   const v = basicsSchema.parse(values);
@@ -79,7 +88,7 @@ export async function saveLanguages(values: { languages: string[] }) {
     .from("individual_details")
     .upsert({ profile_id: userId, languages: v.languages }, { onConflict: "profile_id" });
   if (error) throw new Error(error.message);
-  bust();
+  bustOptimistic();
 }
 
 // ─── career categories (lives on profiles.career_categories) ─────────────
@@ -93,7 +102,7 @@ export async function saveCareerCategories(values: { categories: string[] }) {
     .update({ career_categories: clean })
     .eq("id", userId);
   if (error) throw new Error(error.message);
-  bust();
+  bustOptimistic();
 }
 
 // ─── experiences ────────────────────────────────────────────────────────
@@ -175,19 +184,26 @@ export async function deleteEducation(id: string) {
 }
 
 // ─── skills ─────────────────────────────────────────────────────────────
-export async function addSkill(name: string) {
+// Returns the new row id so the (optimistic) card can reconcile its temporary
+// row with the real id — needed for subsequent deletes.
+export async function addSkill(name: string): Promise<{ id: string }> {
   const v = skillSchema.parse({ name });
   const { supabase, userId } = await authedClient();
-  const { error } = await supabase.from("skills").insert({ profile_id: userId, name: v.name });
+  const { data, error } = await supabase
+    .from("skills")
+    .insert({ profile_id: userId, name: v.name })
+    .select("id")
+    .single();
   if (error) throw new Error(error.message);
-  bust();
+  bustOptimistic();
+  return { id: data.id };
 }
 
 export async function deleteSkill(id: string) {
   const { supabase } = await authedClient();
   const { error } = await supabase.from("skills").delete().eq("id", id);
   if (error) throw new Error(error.message);
-  bust();
+  bustOptimistic();
 }
 
 // ─── certifications ─────────────────────────────────────────────────────

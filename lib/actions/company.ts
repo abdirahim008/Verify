@@ -25,6 +25,15 @@ async function authedClient() {
 }
 function bust() { revalidatePath("/profile"); revalidatePath("/home"); }
 
+// Lightweight "bust" for optimistic chip/array saves (sectors, etc.) where the
+// editing card already reflects the change locally. We deliberately do NOT
+// revalidate "/profile": since that's the route the user is on, revalidating it
+// forces an immediate full re-render of the company builder (re-querying ~8
+// tables + re-rendering every section card) on EVERY chip add — the cause of
+// the multi-second lag. The public profile (/u/[id]) is force-dynamic and the
+// PDF is generated on demand, so nothing here needs eager revalidation.
+function bustOptimistic() { /* no-op: optimistic UI owns the immediate update */ }
+
 // ─── basics ─────────────────────────────────────────────────────────
 export async function saveCompanyBasics(values: CompanyBasicsValues) {
   const v = companyBasicsSchema.parse(values);
@@ -95,7 +104,7 @@ export async function saveCompanyOfferings(values: { sectors: string[]; core_ser
     .from("company_details")
     .upsert({ profile_id: userId, sectors: v.sectors, core_services: v.core_services }, { onConflict: "profile_id" });
   if (error) throw new Error(error.message);
-  bust();
+  bustOptimistic();
 }
 
 // ─── projects ──────────────────────────────────────────────────────
@@ -228,7 +237,7 @@ export async function saveCompanySectors(sectors: string[]) {
     .from("company_details")
     .upsert({ profile_id: userId, sectors: v.sectors }, { onConflict: "profile_id" });
   if (error) throw new Error(error.message);
-  bust();
+  bustOptimistic();
 }
 
 // ─── values ─────────────────────────────────────────────────────────
