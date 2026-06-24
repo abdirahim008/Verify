@@ -1,6 +1,10 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+// Uses the getAll/setAll cookie interface (required by @supabase/ssr ≥0.5). The
+// deprecated per-cookie get/set/remove methods mishandle the *chunked*
+// auth-token cookies Supabase writes for large sessions, desyncing the browser
+// client (server stays authed while the client's getUser() returns null).
 export function createSupabaseServerClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -8,17 +12,17 @@ export function createSupabaseServerClient() {
   const cookieStore = cookies();
   return createServerClient(url, anon, {
     cookies: {
-      get(name: string) {
-        return cookieStore.get(name)?.value;
+      getAll() {
+        return cookieStore.getAll();
       },
-      set(name: string, value: string, options: CookieOptions) {
+      setAll(cookiesToSet) {
         // In RSC reads we can't mutate cookies; ignore. Route handlers / Server
-        // Actions use a separate helper (lib/supabase/route.ts) when they need
-        // to write cookies during auth flows.
-        try { cookieStore.set({ name, value, ...options }); } catch {}
-      },
-      remove(name: string, options: CookieOptions) {
-        try { cookieStore.set({ name, value: "", ...options }); } catch {}
+        // Actions use a separate helper (lib/supabase/route.ts), and the
+        // middleware refreshes + persists the session on every request.
+        try {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set({ name, value, ...options }));
+        } catch { /* RSC render — read-only cookie store */ }
       },
     },
   });
@@ -34,7 +38,7 @@ export function createSupabaseServiceClient() {
   // Service role is exempt from RLS — wire it through createServerClient with
   // no cookie support so it can't accidentally pick up a user session.
   return createServerClient(url, key, {
-    cookies: { get: () => undefined, set: () => {}, remove: () => {} },
+    cookies: { getAll: () => [], setAll: () => {} },
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }

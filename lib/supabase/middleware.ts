@@ -1,11 +1,16 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // Middleware needs to read AND refresh the auth cookie on each protected
-// request. We pass a NextResponse through so set/remove can re-attach the
-// refreshed cookies to the outgoing response.
+// request. We pass a NextResponse through so setAll can re-attach the refreshed
+// cookies to the outgoing response.
+//
+// Uses the getAll/setAll cookie interface (required by @supabase/ssr ≥0.5):
+// the deprecated per-cookie get/set/remove methods mishandle the *chunked*
+// auth-token cookies Supabase writes for large sessions, which desyncs the
+// browser client (server stays authed, client's getUser() returns null).
 export async function updateSession(request: NextRequest) {
-  let response = NextResponse.next({ request: { headers: request.headers } });
+  let response = NextResponse.next({ request });
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -15,16 +20,14 @@ export async function updateSession(request: NextRequest) {
 
   const supabase = createServerClient(url, anon, {
     cookies: {
-      get(name: string) { return request.cookies.get(name)?.value; },
-      set(name: string, value: string, options: CookieOptions) {
-        request.cookies.set({ name, value, ...options });
-        response = NextResponse.next({ request: { headers: request.headers } });
-        response.cookies.set({ name, value, ...options });
+      getAll() {
+        return request.cookies.getAll();
       },
-      remove(name: string, options: CookieOptions) {
-        request.cookies.set({ name, value: "", ...options });
-        response = NextResponse.next({ request: { headers: request.headers } });
-        response.cookies.set({ name, value: "", ...options });
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        response = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) =>
+          response.cookies.set(name, value, options));
       },
     },
   });
