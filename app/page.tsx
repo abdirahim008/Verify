@@ -172,7 +172,7 @@ function VerifiedShowcase() {
               <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                 <span className="font-serif text-[18px] font-medium">Senior Health Coordinator</span>
                 <span className="font-serif text-[18px] italic text-sienna">· UNICEF Somalia</span>
-                <VerifiedBadge note="UNICEF Somalia" />
+                <VerifiedBadge />
               </div>
               <p className="text-[12px] text-muted mt-1">Mogadishu · Mar 2021 — Present</p>
               <p className="text-[13.5px] text-ink-soft leading-[1.6] mt-2.5">

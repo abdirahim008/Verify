@@ -2,8 +2,10 @@ import { cn } from "@/lib/cn";
 
 // Per-claim verified badge — inline, never global. CLAUDE.md §6+§12: the
 // badge means a specific experience/project/education was checked. An
-// unverified item shows nothing.
-export function VerifiedBadge({ note, className }: { note?: string | null; className?: string }) {
+// unverified item shows nothing. The issuer is intentionally NOT shown — a
+// plain green "Verified" badge is enough; `note` is kept for call-site
+// compatibility but no longer rendered.
+export function VerifiedBadge({ className }: { note?: string | null; className?: string }) {
   return (
     <span
       className={cn(
@@ -15,7 +17,7 @@ export function VerifiedBadge({ note, className }: { note?: string | null; class
         <circle cx="5.5" cy="5.5" r="5.5" fill="currentColor" />
         <path d="M3 5.5 L4.7 7.2 L8 4" stroke="#fff" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      {note ? `Verified · ${note}` : "Verified"}
+      Verified
     </span>
   );
 }

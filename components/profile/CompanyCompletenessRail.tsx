@@ -60,7 +60,7 @@ export function CompanyCompletenessRail({
             <p className="mt-2 text-[13px] text-ink-soft">
               None yet. Request verification on a specific project to earn a badge like this:
             </p>
-            <div className="mt-3"><VerifiedBadge note="UNICEF Somalia" /></div>
+            <div className="mt-3"><VerifiedBadge /></div>
           </>
         )}
       </div>

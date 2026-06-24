@@ -18,16 +18,17 @@ export const INK = {
   verified: "#1d6647", // the only accent — Sahan verified green
 };
 
-// Compact inline verified mark — a small green check + "Verified" (+ note).
-// Kept subtle so it sits cleanly on the monochrome templates.
-export function VerifiedMark({ note, size = 9 }: { note?: string; size?: number }) {
+// Compact inline verified mark — a small green check + "Verified". The issuer
+// is intentionally not shown; the green badge alone signals a checked claim.
+// `note` is accepted for call-site compatibility but no longer rendered.
+export function VerifiedMark({ size = 9 }: { note?: string; size?: number }) {
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: "3px", color: INK.verified, fontWeight: 600, fontSize: `${size + 0.5}px`, letterSpacing: "0.02em", whiteSpace: "nowrap" }}>
       <svg width={size} height={size} viewBox="0 0 11 11" aria-hidden style={{ flex: "none" }}>
         <circle cx="5.5" cy="5.5" r="5.5" fill={INK.verified} />
         <path d="M3 5.5 L4.7 7.2 L8 4" stroke="#fff" strokeWidth="1.5" fill="none" strokeLinecap="round" />
       </svg>
-      Verified{note ? ` · ${note}` : ""}
+      Verified
     </span>
   );
 }
