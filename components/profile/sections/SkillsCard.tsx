@@ -8,6 +8,10 @@ import { addSkill, deleteSkill } from "@/lib/actions/profile";
 interface SkillRow { id: string; name: string }
 
 export function SkillsCard({ items }: { items: SkillRow[] }) {
+  // Optimistic local copy: the card owns the immediate update so adds/removes
+  // feel instant. New rows use a temporary id until the server returns the real
+  // one (reconciled below); errors roll back.
+  const [rows, setRows] = useState<SkillRow[]>(items);
   const [value, setValue] = useState("");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -16,18 +20,31 @@ export function SkillsCard({ items }: { items: SkillRow[] }) {
     e.preventDefault();
     const name = value.trim();
     if (!name) return;
-    if (items.some((s) => s.name.toLowerCase() === name.toLowerCase())) {
+    if (rows.some((s) => s.name.toLowerCase() === name.toLowerCase())) {
       setError("You already have that skill."); return;
     }
     setError(null);
+    const tempId = `temp:${name}`;
+    setRows((cur) => [...cur, { id: tempId, name }]);
+    setValue("");
     startTransition(async () => {
-      try { await addSkill(name); setValue(""); }
-      catch (e) { setError(e instanceof Error ? e.message : "Couldn't save"); }
+      try {
+        const { id } = await addSkill(name);
+        setRows((cur) => cur.map((r) => (r.id === tempId ? { id, name } : r)));
+      } catch (e) {
+        setRows((cur) => cur.filter((r) => r.id !== tempId)); // rollback
+        setError(e instanceof Error ? e.message : "Couldn't save");
+      }
     });
   }
 
   function remove(id: string) {
-    startTransition(() => { void deleteSkill(id); });
+    const prev = rows;
+    setRows((cur) => cur.filter((r) => r.id !== id));
+    startTransition(async () => {
+      try { await deleteSkill(id); }
+      catch { setRows(prev); } // rollback
+    });
   }
 
   return (
@@ -38,10 +55,10 @@ export function SkillsCard({ items }: { items: SkillRow[] }) {
       description="Short labels — software, methods, languages of work. Aim for 6–12."
       required
       defaultOpen={items.length < 3}
-      count={items.length}
+      count={rows.length}
     >
       <ul className="flex flex-wrap gap-2">
-        {items.map((s) => (
+        {rows.map((s) => (
           <li key={s.id} className="inline-flex items-center gap-1 rounded-full bg-cream border border-border px-3 py-1 text-[13px] text-ink-soft">
             {s.name}
             <button
@@ -52,7 +69,7 @@ export function SkillsCard({ items }: { items: SkillRow[] }) {
             >×</button>
           </li>
         ))}
-        {items.length === 0 && <li className="text-[13.5px] text-muted">No skills yet.</li>}
+        {rows.length === 0 && <li className="text-[13.5px] text-muted">No skills yet.</li>}
       </ul>
 
       <form onSubmit={submit} className="mt-4 flex gap-2">
