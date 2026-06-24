@@ -6,7 +6,7 @@ import { Button } from "@/components/Button";
 import { JsonLd } from "@/components/JsonLd";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import {
-  SITE, absoluteUrl, articleLd, breadcrumbLd, faqLd,
+  SITE, absoluteUrl, articleLd, breadcrumbLd, faqLd, howToLd,
 } from "@/lib/seo";
 
 // Statically generate every guide at build time — fast, cacheable,
@@ -56,6 +56,10 @@ export default function GuidePage({ params }: { params: { slug: string } }) {
           { name: g.shortLabel, path },
         ]),
         faqLd(g.faq),
+        // HowTo only on guides that carry an explicit step sequence.
+        ...(g.howTo
+          ? [howToLd({ name: g.howTo.name ?? g.h1, description: g.metaDescription, path, steps: g.howTo.steps })]
+          : []),
       ]} />
 
       <main className="mx-auto max-w-3xl px-5 sm:px-8 py-10 sm:py-14">

@@ -33,6 +33,13 @@ export interface Guide {
   sections: GuideSection[];
   /** "What to include" style checklist, rendered as a styled card. */
   checklist?: { title: string; items: string[] };
+  /**
+   * Optional step-by-step procedure. Present ONLY on genuinely procedural
+   * "how-to" guides — it drives HowTo structured data. Do not add to
+   * informational/reference guides (Google flags HowTo on non-procedural
+   * pages as structured-data abuse).
+   */
+  howTo?: { name?: string; steps: { name: string; text: string }[] };
   faq: { q: string; a: string }[];
   related: string[];        // slugs
   cta: { title: string; body: string; href: string; label: string };
@@ -392,6 +399,15 @@ export const GUIDES: Guide[] = [
         ],
       },
     ],
+    howTo: {
+      name: "How to make a CV on your phone",
+      steps: [
+        { name: "Create a free account", text: "Open Sahan in your phone's browser and sign up as an individual — there's no app to install." },
+        { name: "Fill in the basics", text: "Add your name, headline and a short summary, then your experience, education and skills one field at a time. Everything saves as you go." },
+        { name: "Preview the PDF", text: "Open the Templates screen and tap Preview to see the real A4 PDF on your screen. Pick a colour theme and pinch to zoom in on the detail." },
+        { name: "Download your CV", text: "Tap Download to save the CV to your phone as a PDF you can attach to an email or job application straight away." },
+      ],
+    },
     faq: [
       {
         q: "Do I need to install an app to make a CV on my phone?",
@@ -786,6 +802,16 @@ export const GUIDES: Guide[] = [
         "Two to three referees who can speak to specific roles",
       ],
     },
+    howTo: {
+      name: "How to write a CV for UN jobs",
+      steps: [
+        { name: "Read the vacancy's requirements", text: "Note the listed competencies, the minimum education level and the years of experience required — these are the hard gates you must satisfy." },
+        { name: "Structure your history with results", text: "List roles in reverse-chronological order, each with exact dates and two to four bullets that pair an action with a measurable result." },
+        { name: "Map your bullets to UN competencies", text: "Mirror the vacancy's competency language where it genuinely applies, and make your years of relevant experience easy to total." },
+        { name: "State your eligibility clearly", text: "Put your qualification level, languages with proficiency, and any nationality or work-authorisation requirement where a screener can confirm them in seconds." },
+        { name: "Transfer it into the P11 / PHP", text: "Use your structured CV to complete the UN Personal History Profile field by field, and attach the CV where the vacancy allows." },
+      ],
+    },
     faq: [
       {
         q: "What's the difference between a UN P11 and a CV?",
@@ -1098,6 +1124,16 @@ export const GUIDES: Guide[] = [
         "Accreditations and compliance the buyer requires",
         "A company profile attached that backs every claim",
         "Verified past performance on your strongest projects",
+      ],
+    },
+    howTo: {
+      name: "How to write an expression of interest (EOI)",
+      steps: [
+        { name: "Confirm your eligibility", text: "Check the EOI's pass/fail criteria — legal name, registration, status and any turnover threshold — and make sure you meet them before you start." },
+        { name: "Select your most relevant past performance", text: "Choose projects similar to the opportunity and present each with the client, value, dates and scope." },
+        { name: "Map your capacity to the opportunity", text: "State the sectors, services and key personnel you would bring, matched to the buyer's requirement and geography." },
+        { name: "Answer each question in order", text: "Respond to exactly what the EOI asks, concisely — it's a filter, not a proposal. Make your strongest, most relevant evidence impossible to miss." },
+        { name: "Attach a profile that backs the claims", text: "Include a company profile whose past performance lines up with the EOI, with verified projects where you have them." },
       ],
     },
     faq: [

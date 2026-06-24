@@ -83,6 +83,31 @@ export function breadcrumbLd(items: Array<{ name: string; path: string }>) {
   };
 }
 
+// HowTo schema — only for genuinely procedural guides. Each step needs a
+// short name and the instruction text. `path` anchors the step URLs.
+export function howToLd({
+  name, description, path, steps,
+}: {
+  name: string;
+  description: string;
+  path: string;
+  steps: Array<{ name: string; text: string }>;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name,
+    description,
+    step: steps.map((s, i) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      name: s.name,
+      text: s.text,
+      url: `${absoluteUrl(path)}#step-${i + 1}`,
+    })),
+  };
+}
+
 export function faqLd(faq: Array<{ q: string; a: string }>) {
   return {
     "@context": "https://schema.org",
