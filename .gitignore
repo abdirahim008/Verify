@@ -33,3 +33,6 @@ Thumbs.db
 # Local design handoff extractions (not committed)
 .handoff*
 test-output/
+
+# Logo candidates for review (only the final chosen asset gets committed)
+/logo-candidates/
