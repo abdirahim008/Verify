@@ -297,20 +297,20 @@ function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublic
         </section>
       )}
 
-      {(p.sectors.length > 0 || p.services.length > 0) && (
+      {p.sectors.length > 0 && p.services.length > 0 ? (
+        // Both present → two columns.
         <div className="grid sm:grid-cols-2 gap-4 mt-4">
-          {p.sectors.length > 0 && (
-            <SectionCard title="Sectors" bodyClass="px-6 sm:px-7 py-5 flex flex-wrap gap-2.5">
-              {p.sectors.map((s) => <span key={s} className="rounded-full px-[15px] py-2 text-[12.5px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{s}</span>)}
-            </SectionCard>
-          )}
-          {p.services.length > 0 && (
-            <SectionCard title="Services" bodyClass="px-6 sm:px-7 py-5 flex flex-wrap gap-2.5">
-              {p.services.map((s) => <span key={s} className="rounded-full px-[15px] py-2 text-[12.5px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{s}</span>)}
-            </SectionCard>
-          )}
+          <SectionCard title="Sectors" bodyClass="px-6 sm:px-7 py-5"><TagRow items={p.sectors} /></SectionCard>
+          <SectionCard title="Services" bodyClass="px-6 sm:px-7 py-5"><TagRow items={p.services} /></SectionCard>
         </div>
-      )}
+      ) : (p.sectors.length > 0 || p.services.length > 0) ? (
+        // Only one present → it spans the full width.
+        <section className="mt-4">
+          <SectionCard title={p.sectors.length > 0 ? "Sectors" : "Services"} bodyClass="px-6 sm:px-7 py-5">
+            <TagRow items={p.sectors.length > 0 ? p.sectors : p.services} />
+          </SectionCard>
+        </section>
+      ) : null}
 
       {(p.team.length > 0 || p.ceo?.name) && (
         <section className="mt-4">
@@ -468,6 +468,21 @@ function MvCard({ label, text, dark }: { label: string; text: string; dark?: boo
     <div className="rounded-2xl border shadow-sm p-5" style={dark ? { background: C.ink, borderColor: C.ink } : { background: "#fff", borderColor: C.cardBorder }}>
       <div className="text-[10.5px] font-semibold uppercase tracking-[0.14em]" style={{ color: dark ? "#8a93a6" : C.blue }}>{label}</div>
       <p className="mt-2 font-serif italic text-[15px] leading-snug" style={{ fontFamily: SERIF, color: dark ? "#fff" : C.ink }}>&ldquo;{text}&rdquo;</p>
+    </div>
+  );
+}
+
+// Accent-dot row: tags flow horizontally (each prefixed with a small accent
+// dot) and only wrap to a new line when the row's width is exhausted.
+function TagRow({ items }: { items: string[] }) {
+  return (
+    <div className="flex flex-wrap gap-x-5 gap-y-2.5">
+      {items.map((s) => (
+        <span key={s} className="inline-flex items-center gap-2 text-[13.5px]" style={{ color: "#3a3a34" }}>
+          <span className="w-1.5 h-1.5 rounded-full flex-none" style={{ background: C.blue }} />
+          {s}
+        </span>
+      ))}
     </div>
   );
 }
