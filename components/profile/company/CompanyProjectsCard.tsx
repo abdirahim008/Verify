@@ -9,6 +9,7 @@ import { RequestVerifyButton } from "@/components/verification/RequestVerifyButt
 import { companyProjectSchema, type CompanyProjectValues } from "@/lib/schemas";
 import { addCompanyProject, updateCompanyProject, deleteCompanyProject } from "@/lib/actions/company";
 import { yearRange } from "@/lib/format";
+import { ScopeList } from "@/components/ScopeList";
 
 interface ProjectRow {
   id: string; project_name: string; client_name: string | null; sector: string | null;
@@ -92,7 +93,7 @@ function ProjectRowDisplay({ item, pending: pendingVerify, onEdit }: { item: Pro
             {[item.client_name, item.sector, yearRange(item.year_start, item.year_end)].filter(Boolean).join(" · ")}
           </div>
           {item.scope && (
-            <p className="mt-2 text-[13.5px] text-ink-soft leading-relaxed">{item.scope}</p>
+            <ScopeList text={item.scope} dotColor="#0a5cad" className="mt-2 text-[13.5px] text-ink-soft leading-relaxed" />
           )}
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
