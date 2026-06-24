@@ -117,6 +117,62 @@ export function CompanyOrgChart({ data, A, nameFont, unitFont }: {
   );
 }
 
+export function projectsVisible(data: CompanyData): boolean {
+  return data.projects.length > 0;
+}
+
+// ── small green "Verified" mark for a confirmed project (issuer not shown) ──
+function PartVerified() {
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, color: "#067a5e", whiteSpace: "nowrap", ...band }}>
+      <svg width="10" height="10" viewBox="0 0 11 11" aria-hidden style={{ flex: "none" }}>
+        <circle cx="5.5" cy="5.5" r="5.5" fill="#067a5e" />
+        <path d="M3 5.5 L4.7 7.2 L8 4" stroke="#fff" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      </svg>
+      Verified
+    </span>
+  );
+}
+
+// ── selected-projects list (numbered, with sector / client / value / badge) ──
+// Shared by the five templates; the heading + run-line stay per-template so
+// each design keeps its own voice, but the project rows are identical.
+export function CompanyProjects({ data, A, headFont }: {
+  data: CompanyData; A: AccentSet; headFont: string;
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      {data.projects.map((p, i) => {
+        const last = i === data.projects.length - 1;
+        return (
+          <article key={i} style={{ display: "flex", gap: 16, padding: "13px 0", borderBottom: last ? "none" : `1px solid ${RULE}` }}>
+            <div style={{ width: 58, flex: "none" }}>
+              <div style={{ fontFamily: headFont, fontWeight: 600, fontSize: 18, color: A.accent, lineHeight: 1 }}>{String(i + 1).padStart(2, "0")}</div>
+              {p.sector && <div style={{ fontSize: 9.5, textTransform: "uppercase", letterSpacing: "0.1em", color: FAINT, marginTop: 4 }}>{p.sector}</div>}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <span style={{ fontFamily: headFont, fontWeight: 600, fontSize: 14.5, color: INK }}>{p.name}</span>
+                {p.verified && <PartVerified />}
+              </div>
+              {(p.client || p.yearRange) && (
+                <div style={{ fontSize: 11.5, color: A.accent, marginTop: 2 }}>{[p.client, p.yearRange].filter(Boolean).join(" · ")}</div>
+              )}
+              {p.scope && <p style={{ fontSize: 12, color: BODY, lineHeight: 1.55, margin: "6px 0 0" }}>{p.scope}</p>}
+            </div>
+            {p.value && (
+              <div style={{ width: 86, flex: "none", textAlign: "right" }}>
+                <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.12em", color: FAINT }}>Value</div>
+                <div style={{ fontFamily: headFont, fontWeight: 600, fontSize: 15, color: INK, marginTop: 2 }}>{p.value}</div>
+              </div>
+            )}
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── grouped client list (category heading + chips) ──
 export function CompanyClientGroups({ data, A, variant = "bordered", chipFont }: {
   data: CompanyData; A: AccentSet; variant?: "bordered" | "tinted"; chipFont?: string;
@@ -129,9 +185,16 @@ export function CompanyClientGroups({ data, A, variant = "bordered", chipFont }:
       {data.clientGroups.map((g, gi) => (
         <div key={gi}>
           {g.category !== "Clients" && <div style={{ fontFamily: chipFont, fontSize: 11, fontWeight: 600, color: FAINT, marginBottom: 7 }}>{g.category}</div>}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
             {g.clients.map((c, i) => (
-              <span key={i} style={{ borderRadius: 5, padding: "7px 14px", fontFamily: chipFont, fontSize: 12, color: BODY, whiteSpace: "nowrap", ...chip }}>{c}</span>
+              c.logoUrl ? (
+                <span key={i} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 48, padding: "7px 13px", borderRadius: 5, background: "#fff", border: `1px solid ${RULE}` }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={c.logoUrl} alt={c.name} style={{ maxHeight: 34, maxWidth: 116, objectFit: "contain", display: "block" }} />
+                </span>
+              ) : (
+                <span key={i} style={{ display: "inline-flex", alignItems: "center", height: 48, borderRadius: 5, padding: "0 14px", fontFamily: chipFont, fontSize: 12, color: BODY, whiteSpace: "nowrap", ...chip }}>{c.name}</span>
+              )
             ))}
           </div>
         </div>

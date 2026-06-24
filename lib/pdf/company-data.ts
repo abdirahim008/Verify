@@ -23,7 +23,8 @@ export interface CompanyCert {
 }
 export interface CompanyValue { name: string; description: string; }
 export interface CompanyServiceFull { name: string; description: string; }
-export interface CompanyClientGroup { category: string; clients: string[]; }
+export interface CompanyClientRef { name: string; logoUrl: string; }
+export interface CompanyClientGroup { category: string; clients: CompanyClientRef[]; }
 export interface CompanyCeo {
   name: string; title: string; photoUrl: string; quote: string; message: string;
 }
@@ -42,7 +43,8 @@ export interface CompanyData {
   servicesFull: CompanyServiceFull[];  // name + description (new templates)
   values: CompanyValue[];
   projects: CompanyProject[];
-  clients: string[];                   // flat public list (legacy templates)
+  clients: string[];                   // flat public list of names (fallback)
+  clientsFull: CompanyClientRef[];     // flat list with logos (logo strip)
   clientGroups: CompanyClientGroup[];  // grouped by category (new templates)
   team: CompanyTeamMember[];
   boardName: string;
@@ -86,14 +88,18 @@ export async function loadCompanyDataForPdf(userId: string): Promise<CompanyData
   // Group public clients by category, preserving insertion order. Rows with
   // no category collapse under a single "Clients" heading.
   const clientRows = clientsRes.data ?? [];
+  const toRef = (c: typeof clientRows[number]): CompanyClientRef => ({
+    name: c.client_name, logoUrl: (c.logo_url as string | null) ?? "",
+  });
   const groupOrder: string[] = [];
-  const groupMap = new Map<string, string[]>();
+  const groupMap = new Map<string, CompanyClientRef[]>();
   for (const c of clientRows) {
     const cat = ((c.category as string | null) ?? "").trim() || "Clients";
     if (!groupMap.has(cat)) { groupMap.set(cat, []); groupOrder.push(cat); }
-    groupMap.get(cat)!.push(c.client_name);
+    groupMap.get(cat)!.push(toRef(c));
   }
   const clientGroups = groupOrder.map((category) => ({ category, clients: groupMap.get(category)! }));
+  const clientsFull: CompanyClientRef[] = clientRows.map(toRef);
 
   const servicesFull: CompanyServiceFull[] = (servicesRes.data ?? []).map((s) => ({
     name: s.name, description: (s.description as string | null) ?? "",
@@ -133,6 +139,7 @@ export async function loadCompanyDataForPdf(userId: string): Promise<CompanyData
       verifiedNote: p.verified_note ?? "",
     })),
     clients: clientRows.map((c) => c.client_name),
+    clientsFull,
     clientGroups,
     team: (teamRes.data ?? []).map((t) => ({
       id: t.id,

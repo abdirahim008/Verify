@@ -151,6 +151,7 @@ export async function addCompanyClient(values: CompanyClientValues) {
     category: v.category || null,
     display_public: !!v.display_public,
     note: v.note || null,
+    logo_url: v.logo_url || null,
   });
   if (error) throw new Error(error.message);
   bust();
@@ -163,6 +164,7 @@ export async function updateCompanyClient(id: string, values: CompanyClientValue
     category: v.category || null,
     display_public: !!v.display_public,
     note: v.note || null,
+    logo_url: v.logo_url || null,
   }).eq("id", id);
   if (error) throw new Error(error.message);
   bust();

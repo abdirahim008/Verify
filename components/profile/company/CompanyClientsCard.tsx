@@ -5,10 +5,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/Button";
 import { SectionCard, Field, NewItemPanel } from "../SectionCard";
+import { ClientLogoUploader } from "./ClientLogoUploader";
 import { companyClientSchema, type CompanyClientValues } from "@/lib/schemas";
 import { addCompanyClient, updateCompanyClient, deleteCompanyClient } from "@/lib/actions/company";
 
-interface ClientRow { id: string; client_name: string; category: string | null; display_public: boolean; note: string | null }
+interface ClientRow { id: string; client_name: string; category: string | null; display_public: boolean; note: string | null; logo_url: string | null }
 
 const CLIENT_GROUPS = ["Multilateral & Donors", "Government", "Private & Non-Profit"];
 
@@ -64,6 +65,11 @@ function ClientRowDisplay({ item, onEdit }: { item: ClientRow; onEdit: () => voi
   const [pending, startTransition] = useTransition();
   return (
     <article className="rounded-[10px] border border-border bg-paper p-4 flex items-start justify-between gap-3">
+      <div className="flex items-start gap-3 min-w-0">
+        {item.logo_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.logo_url} alt="" className="w-[72px] h-9 object-contain shrink-0 mt-0.5" />
+        )}
       <div>
         <div className="flex items-center gap-2 flex-wrap">
           <h3 className="font-serif text-[16px] tracking-tightish">{item.client_name}</h3>
@@ -75,6 +81,7 @@ function ClientRowDisplay({ item, onEdit }: { item: ClientRow; onEdit: () => voi
         </div>
         {item.category && <div className="text-[12px] text-sienna mt-0.5">{item.category}</div>}
         {item.note && <div className="text-[12.5px] text-muted mt-1">{item.note}</div>}
+      </div>
       </div>
       <div className="flex gap-1 shrink-0">
         <Button kind="ghost" size="sm" onClick={onEdit}>Edit</Button>
@@ -98,15 +105,17 @@ function ClientForm({
 }) {
   const [pending, startTransition] = useTransition();
   const [serverError, setServerError] = useState<string | null>(null);
-  const { register, handleSubmit, formState: { errors } } = useForm<CompanyClientValues>({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<CompanyClientValues>({
     resolver: zodResolver(companyClientSchema),
     defaultValues: {
       client_name: initial?.client_name ?? "",
       category: initial?.category ?? "",
       display_public: initial?.display_public ?? false,
       note: initial?.note ?? "",
+      logo_url: initial?.logo_url ?? "",
     },
   });
+  const logoUrl = watch("logo_url") ?? "";
 
   function submit(values: CompanyClientValues) {
     setServerError(null);
@@ -120,6 +129,10 @@ function ClientForm({
     <form onSubmit={handleSubmit(submit)} className="grid gap-4" noValidate>
       <Field label="Client name" error={errors.client_name?.message}>
         <input className="field" {...register("client_name")} />
+      </Field>
+      <Field label="Logo" hint="Shown as a logo on your public profile and PDF.">
+        <input type="hidden" {...register("logo_url")} />
+        <ClientLogoUploader value={logoUrl} onChange={(url) => setValue("logo_url", url, { shouldDirty: true })} />
       </Field>
       <Field label="Group" error={errors.category?.message} hint="Clients are grouped under this heading on the PDF.">
         <input className="field" list="client-groups" placeholder="e.g. Multilateral & Donors" {...register("category")} />

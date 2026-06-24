@@ -47,7 +47,7 @@ export interface PublicCompany {
   projects: Array<{ id: string; project_name: string; client_name: string; sector: string; valueLabel: string; dateRange: string; scope: string; verified: boolean; verifiedNote: string }>;
   team: Array<{ id: string; person_name: string; role: string }>;
   certifications: Array<{ id: string; name: string; issuer: string; year: string; verified: boolean; verifiedNote: string }>;
-  publicClients: string[];
+  publicClients: Array<{ name: string; logoUrl: string }>;
 }
 export type PublicProfile = PublicIndividual | PublicCompany;
 
@@ -110,7 +110,7 @@ export async function loadPublicProfile(
         id: c.id, name: c.name, issuer: c.issuer ?? "", year: c.year ? String(c.year) : "",
         verified: !!c.verified, verifiedNote: c.verified_note ?? "",
       })) : [],
-      publicClients: visible.has("clients") ? (clientsRes.data ?? []).map((c) => c.client_name) : [],
+      publicClients: visible.has("clients") ? (clientsRes.data ?? []).map((c) => ({ name: c.client_name, logoUrl: (c.logo_url as string | null) ?? "" })) : [],
     };
   }
 

@@ -164,10 +164,25 @@ function About({ data }: { data: CompanyData }) {
         </div>
       )}
 
-      {data.clients.length > 0 && (
+      {data.clientsFull.length > 0 && (
         <div className="clients">
           <div className="col-h">§ 04 · Selected clients &amp; donors</div>
-          <p className="clients-line">{data.clients.join("  ·  ")}</p>
+          {data.clientsFull.some((c) => c.logoUrl) ? (
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, marginTop: 9 }}>
+              {data.clientsFull.map((c, i) => (
+                c.logoUrl ? (
+                  <span key={i} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 44, padding: "6px 12px", borderRadius: 4, background: "#fff", border: "1px solid #e2ded7" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={c.logoUrl} alt={c.name} style={{ maxHeight: 32, maxWidth: 110, objectFit: "contain", display: "block" }} />
+                  </span>
+                ) : (
+                  <span key={i} style={{ fontSize: 12.5, color: "#43403a" }}>{c.name}</span>
+                )
+              ))}
+            </div>
+          ) : (
+            <p className="clients-line">{data.clients.join("  ·  ")}</p>
+          )}
         </div>
       )}
 

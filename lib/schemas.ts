@@ -163,6 +163,9 @@ export const companyClientSchema = z.object({
   category: optTrimmed,
   display_public: z.boolean().optional(),
   note: optTrimmed,
+  // Public URL of an uploaded logo (profile-media bucket). Optional — clients
+  // with no logo fall back to their name in the logo strip.
+  logo_url: optTrimmed,
 });
 export type CompanyClientValues = z.infer<typeof companyClientSchema>;
 

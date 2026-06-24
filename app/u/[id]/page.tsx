@@ -335,8 +335,17 @@ function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublic
       {p.publicClients.length > 0 && (
         <section className="mt-6">
           <SectionHead title="Selected clients" />
-          <div className="bg-white rounded-2xl border shadow-sm p-[22px] flex flex-wrap gap-2.5" style={{ borderColor: C.cardBorder }}>
-            {p.publicClients.map((c) => <span key={c} className="rounded-full px-[15px] py-2 text-[12.5px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{c}</span>)}
+          <div className="bg-white rounded-2xl border shadow-sm p-[22px] flex flex-wrap items-center gap-3" style={{ borderColor: C.cardBorder }}>
+            {p.publicClients.map((c, i) => (
+              c.logoUrl ? (
+                <span key={i} className="inline-flex items-center justify-center h-[52px] px-3.5 rounded-lg border bg-white" style={{ borderColor: C.chipBorder }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={c.logoUrl} alt={c.name} className="max-h-9 max-w-[130px] object-contain block" />
+                </span>
+              ) : (
+                <span key={i} className="inline-flex items-center h-[52px] rounded-full px-[15px] text-[12.5px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{c.name}</span>
+              )
+            ))}
           </div>
         </section>
       )}

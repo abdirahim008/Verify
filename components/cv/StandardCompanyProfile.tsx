@@ -3,7 +3,8 @@ import type { CompanyData } from "@/lib/pdf/company-data";
 import { deriveAccent, monogram, profileLine } from "./companyShared";
 import {
   INK, BODY, MUTE, FAINT, RULE, band, paragraphs, ceoVisible, orgVisible,
-  CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, SHELL_CSS,
+  CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, CompanyProjects,
+  projectsVisible, SHELL_CSS,
 } from "./companyProfileParts";
 
 // Company Profile — "The Standard" (Company-1-Classic). Classic centered
@@ -140,7 +141,21 @@ export function StandardCompanyProfile({ data, theme }: { data: CompanyData; the
         )}
       </div>
 
-      {/* ── PAGE 3: Org + Clients ── */}
+      {/* ── PAGE 3: Selected Projects ── */}
+      {projectsVisible(data) && (
+        <div className="cpage" style={{ fontFamily: SANS, padding: "54px 66px", display: "flex", flexDirection: "column" }}>
+          <RunHead name={data.name} />
+          <section style={{ marginTop: 30 }}>
+            <RuledEyebrow A={A}>Selected Projects</RuledEyebrow>
+            <p style={{ margin: "0 0 14px", fontSize: 12.5, color: MUTE, lineHeight: 1.55 }}>
+              Verified entries are independently confirmed with the named client or donor.
+            </p>
+            <CompanyProjects data={data} A={A} headFont={SERIF} />
+          </section>
+        </div>
+      )}
+
+      {/* ── PAGE 4: Org + Clients ── */}
       <div className="cpage" style={{ fontFamily: SANS, padding: "54px 66px", display: "flex", flexDirection: "column" }}>
         <RunHead name={data.name} />
         {orgVisible(data) && (

@@ -3,7 +3,8 @@ import type { CompanyData } from "@/lib/pdf/company-data";
 import { deriveAccent, monogram, profileLine } from "./companyShared";
 import {
   INK, MUTE, FAINT, RULE, band, paragraphs, ceoVisible, orgVisible,
-  CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, SHELL_CSS,
+  CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, CompanyProjects,
+  projectsVisible, SHELL_CSS,
 } from "./companyProfileParts";
 
 // Company Profile — "The Broadsheet" (Company-4-Two-Column). Editorial
@@ -146,7 +147,21 @@ export function BroadsheetCompanyProfile({ data, theme }: { data: CompanyData; t
         )}
       </div>
 
-      {/* ── PAGE 3: Org + Clients ── */}
+      {/* ── PAGE 3: Selected Projects ── */}
+      {projectsVisible(data) && (
+        <div className="cpage" style={{ fontFamily: BODYF, padding: "48px 56px", display: "flex", flexDirection: "column" }}>
+          <RunHead data={data} />
+          <section style={{ marginTop: 26 }}>
+            <Label A={A} ruled>Selected Projects</Label>
+            <p style={{ margin: "0 0 14px", fontSize: 12.5, color: MUTE, lineHeight: 1.55 }}>
+              Verified entries are independently confirmed with the named client or donor.
+            </p>
+            <CompanyProjects data={data} A={A} headFont={DISP} />
+          </section>
+        </div>
+      )}
+
+      {/* ── PAGE 4: Org + Clients ── */}
       <div className="cpage" style={{ fontFamily: BODYF, padding: "48px 56px", display: "flex", flexDirection: "column" }}>
         <RunHead data={data} />
         {orgVisible(data) && (

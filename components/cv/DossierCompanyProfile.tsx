@@ -3,7 +3,8 @@ import type { CompanyData } from "@/lib/pdf/company-data";
 import { deriveAccent, monogram, profileLine } from "./companyShared";
 import {
   INK, BODY, MUTE, FAINT, RULE, band, paragraphs, ceoVisible, orgVisible,
-  CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, SHELL_CSS,
+  CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, CompanyProjects,
+  projectsVisible, SHELL_CSS,
 } from "./companyProfileParts";
 
 // Company Profile — "The Dossier" (Company-2-Sidebar). Left sidebar carries
@@ -164,7 +165,21 @@ export function DossierCompanyProfile({ data, theme }: { data: CompanyData; them
         )}
       </div>
 
-      {/* ── PAGE 3: Org + Clients + CTA ── */}
+      {/* ── PAGE 3: Selected Projects ── */}
+      {projectsVisible(data) && (
+        <div className="cpage" style={{ fontFamily: BODYF, padding: "50px 56px", display: "flex", flexDirection: "column" }}>
+          <RunHead data={data} A={A} mono={mono} />
+          <section style={{ marginTop: 28 }}>
+            <MainLabel A={A} ruled>Selected Projects</MainLabel>
+            <p style={{ margin: "0 0 14px", fontSize: 12.5, color: MUTE, lineHeight: 1.55 }}>
+              Verified entries are independently confirmed with the named client or donor.
+            </p>
+            <CompanyProjects data={data} A={A} headFont={DISP} />
+          </section>
+        </div>
+      )}
+
+      {/* ── PAGE 4: Org + Clients + CTA ── */}
       <div className="cpage" style={{ fontFamily: BODYF, padding: "50px 56px", display: "flex", flexDirection: "column" }}>
         <RunHead data={data} A={A} mono={mono} />
         {orgVisible(data) && (

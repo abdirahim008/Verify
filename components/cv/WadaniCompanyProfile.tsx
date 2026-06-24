@@ -166,12 +166,19 @@ function About({ data }: { data: CompanyData }) {
         </div>
       )}
 
-      {data.clients.length > 0 && (
+      {data.clientsFull.length > 0 && (
         <div className="clients">
           <p className="eyebrow eyebrow-mb">Selected clients &amp; donors</p>
-          <div className="clients-list">
-            {data.clients.map((c, i) => (
-              <span key={i} className="client-chip">{c}</span>
+          <div className="clients-list" style={{ alignItems: "center" }}>
+            {data.clientsFull.map((c, i) => (
+              c.logoUrl ? (
+                <span key={i} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 48, padding: "7px 13px", borderRadius: 5, background: "#fff", border: "1px solid #e2ded7" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={c.logoUrl} alt={c.name} style={{ maxHeight: 34, maxWidth: 116, objectFit: "contain", display: "block" }} />
+                </span>
+              ) : (
+                <span key={i} className="client-chip">{c.name}</span>
+              )
             ))}
           </div>
         </div>

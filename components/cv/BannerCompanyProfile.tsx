@@ -3,7 +3,8 @@ import type { CompanyData } from "@/lib/pdf/company-data";
 import { deriveAccent, monogram, profileLine } from "./companyShared";
 import {
   INK, MUTE, FAINT, RULE, band, paragraphs, ceoVisible, orgVisible,
-  CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, SHELL_CSS,
+  CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, CompanyProjects,
+  projectsVisible, SHELL_CSS,
 } from "./companyProfileParts";
 
 // Company Profile — "The Banner" (Company-3-Header-Footer-Band). Each page
@@ -155,7 +156,24 @@ export function BannerCompanyProfile({ data, theme }: { data: CompanyData; theme
         <FootBand A={A}>{data.name}</FootBand>
       </div>
 
-      {/* ── PAGE 3: Org + Clients ── */}
+      {/* ── PAGE 3: Selected Projects ── */}
+      {projectsVisible(data) && (
+        <div className="cpage" style={{ fontFamily: BODYF, display: "flex", flexDirection: "column" }}>
+          <ThinHead data={data} A={A} mono={mono} />
+          <div style={{ padding: "34px 56px", flex: 1 }}>
+            <section>
+              <Label A={A} ruled>Selected Projects</Label>
+              <p style={{ margin: "0 0 14px", fontSize: 12.5, color: MUTE, lineHeight: 1.55 }}>
+                Verified entries are independently confirmed with the named client or donor.
+              </p>
+              <CompanyProjects data={data} A={A} headFont={DISP} />
+            </section>
+          </div>
+          <FootBand A={A}>{data.name}</FootBand>
+        </div>
+      )}
+
+      {/* ── PAGE 4: Org + Clients ── */}
       <div className="cpage" style={{ fontFamily: BODYF, display: "flex", flexDirection: "column" }}>
         <ThinHead data={data} A={A} mono={mono} />
         <div style={{ padding: "32px 56px", flex: 1 }}>
