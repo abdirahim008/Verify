@@ -12,7 +12,6 @@ export const SITE = {
   description:
     "Sahan is the simplest way for professionals and organisations in Somalia and East Africa to build a structured profile and generate an elegant, recruiter-ready CV or bid-ready company profile — free, on any phone, in minutes. Add verified badges to the experience and projects that matter.",
   locale: "en",
-  twitter: "@sahanprofiles", // update if/when the handle exists
 };
 
 export function absoluteUrl(path = "/"): string {
@@ -28,6 +27,10 @@ export function organizationLd() {
     "@type": "Organization",
     name: SITE.name,
     url: SITE.url,
+    // Brand logo — helps Google associate the mark with the entity
+    // (knowledge panel, rich results).
+    logo: absoluteUrl("/icon.png"),
+    image: absoluteUrl("/icon.png"),
     description: SITE.description,
     areaServed: ["Somalia", "Kenya", "Ethiopia", "South Sudan", "East Africa"],
     knowsAbout: [

@@ -19,10 +19,18 @@ const C = {
 const SERIF = "var(--font-serif), 'Source Serif 4', Georgia, serif";
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
+  // Public profiles are shareable by link but intentionally kept OUT of search
+  // engines (privacy; matches "no public browse of profiles"). noindex is the
+  // authoritative signal — the page stays crawlable so Google can read it.
+  const robots = { index: false, follow: false } as const;
   const profile = await loadPublicProfile(params.id, "public");
-  if (!profile) return { title: "Profile" };
+  if (!profile) return { title: "Profile", robots };
   const name = profile.kind === "company" ? profile.name : profile.fullName;
-  return { title: name, description: profile.kind === "individual" ? profile.headline : profile.about?.slice(0, 160) };
+  return {
+    title: name,
+    description: profile.kind === "individual" ? profile.headline : profile.about?.slice(0, 160),
+    robots,
+  };
 }
 
 export default async function PublicProfilePage({ params }: { params: { id: string } }) {
