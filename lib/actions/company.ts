@@ -150,6 +150,39 @@ export async function deleteCompanyProject(id: string) {
   bust();
 }
 
+// ─── project photos (company_project_media; max 4 per project) ───────────
+export async function addProjectMedia(projectId: string, values: { url: string; caption?: string }) {
+  const url = String(values.url || "").trim().slice(0, 600);
+  if (!url) throw new Error("No image to save.");
+  const caption = String(values.caption || "").trim().slice(0, 200);
+  const { supabase, userId } = await authedClient();
+  const { count } = await supabase
+    .from("company_project_media").select("id", { count: "exact", head: true })
+    .eq("project_id", projectId);
+  if ((count ?? 0) >= 4) throw new Error("Up to 4 photos per project.");
+  const { data, error } = await supabase.from("company_project_media").insert({
+    project_id: projectId, profile_id: userId, url, caption: caption || null, order_index: count ?? 0,
+  }).select("id").single();
+  if (error) throw new Error(error.message);
+  bust();
+  return data.id as string;
+}
+
+export async function updateProjectMediaCaption(id: string, caption: string) {
+  const { supabase } = await authedClient();
+  const { error } = await supabase.from("company_project_media")
+    .update({ caption: String(caption || "").trim().slice(0, 200) || null }).eq("id", id);
+  if (error) throw new Error(error.message);
+  bust();
+}
+
+export async function deleteProjectMedia(id: string) {
+  const { supabase } = await authedClient();
+  const { error } = await supabase.from("company_project_media").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  bust();
+}
+
 // ─── clients ───────────────────────────────────────────────────────
 export async function addCompanyClient(values: CompanyClientValues) {
   const v = companyClientSchema.parse(values);

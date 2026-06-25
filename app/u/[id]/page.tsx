@@ -298,6 +298,31 @@ function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublic
         </section>
       )}
 
+      {p.projects.some((proj) => proj.media.length > 0) && (
+        <section className="mt-4">
+          <SectionCard title="Project gallery" bodyClass="px-6 sm:px-7 py-6">
+            <div className="space-y-7">
+              {p.projects.filter((proj) => proj.media.length > 0).map((proj) => (
+                <div key={proj.id}>
+                  <h3 className="font-serif font-semibold text-[15px] tracking-tightish" style={{ fontFamily: SERIF, color: C.ink }}>{proj.project_name}</h3>
+                  <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {proj.media.map((m, i) => (
+                      <figure key={i} className="min-w-0">
+                        <div className="rounded-[10px] overflow-hidden border" style={{ borderColor: C.cardBorder }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={m.url} alt={m.caption || proj.project_name} className="w-full aspect-[4/3] object-cover block" loading="lazy" />
+                        </div>
+                        {m.caption && <figcaption className="mt-1.5 text-[11.5px] leading-snug" style={{ color: C.muted }}>{m.caption}</figcaption>}
+                      </figure>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        </section>
+      )}
+
       {p.sectors.length > 0 && (
         <section className="mt-4">
           <SectionCard title="Sectors" bodyClass="px-6 sm:px-7 py-5"><TagRow items={p.sectors} /></SectionCard>

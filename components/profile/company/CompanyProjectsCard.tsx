@@ -10,12 +10,15 @@ import { companyProjectSchema, type CompanyProjectValues } from "@/lib/schemas";
 import { addCompanyProject, updateCompanyProject, deleteCompanyProject } from "@/lib/actions/company";
 import { yearRange } from "@/lib/format";
 import { CollapsibleScope } from "@/components/CollapsibleScope";
+import { ProjectPhotos } from "./ProjectPhotos";
 
+interface ProjectMedia { id: string; url: string; caption: string | null }
 interface ProjectRow {
   id: string; project_name: string; client_name: string | null; sector: string | null;
   value_amount: number | null; currency: string | null;
   year_start: number | null; year_end: number | null; scope: string | null;
   verified: boolean; verified_note: string | null;
+  media?: ProjectMedia[];
 }
 
 export function CompanyProjectsCard({ items, pendingIds }: { items: ProjectRow[]; pendingIds: Set<string> }) {
@@ -111,6 +114,14 @@ function ProjectRowDisplay({ item, pending: pendingVerify, onEdit }: { item: Pro
       {item.scope && (
         <CollapsibleScope text={item.scope} dotColor="#0a5cad" className="mt-3 text-[13.5px] text-ink-soft leading-relaxed" />
       )}
+      {(item.media?.length ?? 0) > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {item.media!.map((m) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img key={m.id} src={m.url} alt="" className="w-16 h-16 rounded-md object-cover border border-border" />
+          ))}
+        </div>
+      )}
     </article>
   );
 }
@@ -189,7 +200,22 @@ function ProjectForm({
     </form>
   );
 
-  return asPanel ? <NewItemPanel title="New project">{body}</NewItemPanel> : (
-    <div className="rounded-[10px] border border-sienna/40 bg-sienna-soft/40 p-4 sm:p-5">{body}</div>
+  if (asPanel) {
+    return (
+      <NewItemPanel title="New project">
+        {body}
+        <p className="helper mt-3">Save the project, then edit it to add up to 4 photos.</p>
+      </NewItemPanel>
+    );
+  }
+  return (
+    <div className="rounded-[10px] border border-sienna/40 bg-sienna-soft/40 p-4 sm:p-5">
+      {body}
+      {initial?.id && (
+        <div className="mt-4 pt-4 border-t border-border">
+          <ProjectPhotos projectId={initial.id} initial={initial.media ?? []} />
+        </div>
+      )}
+    </div>
   );
 }

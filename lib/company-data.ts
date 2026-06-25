@@ -9,7 +9,7 @@ export async function loadCompanyProfile(userId: string) {
     };
   }
   const [
-    profileRes, basicsRes, projectsRes, clientsRes, teamRes, certsRes, valuesRes, servicesRes,
+    profileRes, basicsRes, projectsRes, clientsRes, teamRes, certsRes, valuesRes, servicesRes, mediaRes,
   ] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
     supabase.from("company_details").select("*").eq("profile_id", userId).maybeSingle(),
@@ -19,12 +19,21 @@ export async function loadCompanyProfile(userId: string) {
     supabase.from("company_certifications").select("*").eq("profile_id", userId).order("year", { ascending: false, nullsFirst: false }),
     supabase.from("company_values").select("*").eq("profile_id", userId).order("order_index").order("created_at"),
     supabase.from("company_services").select("*").eq("profile_id", userId).order("order_index").order("created_at"),
+    supabase.from("company_project_media").select("*").eq("profile_id", userId).order("order_index").order("created_at"),
   ]);
+
+  // Attach each project's photos (max 4) so the builder can manage them inline.
+  const mediaByProject = new Map<string, Array<{ id: string; url: string; caption: string | null }>>();
+  for (const m of mediaRes.data ?? []) {
+    const list = mediaByProject.get(m.project_id) ?? [];
+    list.push({ id: m.id, url: m.url, caption: m.caption ?? null });
+    mediaByProject.set(m.project_id, list);
+  }
 
   return {
     profile: profileRes.data,
     basics: basicsRes.data,
-    projects: projectsRes.data ?? [],
+    projects: (projectsRes.data ?? []).map((p) => ({ ...p, media: mediaByProject.get(p.id) ?? [] })),
     clients: clientsRes.data ?? [],
     team: teamRes.data ?? [],
     certifications: certsRes.data ?? [],

@@ -47,7 +47,7 @@ export interface PublicCompany {
   servicesFull: Array<{ name: string; description: string }>;
   ceo: { name: string; title: string; photoUrl: string | null; quote: string; message: string } | null;
   visible: Set<string>;
-  projects: Array<{ id: string; project_name: string; client_name: string; sector: string; valueLabel: string; dateRange: string; scope: string; verified: boolean; verifiedNote: string }>;
+  projects: Array<{ id: string; project_name: string; client_name: string; sector: string; valueLabel: string; dateRange: string; scope: string; verified: boolean; verifiedNote: string; media: Array<{ url: string; caption: string }> }>;
   team: Array<{ id: string; person_name: string; role: string }>;
   certifications: Array<{ id: string; name: string; issuer: string; year: string; verified: boolean; verifiedNote: string }>;
   publicClients: Array<{ name: string; logoUrl: string }>;
@@ -77,14 +77,21 @@ export async function loadPublicProfile(
   }
 
   if (prof.account_type === "company") {
-    const [basicsRes, projRes, teamRes, certRes, clientsRes, servicesRes] = await Promise.all([
+    const [basicsRes, projRes, teamRes, certRes, clientsRes, servicesRes, mediaRes] = await Promise.all([
       svc.from("company_details").select("*").eq("profile_id", profileId).maybeSingle(),
       svc.from("company_projects").select("*").eq("profile_id", profileId).order("year_end", { ascending: false, nullsFirst: false }),
       svc.from("company_team").select("*").eq("profile_id", profileId).order("order_index").order("created_at"),
       svc.from("company_certifications").select("*").eq("profile_id", profileId).order("year", { ascending: false, nullsFirst: false }),
       svc.from("company_clients").select("*").eq("profile_id", profileId).eq("display_public", true).order("client_name"),
       svc.from("company_services").select("name, description").eq("profile_id", profileId).order("order_index").order("created_at"),
+      svc.from("company_project_media").select("project_id, url, caption").eq("profile_id", profileId).order("order_index").order("created_at"),
     ]);
+    const mediaByProject = new Map<string, Array<{ url: string; caption: string }>>();
+    for (const m of mediaRes.data ?? []) {
+      const list = mediaByProject.get(m.project_id) ?? [];
+      list.push({ url: m.url, caption: (m.caption as string | null) ?? "" });
+      mediaByProject.set(m.project_id, list);
+    }
     const b = basicsRes.data;
     if (!b?.company_name) return null;
     return {
@@ -123,6 +130,7 @@ export async function loadPublicProfile(
         dateRange: yearRange(p.year_start, p.year_end),
         scope: p.scope ?? "",
         verified: !!p.verified, verifiedNote: p.verified_note ?? "",
+        media: mediaByProject.get(p.id) ?? [],
       })) : [],
       team: visible.has("team") ? (teamRes.data ?? []).map((t) => ({ id: t.id, person_name: t.person_name, role: t.role ?? "" })) : [],
       certifications: visible.has("certifications") ? (certRes.data ?? []).map((c) => ({
