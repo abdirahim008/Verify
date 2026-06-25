@@ -139,6 +139,36 @@ export function projectsVisible(data: CompanyData): boolean {
   return data.projects.length > 0;
 }
 
+export function galleryVisible(data: CompanyData): boolean {
+  return data.projects.some((p) => p.media.length > 0);
+}
+
+// Project gallery — photos grouped per project with captions. Rendered as a
+// final page in the company templates when any project has photos.
+export function CompanyGallery({ data, headFont }: { data: CompanyData; headFont: string }) {
+  const withPhotos = data.projects.filter((p) => p.media.length > 0);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+      {withPhotos.map((p, i) => (
+        <div key={i}>
+          <div style={{ fontFamily: headFont, fontWeight: 600, fontSize: 14, color: INK, marginBottom: 8 }}>{p.name}</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            {p.media.map((m, j) => (
+              <figure key={j} style={{ margin: 0 }}>
+                <div style={{ borderRadius: 8, overflow: "hidden", border: `1px solid ${RULE}`, ...band }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={m.url} alt="" style={{ width: "100%", height: 156, objectFit: "cover", display: "block" }} />
+                </div>
+                {m.caption && <figcaption style={{ fontSize: 10.5, color: MUTE, marginTop: 4, lineHeight: 1.4 }}>{m.caption}</figcaption>}
+              </figure>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── small green "Verified" mark for a confirmed project (issuer not shown) ──
 function PartVerified() {
   return (

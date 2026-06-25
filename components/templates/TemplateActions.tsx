@@ -13,6 +13,8 @@ interface Props {
   storageKey: string;
   templateName: string;
   themes: PdfTheme[];
+  /** Extra query params appended to download + preview (e.g. year filter). */
+  params?: Record<string, string | number | undefined | null>;
 }
 
 // Per-template action block used inside the download choosers: curated-
@@ -20,7 +22,7 @@ interface Props {
 // rasterised client-side via PDF.js), and the themed download link. The
 // chosen palette is remembered per template in localStorage — no schema,
 // survives reloads on this device.
-export function TemplateActions({ href, storageKey, templateName, themes }: Props) {
+export function TemplateActions({ href, storageKey, templateName, themes, params }: Props) {
   const lsKey = `sahan-theme:${storageKey}`;
   const [themeId, setThemeId] = useState(themes[0]?.id ?? "");
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -41,7 +43,11 @@ export function TemplateActions({ href, storageKey, templateName, themes }: Prop
   }
 
   const active = themes.find((t) => t.id === themeId) ?? themes[0];
-  const qs = `?theme=${encodeURIComponent(themeId)}`;
+  const extra = Object.entries(params ?? {})
+    .filter(([, v]) => v !== undefined && v !== null && v !== "")
+    .map(([k, v]) => `&${k}=${encodeURIComponent(String(v))}`)
+    .join("");
+  const qs = `?theme=${encodeURIComponent(themeId)}${extra}`;
 
   return (
     <div>

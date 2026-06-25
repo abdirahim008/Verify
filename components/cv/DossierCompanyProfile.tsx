@@ -4,7 +4,7 @@ import { deriveAccent, monogram, profileLine } from "./companyShared";
 import {
   INK, BODY, MUTE, FAINT, RULE, band, paragraphs, ceoVisible, orgVisible,
   CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, CompanyProjects,
-  projectsVisible, SHELL_CSS,
+  projectsVisible, galleryVisible, CompanyGallery, SHELL_CSS,
 } from "./companyProfileParts";
 
 // Company Profile — "The Dossier" (Company-2-Sidebar). Left sidebar carries
@@ -184,6 +184,17 @@ export function DossierCompanyProfile({ data, theme }: { data: CompanyData; them
               Verified entries are independently confirmed with the named client or donor.
             </p>
             <CompanyProjects data={data} A={A} headFont={DISP} />
+          </section>
+        </div>
+      )}
+
+      {/* ── PAGE: Project gallery ── */}
+      {galleryVisible(data) && (
+        <div className="cpage" style={{ fontFamily: BODYF, padding: "50px 56px", display: "flex", flexDirection: "column" }}>
+          <RunHead data={data} A={A} mono={mono} />
+          <section style={{ marginTop: 28 }}>
+            <MainLabel A={A} ruled>Project Gallery</MainLabel>
+            <CompanyGallery data={data} headFont={DISP} />
           </section>
         </div>
       )}

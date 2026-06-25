@@ -4,7 +4,7 @@ import { deriveAccent, monogram, profileLine } from "./companyShared";
 import {
   INK, MUTE, band, paragraphs, ceoVisible, orgVisible,
   CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, CompanyProjects,
-  projectsVisible, SHELL_CSS,
+  projectsVisible, galleryVisible, CompanyGallery, SHELL_CSS,
 } from "./companyProfileParts";
 
 // Company Profile — "The Bento" (Company-5-Modular). Modular rounded cards
@@ -172,6 +172,17 @@ export function BentoCompanyProfile({ data, theme }: { data: CompanyData; theme?
               Verified entries are independently confirmed with the named client or donor.
             </p>
             <CompanyProjects data={data} A={A} headFont={DISP} />
+          </div>
+        </div>
+      )}
+
+      {/* ── PAGE: Project gallery ── */}
+      {galleryVisible(data) && (
+        <div className="cpage" style={{ fontFamily: BODYF, padding: 50, display: "flex", flexDirection: "column" }}>
+          <RunHead data={data} A={A} mono={mono} />
+          <div style={{ background: "#fff", border: `1px solid ${CARD}`, borderRadius: 10, padding: "22px 24px", marginTop: 18, flex: 1 }}>
+            <CardLabel A={A}>Project Gallery</CardLabel>
+            <CompanyGallery data={data} headFont={DISP} />
           </div>
         </div>
       )}

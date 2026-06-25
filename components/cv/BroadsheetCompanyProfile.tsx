@@ -4,7 +4,7 @@ import { deriveAccent, monogram, profileLine } from "./companyShared";
 import {
   INK, MUTE, FAINT, RULE, band, paragraphs, ceoVisible, orgVisible,
   CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, CompanyProjects,
-  projectsVisible, SHELL_CSS,
+  projectsVisible, galleryVisible, CompanyGallery, SHELL_CSS,
 } from "./companyProfileParts";
 
 // Company Profile — "The Broadsheet" (Company-4-Two-Column). Editorial
@@ -160,6 +160,17 @@ export function BroadsheetCompanyProfile({ data, theme }: { data: CompanyData; t
               Verified entries are independently confirmed with the named client or donor.
             </p>
             <CompanyProjects data={data} A={A} headFont={DISP} />
+          </section>
+        </div>
+      )}
+
+      {/* ── PAGE: Project gallery ── */}
+      {galleryVisible(data) && (
+        <div className="cpage" style={{ fontFamily: BODYF, padding: "48px 56px", display: "flex", flexDirection: "column" }}>
+          <RunHead data={data} />
+          <section style={{ marginTop: 26 }}>
+            <Label A={A} ruled>Project Gallery</Label>
+            <CompanyGallery data={data} headFont={DISP} />
           </section>
         </div>
       )}

@@ -4,7 +4,7 @@ import { deriveAccent, monogram, profileLine } from "./companyShared";
 import {
   INK, BODY, MUTE, FAINT, RULE, band, paragraphs, ceoVisible, orgVisible,
   CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, CompanyProjects,
-  projectsVisible, SHELL_CSS,
+  projectsVisible, galleryVisible, CompanyGallery, SHELL_CSS,
 } from "./companyProfileParts";
 
 // Company Profile — "The Standard" (Company-1-Classic). Classic centered
@@ -151,6 +151,17 @@ export function StandardCompanyProfile({ data, theme }: { data: CompanyData; the
               Verified entries are independently confirmed with the named client or donor.
             </p>
             <CompanyProjects data={data} A={A} headFont={SERIF} />
+          </section>
+        </div>
+      )}
+
+      {/* ── PAGE: Project gallery ── */}
+      {galleryVisible(data) && (
+        <div className="cpage" style={{ fontFamily: SANS, padding: "54px 66px", display: "flex", flexDirection: "column" }}>
+          <RunHead name={data.name} />
+          <section style={{ marginTop: 30 }}>
+            <RuledEyebrow A={A}>Project Gallery</RuledEyebrow>
+            <CompanyGallery data={data} headFont={SERIF} />
           </section>
         </div>
       )}

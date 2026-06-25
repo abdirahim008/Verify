@@ -80,6 +80,20 @@ export async function GET(
     }, { status: 400 });
   }
 
+  // Optional year filter (?from / ?to). Keep projects whose year span overlaps
+  // [from, to]; undated projects are always kept so nothing silently vanishes.
+  const from = Number(url.searchParams.get("from")) || null;
+  const to = Number(url.searchParams.get("to")) || null;
+  if (from || to) {
+    const lo = from ?? -Infinity, hi = to ?? Infinity;
+    data.projects = data.projects.filter((p) => {
+      const start = p.yearStart ?? p.yearEnd;
+      const end = p.yearEnd ?? p.yearStart;
+      if (start == null && end == null) return true;
+      return (end ?? start)! >= lo && (start ?? end)! <= hi;
+    });
+  }
+
   const Template = t.component;
   let pdf: Buffer;
   try {

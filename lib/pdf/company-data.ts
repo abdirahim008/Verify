@@ -10,6 +10,8 @@ export interface CompanyProject {
   name: string; client: string; sector: string; value: string;
   valueAmount: number | null;   // raw numeric — cover-page stat tiles sum it
   yearRange: string; scope: string;
+  yearStart: number | null; yearEnd: number | null;  // for year filtering
+  media: Array<{ url: string; caption: string }>;    // gallery photos (max 4)
   verified: boolean; verifiedNote: string;
 }
 export interface CompanyTeamMember {
@@ -65,7 +67,7 @@ export async function loadCompanyDataForPdf(userId: string): Promise<CompanyData
   const supabase = createSupabaseServerClient();
   if (!supabase) return null;
 
-  const [basicsRes, projectsRes, clientsRes, teamRes, certsRes, servicesRes, valuesRes] = await Promise.all([
+  const [basicsRes, projectsRes, clientsRes, teamRes, certsRes, servicesRes, valuesRes, mediaRes] = await Promise.all([
     supabase.from("company_details").select("*").eq("profile_id", userId).maybeSingle(),
     supabase.from("company_projects").select("*").eq("profile_id", userId)
       .order("year_end", { ascending: false, nullsFirst: false }),
@@ -80,10 +82,19 @@ export async function loadCompanyDataForPdf(userId: string): Promise<CompanyData
       .order("order_index").order("created_at"),
     supabase.from("company_values").select("name, description").eq("profile_id", userId)
       .order("order_index").order("created_at"),
+    supabase.from("company_project_media").select("project_id, url, caption").eq("profile_id", userId)
+      .order("order_index").order("created_at"),
   ]);
 
   const b = basicsRes.data;
   if (!b?.company_name) return null;
+
+  const mediaByProject = new Map<string, Array<{ url: string; caption: string }>>();
+  for (const m of mediaRes.data ?? []) {
+    const list = mediaByProject.get(m.project_id) ?? [];
+    list.push({ url: m.url, caption: (m.caption as string | null) ?? "" });
+    mediaByProject.set(m.project_id, list);
+  }
 
   // Group public clients by category, preserving insertion order. Rows with
   // no category collapse under a single "Clients" heading.
@@ -134,7 +145,10 @@ export async function loadCompanyDataForPdf(userId: string): Promise<CompanyData
       value: formatValue(p.value_amount, p.currency),
       valueAmount: p.value_amount != null ? Number(p.value_amount) : null,
       yearRange: yearRange(p.year_start, p.year_end),
+      yearStart: p.year_start ?? null,
+      yearEnd: p.year_end ?? null,
       scope: p.scope ?? "",
+      media: mediaByProject.get(p.id) ?? [],
       verified: !!p.verified,
       verifiedNote: p.verified_note ?? "",
     })),

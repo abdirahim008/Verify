@@ -4,7 +4,7 @@ import { deriveAccent, monogram, profileLine } from "./companyShared";
 import {
   INK, MUTE, FAINT, RULE, band, paragraphs, ceoVisible, orgVisible,
   CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, CompanyProjects,
-  projectsVisible, SHELL_CSS,
+  projectsVisible, galleryVisible, CompanyGallery, SHELL_CSS,
 } from "./companyProfileParts";
 
 // Company Profile — "The Banner" (Company-3-Header-Footer-Band). Each page
@@ -174,6 +174,20 @@ export function BannerCompanyProfile({ data, theme }: { data: CompanyData; theme
                 Verified entries are independently confirmed with the named client or donor.
               </p>
               <CompanyProjects data={data} A={A} headFont={DISP} />
+            </section>
+          </div>
+          <FootBand A={A}>{data.name}</FootBand>
+        </div>
+      )}
+
+      {/* ── PAGE: Project gallery ── */}
+      {galleryVisible(data) && (
+        <div className="cpage" style={{ fontFamily: BODYF, display: "flex", flexDirection: "column" }}>
+          <ThinHead data={data} A={A} mono={mono} />
+          <div style={{ padding: "34px 56px", flex: 1 }}>
+            <section>
+              <Label A={A} ruled>Project Gallery</Label>
+              <CompanyGallery data={data} headFont={DISP} />
             </section>
           </div>
           <FootBand A={A}>{data.name}</FootBand>
