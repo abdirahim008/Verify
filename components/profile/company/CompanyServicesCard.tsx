@@ -17,48 +17,72 @@ export function CompanyServicesCard({ items }: { items: ServiceRow[] }) {
   return (
     <SectionCard
       eyebrow="Section 6"
-      title="Services"
-      description="What you actually do — each service with a one-line description. These render as the “What We Do” grid."
+      title="What we do"
+      description="Each service with a one-line description — renders as the “What we do” grid on your profile."
       defaultOpen={false}
       count={items.length}
+      headerAction={!adding && <Button kind="quiet" size="sm" onClick={() => { setAdding(true); setEditingId(null); }}>+ Add service</Button>}
     >
-      <div className="mt-1 space-y-3">
-        {items.map((item) =>
-          editingId === item.id ? (
-            <ServiceForm key={item.id} initial={item} onSubmit={(v) => updateCompanyService(item.id, v)}
-              onCancel={() => setEditingId(null)} onDone={() => setEditingId(null)} submitLabel="Save changes" />
-          ) : (
-            <ServiceRowDisplay key={item.id} item={item} onEdit={() => setEditingId(item.id)} />
-          ),
-        )}
-      </div>
+      {items.length > 0 && (
+        <div className="grid sm:grid-cols-2 gap-x-10 gap-y-1">
+          {items.map((item) =>
+            editingId === item.id ? (
+              <div key={item.id} className="sm:col-span-2 my-2">
+                <ServiceForm initial={item} onSubmit={(v) => updateCompanyService(item.id, v)}
+                  onCancel={() => setEditingId(null)} onDone={() => setEditingId(null)} submitLabel="Save changes" />
+              </div>
+            ) : (
+              <ServiceItem key={item.id} item={item} onEdit={() => { setEditingId(item.id); setAdding(false); }} />
+            ),
+          )}
+        </div>
+      )}
 
-      {items.length === 0 && !adding && <p className="mt-2 text-[13.5px] text-muted">No services yet.</p>}
+      {items.length === 0 && !adding && <p className="text-[13.5px] text-muted">No services yet. Add what your firm actually does.</p>}
 
-      {adding ? (
-        <ServiceForm onSubmit={addCompanyService} onCancel={() => setAdding(false)} onDone={() => setAdding(false)} submitLabel="Save service" asPanel />
-      ) : (
-        <div className="mt-4"><Button kind="quiet" size="md" onClick={() => setAdding(true)}>+ Add service</Button></div>
+      {adding && (
+        <div className="mt-4">
+          <ServiceForm onSubmit={addCompanyService} onCancel={() => setAdding(false)} onDone={() => setAdding(false)} submitLabel="Save service" asPanel />
+        </div>
       )}
     </SectionCard>
   );
 }
 
-function ServiceRowDisplay({ item, onEdit }: { item: ServiceRow; onEdit: () => void }) {
+function ServiceItem({ item, onEdit }: { item: ServiceRow; onEdit: () => void }) {
   const [pending, startTransition] = useTransition();
+  function del() {
+    if (!confirm("Delete this service?")) return;
+    startTransition(() => { void deleteCompanyService(item.id); });
+  }
   return (
-    <article className="rounded-[10px] border border-border bg-paper p-4 flex items-start justify-between gap-3">
-      <div>
-        <h3 className="font-serif text-[16px] tracking-tightish">{item.name}</h3>
-        {item.description && <div className="text-[12.5px] text-ink-soft mt-1">{item.description}</div>}
-      </div>
-      <div className="flex gap-1 shrink-0">
-        <Button kind="ghost" size="sm" onClick={onEdit}>Edit</Button>
-        <Button kind="ghost" size="sm" disabled={pending}
-          onClick={() => { if (confirm("Delete this service?")) startTransition(() => { void deleteCompanyService(item.id); }); }}
-          className="text-red-700 hover:bg-red-50">{pending ? "..." : "Delete"}</Button>
-      </div>
-    </article>
+    <div className="group flex items-start gap-2.5 py-2.5 border-b border-border-soft">
+      <span className="mt-[7px] w-[7px] h-[7px] rounded-full bg-sienna shrink-0" aria-hidden />
+      <p className="flex-1 min-w-0 text-[13.5px] leading-snug">
+        <span className="font-serif font-semibold text-[15px] text-ink tracking-tightish">{item.name}</span>
+        {item.description && <span className="text-muted"> — {item.description}</span>}
+      </p>
+      <Kebab onEdit={onEdit} onDelete={del} pending={pending} />
+    </div>
+  );
+}
+
+function Kebab({ onEdit, onDelete, pending }: { onEdit: () => void; onDelete: () => void; pending: boolean }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative shrink-0">
+      <button type="button" aria-label="Service actions" onClick={() => setOpen((o) => !o)}
+        className="w-7 h-7 rounded-md text-muted hover:bg-cream/70 flex items-center justify-center text-[17px] leading-none">⋯</button>
+      {open && (
+        <>
+          <button aria-hidden tabIndex={-1} onClick={() => setOpen(false)} className="fixed inset-0 z-10 cursor-default" />
+          <div className="absolute right-0 top-8 z-20 w-28 rounded-lg border border-border bg-paper shadow-md py-1">
+            <button type="button" onClick={() => { setOpen(false); onEdit(); }} className="block w-full text-left px-3 py-1.5 text-[13px] hover:bg-cream/70">Edit</button>
+            <button type="button" disabled={pending} onClick={() => { setOpen(false); onDelete(); }} className="block w-full text-left px-3 py-1.5 text-[13px] text-red-700 hover:bg-red-50">{pending ? "Deleting…" : "Delete"}</button>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 

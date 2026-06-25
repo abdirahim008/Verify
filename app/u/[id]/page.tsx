@@ -298,20 +298,17 @@ function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublic
         </section>
       )}
 
-      {p.sectors.length > 0 && p.services.length > 0 ? (
-        // Both present → two columns.
-        <div className="grid sm:grid-cols-2 gap-4 mt-4">
-          <SectionCard title="Sectors" bodyClass="px-6 sm:px-7 py-5"><TagRow items={p.sectors} /></SectionCard>
-          <SectionCard title="Services" bodyClass="px-6 sm:px-7 py-5"><TagRow items={p.services} /></SectionCard>
-        </div>
-      ) : (p.sectors.length > 0 || p.services.length > 0) ? (
-        // Only one present → it spans the full width.
+      {p.sectors.length > 0 && (
         <section className="mt-4">
-          <SectionCard title={p.sectors.length > 0 ? "Sectors" : "Services"} bodyClass="px-6 sm:px-7 py-5">
-            <TagRow items={p.sectors.length > 0 ? p.sectors : p.services} />
-          </SectionCard>
+          <SectionCard title="Sectors" bodyClass="px-6 sm:px-7 py-5"><TagRow items={p.sectors} /></SectionCard>
         </section>
-      ) : null}
+      )}
+
+      {p.servicesFull.length > 0 && (
+        <section className="mt-4">
+          <SectionCard title="What we do" bodyClass="px-6 sm:px-7 py-6"><ServicesGrid items={p.servicesFull} /></SectionCard>
+        </section>
+      )}
 
       {(p.team.length > 0 || p.ceo?.name) && (
         <section className="mt-4">
@@ -486,6 +483,23 @@ function TagRow({ items }: { items: string[] }) {
           <span className="w-1.5 h-1.5 rounded-full flex-none" style={{ background: C.blue }} />
           {s}
         </span>
+      ))}
+    </div>
+  );
+}
+
+// Services as a compact two-column "Name — description" grid.
+function ServicesGrid({ items }: { items: Array<{ name: string; description: string }> }) {
+  return (
+    <div className="grid sm:grid-cols-2 gap-x-10 gap-y-3.5">
+      {items.map((s, i) => (
+        <div key={i} className="flex items-start gap-2.5">
+          <span className="mt-[7px] w-[7px] h-[7px] rounded-full flex-none" style={{ background: C.blue }} aria-hidden />
+          <p className="flex-1 min-w-0 text-[13.5px] leading-snug" style={{ color: C.muted }}>
+            <span className="font-serif font-semibold text-[15px]" style={{ fontFamily: SERIF, color: C.ink }}>{s.name}</span>
+            {s.description && <> — {s.description}</>}
+          </p>
+        </div>
       ))}
     </div>
   );

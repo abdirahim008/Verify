@@ -44,6 +44,7 @@ export interface PublicCompany {
   tagline: string | null;
   sectors: string[];
   services: string[];
+  servicesFull: Array<{ name: string; description: string }>;
   ceo: { name: string; title: string; photoUrl: string | null; quote: string; message: string } | null;
   visible: Set<string>;
   projects: Array<{ id: string; project_name: string; client_name: string; sector: string; valueLabel: string; dateRange: string; scope: string; verified: boolean; verifiedNote: string }>;
@@ -76,12 +77,13 @@ export async function loadPublicProfile(
   }
 
   if (prof.account_type === "company") {
-    const [basicsRes, projRes, teamRes, certRes, clientsRes] = await Promise.all([
+    const [basicsRes, projRes, teamRes, certRes, clientsRes, servicesRes] = await Promise.all([
       svc.from("company_details").select("*").eq("profile_id", profileId).maybeSingle(),
       svc.from("company_projects").select("*").eq("profile_id", profileId).order("year_end", { ascending: false, nullsFirst: false }),
       svc.from("company_team").select("*").eq("profile_id", profileId).order("order_index").order("created_at"),
       svc.from("company_certifications").select("*").eq("profile_id", profileId).order("year", { ascending: false, nullsFirst: false }),
       svc.from("company_clients").select("*").eq("profile_id", profileId).eq("display_public", true).order("client_name"),
+      svc.from("company_services").select("name, description").eq("profile_id", profileId).order("order_index").order("created_at"),
     ]);
     const b = basicsRes.data;
     if (!b?.company_name) return null;
@@ -99,7 +101,10 @@ export async function loadPublicProfile(
       foundedYear: b.founded_year ?? null,
       tagline: b.tagline ?? null,
       sectors: visible.has("sectors") ? (b.sectors ?? []) : [],
-      services: visible.has("sectors") ? (b.core_services ?? []) : [],
+      // Services come from the company_services table (name + description),
+      // not the legacy core_services array.
+      servicesFull: visible.has("sectors") ? (servicesRes.data ?? []).map((s) => ({ name: s.name, description: (s.description as string | null) ?? "" })) : [],
+      services: visible.has("sectors") ? (servicesRes.data ?? []).map((s) => s.name) : [],
       // CEO node (organogram top) + message. Grouped with the leadership /
       // "team" visibility toggle. null when nothing to show or hidden.
       ceo: visible.has("team") && (b.ceo_name || b.ceo_message || b.ceo_quote)
