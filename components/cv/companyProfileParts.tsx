@@ -188,12 +188,12 @@ export function CompanyClientGroups({ data, A, variant = "bordered", chipFont }:
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
             {g.clients.map((c, i) => (
               c.logoUrl ? (
-                <span key={i} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 48, padding: "7px 13px", borderRadius: 5, background: "#fff", border: `1px solid ${RULE}` }}>
+                <span key={i} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 64, padding: "9px 16px", borderRadius: 6, background: "#fff", border: `1px solid ${RULE}` }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={c.logoUrl} alt={c.name} style={{ maxHeight: 34, maxWidth: 116, objectFit: "contain", display: "block" }} />
+                  <img src={c.logoUrl} alt={c.name} style={{ maxHeight: 46, maxWidth: 150, objectFit: "contain", display: "block" }} />
                 </span>
               ) : (
-                <span key={i} style={{ display: "inline-flex", alignItems: "center", height: 48, borderRadius: 5, padding: "0 14px", fontFamily: chipFont, fontSize: 12, color: BODY, whiteSpace: "nowrap", ...chip }}>{c.name}</span>
+                <span key={i} style={{ display: "inline-flex", alignItems: "center", height: 64, borderRadius: 6, padding: "0 16px", fontFamily: chipFont, fontSize: 12, color: BODY, whiteSpace: "nowrap", ...chip }}>{c.name}</span>
               )
             ))}
           </div>

@@ -36,7 +36,10 @@ export function DossierCompanyProfile({ data, theme }: { data: CompanyData; them
         <div style={{ width: 11, flex: "none", background: A.accent, ...band }} />
         <div style={{ flex: 1, padding: "62px 58px", display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Mono mono={mono} A={A} size={46} radius={10} font={23} />
+            {data.logoUrl
+              // eslint-disable-next-line @next/next/no-img-element
+              ? <img src={data.logoUrl} alt="" style={{ height: 46, maxWidth: 130, objectFit: "contain" }} />
+              : <Mono mono={mono} A={A} size={46} radius={10} font={23} />}
             <span style={{ fontFamily: DISP, fontWeight: 600, fontSize: 14, color: INK }}>{data.name}</span>
           </div>
           <div style={{ flex: 1 }} />

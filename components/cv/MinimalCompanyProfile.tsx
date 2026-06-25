@@ -1,5 +1,7 @@
 import "server-only";
 import type { CompanyData } from "@/lib/pdf/company-data";
+import { CompanyOrgChart, orgVisible } from "./companyProfileParts";
+import { deriveAccent } from "./companyShared";
 
 // Company Profile — "Minimal / Architectural" register. White space,
 // hairlines, massive understated type, one restrained blue accent.
@@ -34,7 +36,7 @@ export function MinimalCompanyProfile({ data, theme }: { data: CompanyData; them
       <style dangerouslySetInnerHTML={{ __html: styles(C) }} />
       <Cover data={data} C={C} />
       <Firm data={data} />
-      <Work data={data} />
+      <Work data={data} C={C} />
     </>
   );
 }
@@ -54,7 +56,10 @@ function Cover({ data, C }: { data: CompanyData; C: Palette }) {
       </div>
 
       <div className="lockup">
-        <span className="lockup-mono">{dottedInitials(data.name)}</span>
+        {data.logoUrl
+          // eslint-disable-next-line @next/next/no-img-element
+          ? <img src={data.logoUrl} alt="" className="lockup-logo" />
+          : <span className="lockup-mono">{dottedInitials(data.name)}</span>}
         <span className="lockup-dash" />
         {data.foundedYear && <span className="lockup-est">Est. {data.foundedYear}</span>}
       </div>
@@ -150,7 +155,7 @@ function Firm({ data }: { data: CompanyData }) {
 }
 
 // ── Page 3 · Chapter 02 — The work ─────────────────────────────────
-function Work({ data }: { data: CompanyData }) {
+function Work({ data, C }: { data: CompanyData; C: Palette }) {
   return (
     <section className="page inner">
       <div className="run">
@@ -189,9 +194,9 @@ function Work({ data }: { data: CompanyData }) {
             <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, marginTop: 8 }}>
               {data.clientsFull.map((c, i) => (
                 c.logoUrl ? (
-                  <span key={i} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 44, padding: "6px 12px", borderRadius: 4, background: "#fff", border: "1px solid #e2ded7" }}>
+                  <span key={i} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 60, padding: "9px 15px", borderRadius: 5, background: "#fff", border: "1px solid #e2ded7" }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={c.logoUrl} alt={c.name} style={{ maxHeight: 32, maxWidth: 110, objectFit: "contain", display: "block" }} />
+                    <img src={c.logoUrl} alt={c.name} style={{ maxHeight: 44, maxWidth: 146, objectFit: "contain", display: "block" }} />
                   </span>
                 ) : (
                   <span key={i} style={{ fontSize: 12.5, color: "#43403a" }}>{c.name}</span>
@@ -204,31 +209,27 @@ function Work({ data }: { data: CompanyData }) {
         </div>
       )}
 
-      <div className="two">
-        {data.team.length > 0 && (
-          <div>
-            <div className="list-h">Key personnel</div>
-            {data.team.map((m) => (
-              <div key={m.id} className="tm-row">
-                <span className="tm-name">{m.name}</span>
-                {m.role && <span className="tm-role"> — {m.role}</span>}
-              </div>
-            ))}
+      {orgVisible(data) && (
+        <div style={{ marginTop: "9mm" }}>
+          <div className="list-h">Key personnel</div>
+          <div style={{ marginTop: "4mm" }}>
+            <CompanyOrgChart data={data} A={deriveAccent(C.accent)} nameFont={SERIF} unitFont={SANS} />
           </div>
-        )}
-        {data.certifications.length > 0 && (
-          <div>
-            <div className="list-h">Accreditations</div>
-            {data.certifications.map((c, i) => (
-              <div key={i} className="tm-row">
-                <span className="tm-name">{c.name}</span>
-                {(c.issuer || c.year) && <span className="tm-role"> — {[c.issuer, c.year].filter(Boolean).join(", ")}</span>}
-                {c.verified && <> <VerifiedPill small note={c.verifiedNote} /></>}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {data.certifications.length > 0 && (
+        <div style={{ marginTop: "8mm" }}>
+          <div className="list-h">Accreditations</div>
+          {data.certifications.map((c, i) => (
+            <div key={i} className="tm-row">
+              <span className="tm-name">{c.name}</span>
+              {(c.issuer || c.year) && <span className="tm-role"> — {[c.issuer, c.year].filter(Boolean).join(", ")}</span>}
+              {c.verified && <> <VerifiedPill small note={c.verifiedNote} /></>}
+            </div>
+          ))}
+        </div>
+      )}
 
       <PageFoot data={data} page="03" />
     </section>
@@ -337,6 +338,7 @@ const styles = (C: Palette) => `
   font-size: 17pt; font-weight: 400; font-style: italic;
   letter-spacing: -0.02em; color: ${C.accent};
 }
+.lockup-logo { height: 16mm; width: auto; max-width: 60mm; object-fit: contain; display: block; }
 .lockup-dash { width: 6mm; height: 1px; background: ${C.ink}; display: inline-block; }
 .lockup-est {
   font-size: 7.5pt; letter-spacing: 0.2em; text-transform: uppercase;

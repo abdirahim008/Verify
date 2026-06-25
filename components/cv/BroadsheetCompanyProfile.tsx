@@ -33,8 +33,11 @@ export function BroadsheetCompanyProfile({ data, theme }: { data: CompanyData; t
 
       {/* ── COVER ── */}
       <div className="cpage" style={{ fontFamily: BODYF, display: "flex", flexDirection: "column", padding: "64px 56px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-          <span style={{ fontFamily: DISP, fontWeight: 700, fontSize: 14, letterSpacing: "-0.01em", color: INK }}>{data.name}</span>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          {data.logoUrl
+            // eslint-disable-next-line @next/next/no-img-element
+            ? <img src={data.logoUrl} alt="" style={{ height: 34, maxWidth: 150, objectFit: "contain", display: "block" }} />
+            : <span style={{ fontFamily: DISP, fontWeight: 700, fontSize: 14, letterSpacing: "-0.01em", color: INK }}>{data.name}</span>}
           <span style={{ fontFamily: DISP, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.26em", color: A.accent }}>{profileLine(data.year)}</span>
         </div>
         <div style={{ height: 2.5, background: A.accent, marginTop: 16, ...band }} />
