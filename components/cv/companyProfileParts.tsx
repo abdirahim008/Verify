@@ -77,12 +77,23 @@ export function CompanyOrgChart({ data, A, nameFont, unitFont }: {
   data: CompanyData; A: AccentSet; nameFont: string; unitFont?: string;
 }) {
   const board = data.boardName || "Board of Directors";
-  // The CEO is already shown as the dedicated node below the board. If the same
-  // person is also entered as a Key Personnel team member, drop them from the
-  // director grid so they don't appear twice.
+  // Leadership for the chart comes from Key Personnel. If a team member's role
+  // marks them as the chief executive, they become the CEO node and drop out of
+  // the director grid. Only when no such member exists do we fall back to the
+  // CEO-message name/title — so the same person never shows up twice (e.g. once
+  // from the CEO message and again as a key-personnel card).
   const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
-  const ceoName = data.ceo.name ? norm(data.ceo.name) : "";
-  const directors = ceoName ? data.team.filter((m) => norm(m.name) !== ceoName) : data.team;
+  const CEO_ROLE = /\b(ceo|chief exec|managing director|managing partner|executive director|director general)\b/i;
+  const teamCeo = data.team.find((m) => CEO_ROLE.test(m.role || ""));
+  let ceoNode: { name: string; title: string } | null = null;
+  let directors = data.team;
+  if (teamCeo) {
+    ceoNode = { name: teamCeo.name, title: teamCeo.role };
+    directors = data.team.filter((m) => m.id !== teamCeo.id);
+  } else if (data.ceo.name) {
+    ceoNode = { name: data.ceo.name, title: data.ceo.title };
+    directors = data.team.filter((m) => norm(m.name) !== norm(data.ceo.name));
+  }
   const cols = Math.min(Math.max(directors.length, 1), 3);
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -90,12 +101,12 @@ export function CompanyOrgChart({ data, A, nameFont, unitFont }: {
         <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.16em", color: FAINT }}>Governance</div>
         <div style={{ fontFamily: nameFont, fontWeight: 600, fontSize: 13, color: INK }}>{board}</div>
       </div>
-      {data.ceo.name && (
+      {ceoNode && (
         <>
           <div style={{ width: 1.5, height: 18, background: A.accentLine }} />
           <div style={{ background: A.accent, borderRadius: 6, padding: "11px 26px", textAlign: "center", color: A.onAccent, ...band }}>
             <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.16em", color: A.onAccentMuted }}>Chief Executive</div>
-            <div style={{ fontFamily: nameFont, fontWeight: 600, fontSize: 14 }}>{[data.ceo.name, data.ceo.title].filter(Boolean).join(" · ")}</div>
+            <div style={{ fontFamily: nameFont, fontWeight: 600, fontSize: 14 }}>{[ceoNode.name, ceoNode.title].filter(Boolean).join(" · ")}</div>
           </div>
         </>
       )}

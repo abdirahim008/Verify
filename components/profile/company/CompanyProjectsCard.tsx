@@ -92,9 +92,6 @@ function ProjectRowDisplay({ item, pending: pendingVerify, onEdit }: { item: Pro
           <div className="text-[13px] text-ink-soft mt-1 italic">
             {[item.client_name, item.sector, yearRange(item.year_start, item.year_end)].filter(Boolean).join(" · ")}
           </div>
-          {item.scope && (
-            <ScopeList text={item.scope} dotColor="#0a5cad" className="mt-2 text-[13.5px] text-ink-soft leading-relaxed" />
-          )}
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
           {item.value_amount != null && (
@@ -110,6 +107,10 @@ function ProjectRowDisplay({ item, pending: pendingVerify, onEdit }: { item: Pro
           </div>
         </div>
       </div>
+      {/* Scope spans the full card width — not boxed beside the value/actions. */}
+      {item.scope && (
+        <ScopeList text={item.scope} dotColor="#0a5cad" className="mt-3 text-[13.5px] text-ink-soft leading-relaxed" />
+      )}
     </article>
   );
 }
