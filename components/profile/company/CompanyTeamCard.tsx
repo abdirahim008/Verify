@@ -23,68 +23,89 @@ export function CompanyTeamCard({ items }: { items: TeamRow[] }) {
       description="A simple list of senior staff and reporting lines. The PDF renders a tidy organogram from this."
       defaultOpen={false}
       count={items.length}
+      headerAction={!adding && <Button kind="quiet" size="sm" onClick={() => { setAdding(true); setEditingId(null); }}>+ Add team member</Button>}
     >
-      <div className="space-y-3">
-        {items.map((item) =>
-          editingId === item.id ? (
-            <TeamForm
-              key={item.id}
-              initial={item}
-              others={items.filter((x) => x.id !== item.id)}
-              onSubmit={(v) => updateCompanyTeamMember(item.id, v)}
-              onCancel={() => setEditingId(null)}
-              onDone={() => setEditingId(null)}
-              submitLabel="Save changes"
-            />
-          ) : (
-            <TeamRowDisplay
-              key={item.id}
-              item={item}
-              manager={item.reports_to ? byId.get(item.reports_to) ?? null : null}
-              onEdit={() => setEditingId(item.id)}
-            />
-          ),
-        )}
-      </div>
+      {items.length > 0 && (
+        <div className="grid sm:grid-cols-2 gap-x-10 gap-y-1">
+          {items.map((item) =>
+            editingId === item.id ? (
+              <div key={item.id} className="sm:col-span-2 my-2">
+                <TeamForm
+                  initial={item}
+                  others={items.filter((x) => x.id !== item.id)}
+                  onSubmit={(v) => updateCompanyTeamMember(item.id, v)}
+                  onCancel={() => setEditingId(null)}
+                  onDone={() => setEditingId(null)}
+                  submitLabel="Save changes"
+                />
+              </div>
+            ) : (
+              <TeamItem
+                key={item.id}
+                item={item}
+                manager={item.reports_to ? byId.get(item.reports_to) ?? null : null}
+                onEdit={() => { setEditingId(item.id); setAdding(false); }}
+              />
+            ),
+          )}
+        </div>
+      )}
 
       {items.length === 0 && !adding && (
         <p className="text-[13.5px] text-muted">No team members yet.</p>
       )}
 
-      {adding ? (
-        <TeamForm others={items} onSubmit={addCompanyTeamMember} onCancel={() => setAdding(false)} onDone={() => setAdding(false)} submitLabel="Save person" asPanel />
-      ) : (
+      {adding && (
         <div className="mt-4">
-          <Button kind="quiet" size="md" onClick={() => setAdding(true)}>+ Add team member</Button>
+          <TeamForm others={items} onSubmit={addCompanyTeamMember} onCancel={() => setAdding(false)} onDone={() => setAdding(false)} submitLabel="Save person" asPanel />
         </div>
       )}
     </SectionCard>
   );
 }
 
-function TeamRowDisplay({ item, manager, onEdit }: { item: TeamRow; manager: TeamRow | null; onEdit: () => void }) {
+function TeamItem({ item, manager, onEdit }: { item: TeamRow; manager: TeamRow | null; onEdit: () => void }) {
   const [pending, startTransition] = useTransition();
+  function del() {
+    if (!confirm("Delete this person?")) return;
+    startTransition(() => { void deleteCompanyTeamMember(item.id); });
+  }
   return (
-    <article className="rounded-[10px] border border-border bg-paper p-4 flex items-start justify-between gap-3">
-      <div>
-        <h3 className="font-serif text-[16px] tracking-tightish">{item.person_name}</h3>
-        {item.role && <div className="text-[13px] text-ink-soft mt-0.5">{item.role}</div>}
+    <div className="flex items-start gap-2.5 py-2.5 border-b border-border-soft">
+      <span className="mt-[7px] w-[7px] h-[7px] rounded-full bg-sienna shrink-0" aria-hidden />
+      <div className="flex-1 min-w-0">
+        <p className="text-[13.5px] leading-snug">
+          <span className="font-serif font-semibold text-[15px] text-ink tracking-tightish">{item.person_name}</span>
+          {item.role && <span className="text-muted"> — {item.role}</span>}
+        </p>
         {(item.units?.length ?? 0) > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-1.5">
-            {item.units!.map((u) => <span key={u} className="rounded-full bg-cream border border-border px-2 py-0.5 text-[11.5px] text-ink-soft">{u}</span>)}
+            {item.units!.map((u) => <span key={u} className="rounded-full bg-cream border border-border px-2 py-0.5 text-[11px] text-ink-soft">{u}</span>)}
           </div>
         )}
-        {manager && <div className="text-[12px] text-muted mt-1">Reports to: {manager.person_name}</div>}
+        {manager && <div className="text-[11.5px] text-muted mt-1">Reports to: {manager.person_name}</div>}
       </div>
-      <div className="flex gap-1 shrink-0">
-        <Button kind="ghost" size="sm" onClick={onEdit}>Edit</Button>
-        <Button kind="ghost" size="sm" disabled={pending}
-          onClick={() => { if (confirm("Delete this person?")) startTransition(() => { void deleteCompanyTeamMember(item.id); }); }}
-          className="text-red-700 hover:bg-red-50">
-          {pending ? "..." : "Delete"}
-        </Button>
-      </div>
-    </article>
+      <Kebab onEdit={onEdit} onDelete={del} pending={pending} />
+    </div>
+  );
+}
+
+function Kebab({ onEdit, onDelete, pending }: { onEdit: () => void; onDelete: () => void; pending: boolean }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative shrink-0">
+      <button type="button" aria-label="Person actions" onClick={() => setOpen((o) => !o)}
+        className="w-7 h-7 rounded-md text-muted hover:bg-cream/70 flex items-center justify-center text-[17px] leading-none">⋯</button>
+      {open && (
+        <>
+          <button aria-hidden tabIndex={-1} onClick={() => setOpen(false)} className="fixed inset-0 z-10 cursor-default" />
+          <div className="absolute right-0 top-8 z-20 w-28 rounded-lg border border-border bg-paper shadow-md py-1">
+            <button type="button" onClick={() => { setOpen(false); onEdit(); }} className="block w-full text-left px-3 py-1.5 text-[13px] hover:bg-cream/70">Edit</button>
+            <button type="button" disabled={pending} onClick={() => { setOpen(false); onDelete(); }} className="block w-full text-left px-3 py-1.5 text-[13px] text-red-700 hover:bg-red-50">{pending ? "Deleting…" : "Delete"}</button>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
