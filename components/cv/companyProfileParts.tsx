@@ -1,6 +1,7 @@
 import "server-only";
 import type { CompanyData } from "@/lib/pdf/company-data";
 import { ceoInitials, type AccentSet } from "./companyShared";
+import { splitScope } from "@/components/ScopeList";
 
 // Visual parts shared by the five "Company Profile System" templates. The
 // org chart and client list are structurally identical across all five —
@@ -154,6 +155,26 @@ function PartVerified() {
 // ── selected-projects list (numbered, with sector / client / value / badge) ──
 // Shared by the five templates; the heading + run-line stay per-template so
 // each design keeps its own voice, but the project rows are identical.
+// Scope as an accent-dot list. Newlines/bullet glyphs become separate items;
+// a single-item scope renders as a plain paragraph. Inline-styled because the
+// PDF render has no Tailwind.
+function ScopeBullets({ text, A }: { text: string; A: AccentSet }) {
+  const items = splitScope(text);
+  if (items.length <= 1) {
+    return <p style={{ fontSize: 12, color: BODY, lineHeight: 1.55, margin: "6px 0 0" }}>{text}</p>;
+  }
+  return (
+    <div style={{ margin: "6px 0 0" }}>
+      {items.map((it, j) => (
+        <div key={j} style={{ display: "flex", gap: 7, fontSize: 12, color: BODY, lineHeight: 1.5, marginTop: j > 0 ? 4 : 0 }}>
+          <span style={{ width: 5, height: 5, borderRadius: "50%", background: A.accent, flex: "none", marginTop: 6, ...band }} />
+          <span style={{ minWidth: 0 }}>{it}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function CompanyProjects({ data, A, headFont }: {
   data: CompanyData; A: AccentSet; headFont: string;
 }) {
@@ -175,7 +196,7 @@ export function CompanyProjects({ data, A, headFont }: {
               {(p.client || p.yearRange) && (
                 <div style={{ fontSize: 11.5, color: A.accent, marginTop: 2 }}>{[p.client, p.yearRange].filter(Boolean).join(" · ")}</div>
               )}
-              {p.scope && <p style={{ fontSize: 12, color: BODY, lineHeight: 1.55, margin: "6px 0 0" }}>{p.scope}</p>}
+              {p.scope && <ScopeBullets text={p.scope} A={A} />}
             </div>
             {p.value && (
               <div style={{ width: 86, flex: "none", textAlign: "right" }}>
