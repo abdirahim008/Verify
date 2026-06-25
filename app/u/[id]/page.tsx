@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { loadPublicProfile, viewerContext } from "@/lib/public-profile";
 import { ReadMore } from "@/components/ReadMore";
-import { ScopeList } from "@/components/ScopeList";
+import { CollapsibleScope } from "@/components/CollapsibleScope";
 
 // Public profile page — the QR / share destination, so it doubles as the
 // app's shop window. No (app) layout: reachable by logged-out viewers, with
@@ -428,7 +428,7 @@ function TimelineItem({ first, last, verified, title, date, meta, note, descript
           {verified && <VerifiedTag note={note} />}
         </div>
         {description && (descriptionAsList
-          ? <ScopeList text={description} dotColor={C.blue} className="mt-2 text-[12.5px] leading-[1.55]" style={{ color: C.muted }} />
+          ? <CollapsibleScope text={description} dotColor={C.blue} className="mt-2 text-[12.5px] leading-[1.55]" style={{ color: C.muted }} />
           : <ReadMore text={description} className="mt-2 text-[12.5px] leading-[1.55]" lines={4} style={{ color: C.muted }} />
         )}
       </div>

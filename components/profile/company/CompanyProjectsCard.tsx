@@ -9,7 +9,7 @@ import { RequestVerifyButton } from "@/components/verification/RequestVerifyButt
 import { companyProjectSchema, type CompanyProjectValues } from "@/lib/schemas";
 import { addCompanyProject, updateCompanyProject, deleteCompanyProject } from "@/lib/actions/company";
 import { yearRange } from "@/lib/format";
-import { ScopeList } from "@/components/ScopeList";
+import { CollapsibleScope } from "@/components/CollapsibleScope";
 
 interface ProjectRow {
   id: string; project_name: string; client_name: string | null; sector: string | null;
@@ -109,7 +109,7 @@ function ProjectRowDisplay({ item, pending: pendingVerify, onEdit }: { item: Pro
       </div>
       {/* Scope spans the full card width — not boxed beside the value/actions. */}
       {item.scope && (
-        <ScopeList text={item.scope} dotColor="#0a5cad" className="mt-3 text-[13.5px] text-ink-soft leading-relaxed" />
+        <CollapsibleScope text={item.scope} dotColor="#0a5cad" className="mt-3 text-[13.5px] text-ink-soft leading-relaxed" />
       )}
     </article>
   );
