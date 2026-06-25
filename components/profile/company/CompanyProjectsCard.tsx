@@ -11,6 +11,11 @@ import { addCompanyProject, updateCompanyProject, deleteCompanyProject } from "@
 import { yearRange } from "@/lib/format";
 import { CollapsibleScope } from "@/components/CollapsibleScope";
 import { ProjectPhotos } from "./ProjectPhotos";
+import { PROJECT_SECTORS } from "@/lib/companySectors";
+
+// Year picker options — current year +5 down to 1980, newest first.
+const NOW = new Date().getFullYear();
+const YEARS = Array.from({ length: NOW + 5 - 1980 + 1 }, (_, i) => NOW + 5 - i);
 
 interface ProjectMedia { id: string; url: string; caption: string | null }
 interface ProjectRow {
@@ -158,6 +163,12 @@ function ProjectForm({
     });
   }
 
+  // Keep any pre-existing sector value that isn't in the curated list so it
+  // isn't silently dropped when editing an older project.
+  const sectorOptions = initial?.sector && !PROJECT_SECTORS.includes(initial.sector)
+    ? [initial.sector, ...PROJECT_SECTORS]
+    : PROJECT_SECTORS;
+
   const body = (
     <form onSubmit={handleSubmit(submit)} className="grid gap-4 sm:grid-cols-2" noValidate>
       <div className="sm:col-span-2">
@@ -169,7 +180,10 @@ function ProjectForm({
         <input className="field" placeholder="e.g. World Bank / FGS" {...register("client_name")} />
       </Field>
       <Field label="Sector" error={errors.sector?.message}>
-        <input className="field" placeholder="e.g. Roads" {...register("sector")} />
+        <select className="field" {...register("sector")}>
+          <option value="">— Select —</option>
+          {sectorOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
       </Field>
       <Field label="Value (number)" error={errors.value_amount?.message} hint="Numbers only. Currency separate.">
         <input className="field" inputMode="decimal" {...register("value_amount")} />
@@ -178,10 +192,16 @@ function ProjectForm({
         <input className="field" placeholder="USD" {...register("currency")} />
       </Field>
       <Field label="Year start" error={errors.year_start?.message}>
-        <input type="number" min={1900} max={2100} className="field" {...register("year_start")} />
+        <select className="field" {...register("year_start")}>
+          <option value="">— Year —</option>
+          {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+        </select>
       </Field>
-      <Field label="Year end" error={errors.year_end?.message}>
-        <input type="number" min={1900} max={2100} className="field" {...register("year_end")} />
+      <Field label="Year end" error={errors.year_end?.message} hint="Leave blank if ongoing.">
+        <select className="field" {...register("year_end")}>
+          <option value="">— Year / ongoing —</option>
+          {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+        </select>
       </Field>
       <div className="sm:col-span-2">
         <Field label="Scope" error={errors.scope?.message} hint="What you actually delivered. Quantify if you can.">
