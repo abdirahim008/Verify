@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/Button";
 import { SectionCard, Field, NewItemPanel } from "../SectionCard";
+import { RowMenu } from "../RowMenu";
 import { companyTeamSchema, type CompanyTeamValues } from "@/lib/schemas";
 import { addCompanyTeamMember, updateCompanyTeamMember, deleteCompanyTeamMember } from "@/lib/actions/company";
 
@@ -85,26 +86,7 @@ function TeamItem({ item, manager, onEdit }: { item: TeamRow; manager: TeamRow |
         )}
         {manager && <div className="text-[11.5px] text-muted mt-1">Reports to: {manager.person_name}</div>}
       </div>
-      <Kebab onEdit={onEdit} onDelete={del} pending={pending} />
-    </div>
-  );
-}
-
-function Kebab({ onEdit, onDelete, pending }: { onEdit: () => void; onDelete: () => void; pending: boolean }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="relative shrink-0">
-      <button type="button" aria-label="Person actions" onClick={() => setOpen((o) => !o)}
-        className="w-7 h-7 rounded-md text-muted hover:bg-cream/70 flex items-center justify-center text-[17px] leading-none">⋯</button>
-      {open && (
-        <>
-          <button aria-hidden tabIndex={-1} onClick={() => setOpen(false)} className="fixed inset-0 z-10 cursor-default" />
-          <div className="absolute right-0 top-8 z-20 w-28 rounded-lg border border-border bg-paper shadow-md py-1">
-            <button type="button" onClick={() => { setOpen(false); onEdit(); }} className="block w-full text-left px-3 py-1.5 text-[13px] hover:bg-cream/70">Edit</button>
-            <button type="button" disabled={pending} onClick={() => { setOpen(false); onDelete(); }} className="block w-full text-left px-3 py-1.5 text-[13px] text-red-700 hover:bg-red-50">{pending ? "Deleting…" : "Delete"}</button>
-          </div>
-        </>
-      )}
+      <RowMenu onEdit={onEdit} onDelete={del} pending={pending} />
     </div>
   );
 }
