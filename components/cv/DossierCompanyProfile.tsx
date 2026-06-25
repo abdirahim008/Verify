@@ -36,11 +36,17 @@ export function DossierCompanyProfile({ data, theme }: { data: CompanyData; them
         <div style={{ width: 11, flex: "none", background: A.accent, ...band }} />
         <div style={{ flex: 1, padding: "62px 58px", display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            {data.logoUrl
+            {data.logoUrl ? (
+              // Logo is the brand mark here — shown large; the company name is
+              // already the cover's hero heading below, so no label beside it.
               // eslint-disable-next-line @next/next/no-img-element
-              ? <img src={data.logoUrl} alt="" style={{ height: 46, maxWidth: 130, objectFit: "contain" }} />
-              : <Mono mono={mono} A={A} size={46} radius={10} font={23} />}
-            <span style={{ fontFamily: DISP, fontWeight: 600, fontSize: 14, color: INK }}>{data.name}</span>
+              <img src={data.logoUrl} alt="" style={{ height: 92, maxWidth: 330, objectFit: "contain", objectPosition: "left center", display: "block" }} />
+            ) : (
+              <>
+                <Mono mono={mono} A={A} size={46} radius={10} font={23} />
+                <span style={{ fontFamily: DISP, fontWeight: 600, fontSize: 14, color: INK }}>{data.name}</span>
+              </>
+            )}
           </div>
           <div style={{ flex: 1 }} />
           <div style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3em", color: A.accent }}>{profileLine(data.year)}</div>
