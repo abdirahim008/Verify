@@ -1,5 +1,10 @@
 import "server-only";
 import type { CompanyData } from "@/lib/pdf/company-data";
+import { CompanyOrgChart, orgVisible } from "./companyProfileParts";
+import { deriveAccent } from "./companyShared";
+
+const WADANI_SERIF = '"Source Serif 4", "Source Serif Pro", Georgia, serif';
+const WADANI_SANS = '"Public Sans", "Source Sans 3", system-ui, sans-serif';
 
 // Company Profile — 3 pages (Cover, About, Projects). Ported from
 // verify/pdfs/company-profile.jsx. Each `.page` is its own A4 sheet so the
@@ -31,7 +36,7 @@ export function WadaniCompanyProfile({ data, theme }: { data: CompanyData; theme
       <style dangerouslySetInnerHTML={{ __html: styles(C) }} />
       <Cover data={data} C={C} />
       <About data={data} />
-      <Projects data={data} />
+      <Projects data={data} C={C} />
     </>
   );
 }
@@ -172,9 +177,9 @@ function About({ data }: { data: CompanyData }) {
           <div className="clients-list" style={{ alignItems: "center" }}>
             {data.clientsFull.map((c, i) => (
               c.logoUrl ? (
-                <span key={i} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 48, padding: "7px 13px", borderRadius: 5, background: "#fff", border: "1px solid #e2ded7" }}>
+                <span key={i} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 64, padding: "9px 16px", borderRadius: 6, background: "#fff", border: "1px solid #e2ded7" }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={c.logoUrl} alt={c.name} style={{ maxHeight: 34, maxWidth: 116, objectFit: "contain", display: "block" }} />
+                  <img src={c.logoUrl} alt={c.name} style={{ maxHeight: 46, maxWidth: 150, objectFit: "contain", display: "block" }} />
                 </span>
               ) : (
                 <span key={i} className="client-chip">{c.name}</span>
@@ -188,7 +193,7 @@ function About({ data }: { data: CompanyData }) {
 }
 
 // ── Page 3: Selected Projects ─────────────────────────────────────
-function Projects({ data }: { data: CompanyData }) {
+function Projects({ data, C }: { data: CompanyData; C: Palette }) {
   return (
     <section className="page projects">
       <div className="run-head">
@@ -231,19 +236,10 @@ function Projects({ data }: { data: CompanyData }) {
         ))}
       </div>
 
-      {data.team.length > 0 && (
+      {orgVisible(data) && (
         <div className="team">
           <p className="eyebrow eyebrow-mb">Key personnel</p>
-          <div className="team-list">
-            {data.team.map((m) => (
-              <div key={m.id} className="team-row">
-                <div>
-                  <div className="team-name">{m.name}</div>
-                  {m.role && <div className="team-role">{m.role}</div>}
-                </div>
-              </div>
-            ))}
-          </div>
+          <CompanyOrgChart data={data} A={deriveAccent(C.sienna)} nameFont={WADANI_SERIF} unitFont={WADANI_SANS} />
         </div>
       )}
 
@@ -354,7 +350,7 @@ const styles = (C: Palette) => `
 }
 .cover-logo {
   position: absolute; top: 36mm; left: 18mm;
-  width: 24mm; height: 24mm;
+  width: 32mm; height: 32mm;
   object-fit: contain;
   background: rgba(255,255,255,0.92);
   border-radius: 4mm;
@@ -427,12 +423,12 @@ const styles = (C: Palette) => `
   line-height: 0.95; margin: 4mm 0 0; max-width: 140mm;
 }
 .italic-sienna { font-style: italic; color: ${C.sienna}; }
-.about-intro { margin-top: 10mm; }
+.about-intro { margin-top: 8mm; }
 .about-body {
   font-size: 11pt; line-height: 1.7; color: ${C.inkSoft};
   margin-top: 6mm; max-width: 160mm; text-align: justify; hyphens: auto;
 }
-.mv-grid { margin-top: 10mm; display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+.mv-grid { margin-top: 8mm; display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
 .mv-card { border-radius: 8px; padding: 6mm 7mm; }
 .mv-light { background: #fff; border: 1px solid ${C.rule}; }
 .mv-dark { background: ${C.teal}; color: #e6ecf3; }
@@ -441,7 +437,7 @@ const styles = (C: Palette) => `
   font-size: 13pt; line-height: 1.35; font-style: italic;
   margin: 3mm 0 0; font-weight: 400; letter-spacing: -0.005em;
 }
-.lists-grid { margin-top: 8mm; display: grid; grid-template-columns: 1fr 1fr; gap: 10mm; }
+.lists-grid { margin-top: 7mm; display: grid; grid-template-columns: 1fr 1fr; gap: 10mm; }
 .list-row {
   display: flex; align-items: baseline; gap: 4mm;
   padding: 2mm 0; border-bottom: 1px solid ${C.rule};
@@ -455,7 +451,7 @@ const styles = (C: Palette) => `
   font-family: "Source Serif 4", "Source Serif Pro", Georgia, serif;
   font-size: 12pt; font-weight: 450; letter-spacing: -0.005em;
 }
-.clients { margin-top: 10mm; }
+.clients { margin-top: 8mm; }
 .clients-list { display: flex; flex-wrap: wrap; gap: 2mm 4mm; }
 .client-chip {
   font-family: "Source Serif 4", "Source Serif Pro", Georgia, serif;
