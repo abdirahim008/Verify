@@ -77,7 +77,13 @@ export function CompanyOrgChart({ data, A, nameFont, unitFont }: {
   data: CompanyData; A: AccentSet; nameFont: string; unitFont?: string;
 }) {
   const board = data.boardName || "Board of Directors";
-  const cols = Math.min(Math.max(data.team.length, 1), 3);
+  // The CEO is already shown as the dedicated node below the board. If the same
+  // person is also entered as a Key Personnel team member, drop them from the
+  // director grid so they don't appear twice.
+  const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
+  const ceoName = data.ceo.name ? norm(data.ceo.name) : "";
+  const directors = ceoName ? data.team.filter((m) => norm(m.name) !== ceoName) : data.team;
+  const cols = Math.min(Math.max(directors.length, 1), 3);
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
       <div style={{ background: A.tint, border: `1px solid ${A.tintBorder}`, borderRadius: 6, padding: "9px 22px", textAlign: "center", ...band }}>
@@ -93,11 +99,11 @@ export function CompanyOrgChart({ data, A, nameFont, unitFont }: {
           </div>
         </>
       )}
-      {data.team.length > 0 && (
+      {directors.length > 0 && (
         <>
           <div style={{ width: 1.5, height: 18, background: A.accentLine }} />
           <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols},1fr)`, gap: 20, width: "100%" }}>
-            {data.team.slice(0, 6).map((m) => (
+            {directors.slice(0, 6).map((m) => (
               <div key={m.id} style={{ textAlign: "center" }}>
                 <div style={{ border: "1px solid #ddd8d0", borderRadius: 6, padding: 10 }}>
                   <div style={{ fontFamily: nameFont, fontWeight: 600, fontSize: 12.5, color: INK }}>{m.name}</div>
