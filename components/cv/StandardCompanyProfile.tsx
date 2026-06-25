@@ -185,10 +185,19 @@ export function StandardCompanyProfile({ data, theme }: { data: CompanyData; the
 }
 
 function Eyebrow({ A, children }: { A: ReturnType<typeof deriveAccent>; children: React.ReactNode }) {
-  return <div style={{ fontSize: 11.5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.22em", color: A.accent, marginBottom: 9 }}>{children}</div>;
+  return <SectionHeader A={A} mb={13}>{children}</SectionHeader>;
 }
 function RuledEyebrow({ A, children }: { A: ReturnType<typeof deriveAccent>; children: React.ReactNode }) {
-  return <div style={{ fontSize: 11.5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.22em", color: A.accent, marginBottom: 14, borderBottom: `1px solid ${RULE}`, paddingBottom: 7 }}>{children}</div>;
+  return <SectionHeader A={A} mb={16}>{children}</SectionHeader>;
+}
+// Elegant section header: a tinted accent tab with an accent edge, in the
+// display face — replaces the tiny uppercase eyebrows so sections stand out.
+function SectionHeader({ A, mb, children }: { A: ReturnType<typeof deriveAccent>; mb: number; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: mb }}>
+      <span style={{ display: "inline-flex", alignItems: "center", background: A.tint, borderLeft: `3px solid ${A.accent}`, borderRadius: "0 7px 7px 0", padding: "8px 16px", fontFamily: SERIF, fontWeight: 600, fontSize: 17, letterSpacing: "0.005em", color: A.accent, ...band }}>{children}</span>
+    </div>
+  );
 }
 function MvBox({ A, label, text }: { A: ReturnType<typeof deriveAccent>; label: string; text: string }) {
   return (

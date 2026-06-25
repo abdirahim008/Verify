@@ -207,7 +207,11 @@ function Mono({ mono, A, size, radius, font }: { mono: string; A: ReturnType<typ
   return <div style={{ width: size, height: size, flex: "none", borderRadius: radius, background: A.accent, color: A.onAccent, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISP, fontWeight: 600, fontSize: font, ...band }}>{mono}</div>;
 }
 function CardLabel({ A, children }: { A: ReturnType<typeof deriveAccent>; children: React.ReactNode }) {
-  return <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: A.accent, marginBottom: 14 }}>{children}</div>;
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <span style={{ display: "inline-flex", alignItems: "center", background: A.tint, borderLeft: `3px solid ${A.accent}`, borderRadius: "0 7px 7px 0", padding: "7px 15px", fontFamily: DISP, fontWeight: 600, fontSize: 16, letterSpacing: "0.005em", color: A.accent, ...band }}>{children}</span>
+    </div>
+  );
 }
 function TintCard({ A, label, text }: { A: ReturnType<typeof deriveAccent>; label: string; text: string }) {
   return (

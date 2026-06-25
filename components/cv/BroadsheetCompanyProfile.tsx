@@ -192,7 +192,11 @@ export function BroadsheetCompanyProfile({ data, theme }: { data: CompanyData; t
 }
 
 function Label({ A, ruled, mt, children }: { A: ReturnType<typeof deriveAccent>; ruled?: boolean; mt?: boolean; children: React.ReactNode }) {
-  return <div style={{ fontFamily: DISP, fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: ruled ? "0.18em" : "0.2em", color: A.accent, marginBottom: ruled ? 14 : 18, marginTop: mt ? 22 : undefined, borderBottom: ruled ? `1px solid ${RULE}` : undefined, paddingBottom: ruled ? 7 : undefined }}>{children}</div>;
+  return (
+    <div style={{ marginBottom: ruled ? 16 : 18, marginTop: mt ? 22 : undefined }}>
+      <span style={{ display: "inline-flex", alignItems: "center", background: A.tint, borderLeft: `3px solid ${A.accent}`, borderRadius: "0 7px 7px 0", padding: "8px 16px", fontFamily: DISP, fontWeight: 700, fontSize: 15, letterSpacing: "0.01em", color: A.accent, ...band }}>{children}</span>
+    </div>
+  );
 }
 function MvBox({ A, label, text, mb }: { A: ReturnType<typeof deriveAccent>; label: string; text: string; mb?: boolean }) {
   return (

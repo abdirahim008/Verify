@@ -215,7 +215,11 @@ function Circle({ mono, A, size, font }: { mono: string; A: ReturnType<typeof de
   return <div style={{ width: size, height: size, flex: "none", border: `1px solid ${A.accentLine}`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISP, fontWeight: 600, fontSize: font, color: A.onAccent }}>{mono}</div>;
 }
 function Label({ A, ruled, children }: { A: ReturnType<typeof deriveAccent>; ruled?: boolean; children: React.ReactNode }) {
-  return <div style={{ fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: A.accent, marginBottom: ruled ? 13 : 9, borderBottom: ruled ? `1px solid ${RULE}` : undefined, paddingBottom: ruled ? 7 : undefined }}>{children}</div>;
+  return (
+    <div style={{ marginBottom: ruled ? 16 : 12 }}>
+      <span style={{ display: "inline-flex", alignItems: "center", background: A.tint, borderLeft: `3px solid ${A.accent}`, borderRadius: "0 7px 7px 0", padding: "8px 16px", fontFamily: DISP, fontWeight: 600, fontSize: 17, letterSpacing: "0.005em", color: A.accent, ...band }}>{children}</span>
+    </div>
+  );
 }
 function MvCol({ A, label, text }: { A: ReturnType<typeof deriveAccent>; label: string; text: string }) {
   return (

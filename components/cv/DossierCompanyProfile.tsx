@@ -220,7 +220,11 @@ function SideLabel({ A, mt, children }: { A: ReturnType<typeof deriveAccent>; mt
   return <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.18em", color: A.accent, margin: mt ? "26px 0 13px" : "0 0 13px" }}>{children}</div>;
 }
 function MainLabel({ A, ruled, children }: { A: ReturnType<typeof deriveAccent>; ruled?: boolean; children: React.ReactNode }) {
-  return <div style={{ fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: A.accent, marginBottom: ruled ? 14 : 9, borderBottom: ruled ? `1px solid ${RULE}` : undefined, paddingBottom: ruled ? 7 : undefined }}>{children}</div>;
+  return (
+    <div style={{ marginBottom: ruled ? 16 : 12 }}>
+      <span style={{ display: "inline-flex", alignItems: "center", background: A.tint, borderLeft: `3px solid ${A.accent}`, borderRadius: "0 7px 7px 0", padding: "8px 16px", fontFamily: DISP, fontWeight: 600, fontSize: 16, letterSpacing: "0.005em", color: A.accent, ...band }}>{children}</span>
+    </div>
+  );
 }
 function RunHead({ data, A, mono }: { data: CompanyData; A: ReturnType<typeof deriveAccent>; mono: string }) {
   return (
