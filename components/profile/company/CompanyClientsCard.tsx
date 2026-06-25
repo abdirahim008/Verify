@@ -22,73 +22,91 @@ export function CompanyClientsCard({ items }: { items: ClientRow[] }) {
       description="Per CLAUDE.md §5/§10, clients are private unless you tick 'show publicly' — only public-ticked clients appear on the PDF."
       defaultOpen={false}
       count={items.length}
+      headerAction={!adding && <Button kind="quiet" size="sm" onClick={() => { setAdding(true); setEditingId(null); }}>+ Add client</Button>}
     >
       <div className="rounded-md border border-border-soft bg-cream/70 p-3 text-[12.5px] text-ink-soft">
         🔒 Clients listed here only appear on your PDF if you tick &ldquo;Show on PDF&rdquo;.
       </div>
 
-      <div className="mt-4 space-y-3">
-        {items.map((item) =>
-          editingId === item.id ? (
-            <ClientForm
-              key={item.id}
-              initial={item}
-              onSubmit={(v) => updateCompanyClient(item.id, v)}
-              onCancel={() => setEditingId(null)}
-              onDone={() => setEditingId(null)}
-              submitLabel="Save changes"
-            />
-          ) : (
-            <ClientRowDisplay key={item.id} item={item} onEdit={() => setEditingId(item.id)} />
-          ),
-        )}
-      </div>
+      {items.length > 0 && (
+        <div className="mt-4 grid sm:grid-cols-2 gap-x-10 gap-y-1">
+          {items.map((item) =>
+            editingId === item.id ? (
+              <div key={item.id} className="sm:col-span-2 my-2">
+                <ClientForm
+                  initial={item}
+                  onSubmit={(v) => updateCompanyClient(item.id, v)}
+                  onCancel={() => setEditingId(null)}
+                  onDone={() => setEditingId(null)}
+                  submitLabel="Save changes"
+                />
+              </div>
+            ) : (
+              <ClientItem key={item.id} item={item} onEdit={() => { setEditingId(item.id); setAdding(false); }} />
+            ),
+          )}
+        </div>
+      )}
 
       {items.length === 0 && !adding && (
         <p className="mt-4 text-[13.5px] text-muted">No clients yet.</p>
       )}
 
-      {adding ? (
-        <ClientForm onSubmit={addCompanyClient} onCancel={() => setAdding(false)} onDone={() => setAdding(false)} submitLabel="Save client" asPanel />
-      ) : (
+      {adding && (
         <div className="mt-4">
-          <Button kind="quiet" size="md" onClick={() => setAdding(true)}>+ Add client</Button>
+          <ClientForm onSubmit={addCompanyClient} onCancel={() => setAdding(false)} onDone={() => setAdding(false)} submitLabel="Save client" asPanel />
         </div>
       )}
     </SectionCard>
   );
 }
 
-function ClientRowDisplay({ item, onEdit }: { item: ClientRow; onEdit: () => void }) {
+function ClientItem({ item, onEdit }: { item: ClientRow; onEdit: () => void }) {
   const [pending, startTransition] = useTransition();
+  function del() {
+    if (!confirm("Delete this client?")) return;
+    startTransition(() => { void deleteCompanyClient(item.id); });
+  }
   return (
-    <article className="rounded-[10px] border border-border bg-paper p-4 flex items-start justify-between gap-3">
-      <div className="flex items-start gap-3 min-w-0">
-        {item.logo_url && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.logo_url} alt="" className="w-[72px] h-9 object-contain shrink-0 mt-0.5" />
-        )}
-      <div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <h3 className="font-serif text-[16px] tracking-tightish">{item.client_name}</h3>
+    <div className="flex items-start gap-3 py-2.5 border-b border-border-soft">
+      {item.logo_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={item.logo_url} alt="" className="w-12 h-9 object-contain shrink-0 mt-0.5" />
+      ) : (
+        <span className="mt-[7px] w-[7px] h-[7px] rounded-full bg-sienna shrink-0" aria-hidden />
+      )}
+      <div className="flex-1 min-w-0">
+        <p className="flex items-center gap-2 flex-wrap leading-snug">
+          <span className="font-serif font-semibold text-[15px] text-ink tracking-tightish">{item.client_name}</span>
           {item.display_public ? (
-            <span className="text-[10.5px] uppercase tracking-[0.14em] text-verified font-semibold">Public</span>
+            <span className="text-[10px] uppercase tracking-[0.14em] text-verified font-semibold">Public</span>
           ) : (
-            <span className="text-[10.5px] uppercase tracking-[0.14em] text-muted">Private</span>
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted">Private</span>
           )}
-        </div>
-        {item.note && <div className="text-[12.5px] text-muted mt-1">{item.note}</div>}
+        </p>
+        {item.note && <div className="text-[12px] text-muted mt-0.5">{item.note}</div>}
       </div>
-      </div>
-      <div className="flex gap-1 shrink-0">
-        <Button kind="ghost" size="sm" onClick={onEdit}>Edit</Button>
-        <Button kind="ghost" size="sm" disabled={pending}
-          onClick={() => { if (confirm("Delete this client?")) startTransition(() => { void deleteCompanyClient(item.id); }); }}
-          className="text-red-700 hover:bg-red-50">
-          {pending ? "..." : "Delete"}
-        </Button>
-      </div>
-    </article>
+      <Kebab onEdit={onEdit} onDelete={del} pending={pending} />
+    </div>
+  );
+}
+
+function Kebab({ onEdit, onDelete, pending }: { onEdit: () => void; onDelete: () => void; pending: boolean }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative shrink-0">
+      <button type="button" aria-label="Client actions" onClick={() => setOpen((o) => !o)}
+        className="w-7 h-7 rounded-md text-muted hover:bg-cream/70 flex items-center justify-center text-[17px] leading-none">⋯</button>
+      {open && (
+        <>
+          <button aria-hidden tabIndex={-1} onClick={() => setOpen(false)} className="fixed inset-0 z-10 cursor-default" />
+          <div className="absolute right-0 top-8 z-20 w-28 rounded-lg border border-border bg-paper shadow-md py-1">
+            <button type="button" onClick={() => { setOpen(false); onEdit(); }} className="block w-full text-left px-3 py-1.5 text-[13px] hover:bg-cream/70">Edit</button>
+            <button type="button" disabled={pending} onClick={() => { setOpen(false); onDelete(); }} className="block w-full text-left px-3 py-1.5 text-[13px] text-red-700 hover:bg-red-50">{pending ? "Deleting…" : "Delete"}</button>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
