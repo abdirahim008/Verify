@@ -11,8 +11,6 @@ import { addCompanyClient, updateCompanyClient, deleteCompanyClient } from "@/li
 
 interface ClientRow { id: string; client_name: string; category: string | null; display_public: boolean; note: string | null; logo_url: string | null }
 
-const CLIENT_GROUPS = ["Multilateral & Donors", "Government", "Private & Non-Profit"];
-
 export function CompanyClientsCard({ items }: { items: ClientRow[] }) {
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -79,7 +77,6 @@ function ClientRowDisplay({ item, onEdit }: { item: ClientRow; onEdit: () => voi
             <span className="text-[10.5px] uppercase tracking-[0.14em] text-muted">Private</span>
           )}
         </div>
-        {item.category && <div className="text-[12px] text-sienna mt-0.5">{item.category}</div>}
         {item.note && <div className="text-[12.5px] text-muted mt-1">{item.note}</div>}
       </div>
       </div>
@@ -109,7 +106,6 @@ function ClientForm({
     resolver: zodResolver(companyClientSchema),
     defaultValues: {
       client_name: initial?.client_name ?? "",
-      category: initial?.category ?? "",
       display_public: initial?.display_public ?? false,
       note: initial?.note ?? "",
       logo_url: initial?.logo_url ?? "",
@@ -133,10 +129,6 @@ function ClientForm({
       <Field label="Logo" hint="Shown as a logo on your public profile and PDF.">
         <input type="hidden" {...register("logo_url")} />
         <ClientLogoUploader value={logoUrl} onChange={(url) => setValue("logo_url", url, { shouldDirty: true })} />
-      </Field>
-      <Field label="Group" error={errors.category?.message} hint="Clients are grouped under this heading on the PDF.">
-        <input className="field" list="client-groups" placeholder="e.g. Multilateral & Donors" {...register("category")} />
-        <datalist id="client-groups">{CLIENT_GROUPS.map((g) => <option key={g} value={g} />)}</datalist>
       </Field>
       <Field label="Note (private)" error={errors.note?.message} hint="Optional. Never shown on the PDF.">
         <input className="field" {...register("note")} />
