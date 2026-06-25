@@ -34,7 +34,14 @@ export function BannerCompanyProfile({ data, theme }: { data: CompanyData; theme
       <div className="cpage" style={{ fontFamily: BODYF, display: "flex", flexDirection: "column" }}>
         <div style={{ background: A.accent, padding: "30px 56px", display: "flex", justifyContent: "space-between", alignItems: "center", ...band }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <Circle mono={mono} A={A} size={46} font={23} />
+            {data.logoUrl
+              ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 46, padding: "5px 10px", borderRadius: 8, background: "#fff", ...band }}>
+                  <img src={data.logoUrl} alt="" style={{ height: 36, maxWidth: 110, objectFit: "contain", display: "block" }} />
+                </span>
+              )
+              : <Circle mono={mono} A={A} size={46} font={23} />}
             <span style={{ fontFamily: DISP, fontWeight: 600, fontSize: 18, color: A.onAccent }}>{data.name}</span>
           </div>
           <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.28em", color: A.onAccentMuted }}>{profileLine(data.year)}</span>

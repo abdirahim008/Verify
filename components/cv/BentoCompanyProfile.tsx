@@ -34,7 +34,10 @@ export function BentoCompanyProfile({ data, theme }: { data: CompanyData; theme?
       <div className="cpage" style={{ fontFamily: BODYF, display: "flex", flexDirection: "column", padding: 50 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Mono mono={mono} A={A} size={42} radius={9} font={21} />
+            {data.logoUrl
+              // eslint-disable-next-line @next/next/no-img-element
+              ? <img src={data.logoUrl} alt="" style={{ height: 42, maxWidth: 120, objectFit: "contain" }} />
+              : <Mono mono={mono} A={A} size={42} radius={9} font={21} />}
             <span style={{ fontFamily: DISP, fontWeight: 600, fontSize: 15, color: INK }}>{data.name}</span>
           </div>
           <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.26em", color: A.accent }}>{profileLine(data.year)}</span>
