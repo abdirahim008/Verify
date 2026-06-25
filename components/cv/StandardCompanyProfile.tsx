@@ -39,8 +39,8 @@ export function StandardCompanyProfile({ data, theme }: { data: CompanyData; the
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
             {data.logoUrl
               // eslint-disable-next-line @next/next/no-img-element
-              ? <img src={data.logoUrl} alt="" style={{ width: 78, height: 78, objectFit: "contain", marginBottom: 28 }} />
-              : <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 78, height: 78, border: `1.5px solid ${A.accent}`, borderRadius: "50%", fontFamily: SERIF, fontWeight: 700, fontSize: 38, color: A.accent, marginBottom: 28 }}>{mono}</div>}
+              ? <img src={data.logoUrl} alt="" style={{ width: 140, height: 140, objectFit: "contain", marginBottom: 32 }} />
+              : <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 140, height: 140, border: `1.5px solid ${A.accent}`, borderRadius: "50%", fontFamily: SERIF, fontWeight: 700, fontSize: 64, color: A.accent, marginBottom: 32 }}>{mono}</div>}
             <h1 style={{ margin: 0, fontFamily: SERIF, fontWeight: 600, fontSize: 68, letterSpacing: "0.01em", color: INK, lineHeight: 1.0 }}>{data.name}</h1>
             {data.tagline && <div style={{ marginTop: 16, fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.34em", color: A.accent }}>{data.tagline}</div>}
             {blurb && <p style={{ margin: "32px 0 0", maxWidth: 440, fontFamily: SERIF, fontStyle: "italic", fontSize: 20, lineHeight: 1.45, color: "#52524c" }}>{blurb}</p>}
