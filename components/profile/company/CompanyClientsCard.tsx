@@ -79,9 +79,8 @@ function ClientItem({ item, onEdit }: { item: ClientRow; onEdit: () => void }) {
       <div className="flex-1 min-w-0">
         <p className="flex items-center gap-2 flex-wrap leading-snug">
           <span className="font-serif font-semibold text-[15px] text-ink tracking-tightish">{item.client_name}</span>
-          {item.display_public ? (
-            <span className="text-[10px] uppercase tracking-[0.14em] text-verified font-semibold">Public</span>
-          ) : (
+          {/* Public is the default — only flag the exceptional "private" (won't show on PDF). */}
+          {!item.display_public && (
             <span className="text-[10px] uppercase tracking-[0.14em] text-muted">Private</span>
           )}
         </p>

@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/Button";
 import { SectionCard, Field, NewItemPanel } from "../SectionCard";
+import { RowMenu } from "../RowMenu";
 import { RequestVerifyButton } from "@/components/verification/RequestVerifyButton";
 import { companyProjectSchema, type CompanyProjectValues } from "@/lib/schemas";
 import { addCompanyProject, updateCompanyProject, deleteCompanyProject } from "@/lib/actions/company";
@@ -83,8 +84,8 @@ function ProjectRowDisplay({ item, pending: pendingVerify, onEdit }: { item: Pro
   const [pending, startTransition] = useTransition();
   return (
     <article className="rounded-[10px] border border-border bg-paper p-4 sm:p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+      <div className="flex items-start gap-3">
+        <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-serif text-[18px] tracking-tightish">{item.project_name}</h3>
             <RequestVerifyButton
@@ -101,18 +102,12 @@ function ProjectRowDisplay({ item, pending: pendingVerify, onEdit }: { item: Pro
             {[item.client_name, item.sector, yearRange(item.year_start, item.year_end)].filter(Boolean).join(" · ")}
           </div>
         </div>
-        <div className="flex flex-col items-end gap-1 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           {item.value_amount != null && (
-            <span className="font-serif text-[18px]">{formatValue(item.value_amount, item.currency)}</span>
+            <span className="font-serif text-[16px]">{formatValue(item.value_amount, item.currency)}</span>
           )}
-          <div className="flex gap-1">
-            <Button kind="ghost" size="sm" onClick={onEdit}>Edit</Button>
-            <Button kind="ghost" size="sm" disabled={pending}
-              onClick={() => { if (confirm("Delete this project?")) startTransition(() => { void deleteCompanyProject(item.id); }); }}
-              className="text-red-700 hover:bg-red-50">
-              {pending ? "..." : "Delete"}
-            </Button>
-          </div>
+          <RowMenu onEdit={onEdit} pending={pending}
+            onDelete={() => { if (confirm("Delete this project?")) startTransition(() => { void deleteCompanyProject(item.id); }); }} />
         </div>
       </div>
       {/* Scope spans the full card width — not boxed beside the value/actions. */}
