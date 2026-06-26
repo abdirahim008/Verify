@@ -62,46 +62,18 @@ export const CV_THEMES: Record<string, PdfTheme[]> = {
 };
 
 export const COMPANY_THEMES: Record<string, PdfTheme[]> = {
-  wadani: [
-    { id: "horizon",  label: "Horizon",  swatch: ["#0a1a2e", "#bfcad6"],
-      overrides: {} },
-    { id: "forest",   label: "Forest",   swatch: ["#081f15", "#b9d2c2"],
-      overrides: { tealDark: "#081f15", teal: "#0d2f20", sand: "#b9d2c2", sand2: "#c4dacb", paperOnTeal: "#e7f0e9", sienna: "#14573f" } },
-    { id: "charcoal", label: "Charcoal", swatch: ["#101216", "#c6cad2"],
-      overrides: { tealDark: "#101216", teal: "#1a1d24", sand: "#c6cad2", sand2: "#d0d4dc", paperOnTeal: "#eceef2", sienna: "#39465e" } },
-    { id: "maroon",   label: "Maroon",   swatch: ["#220a12", "#d4b9c1"],
-      overrides: { tealDark: "#220a12", teal: "#36101d", sand: "#d4b9c1", sand2: "#ddc4cc", paperOnTeal: "#f1e7ea", sienna: "#6d2433" } },
-  ],
-  annual: [
-    { id: "navy",     label: "Navy",     swatch: ["#0d3b66", "#cfd6e0"],
-      overrides: {} },
-    { id: "forest",   label: "Forest",   swatch: ["#1d5c43", "#cfe0d5"],
-      overrides: { navy: "#1d5c43", navyDeep: "#0c2e20", banner: "#cfe0d5", bannerDim: "#b3cdbd" } },
-    { id: "burgundy", label: "Burgundy", swatch: ["#6d2433", "#e3ccd2"],
-      overrides: { navy: "#6d2433", navyDeep: "#3a0f1a", banner: "#e3ccd2", bannerDim: "#d0aeb8" } },
-    { id: "slate",    label: "Slate",    swatch: ["#3b4757", "#d3d9e0"],
-      overrides: { navy: "#3b4757", navyDeep: "#1c232e", banner: "#d3d9e0", bannerDim: "#b9c2cd" } },
-  ],
-  minimal: [
-    { id: "blue",   label: "Signal Blue",   swatch: ["#0a5cad", "#fbfbfa"],
-      overrides: {} },
-    { id: "signal", label: "Signal Orange", swatch: ["#d9530b", "#fbfbfa"],
-      overrides: { accent: "#d9530b" } },
-    { id: "forest", label: "Forest",        swatch: ["#1d6647", "#fbfbfa"],
-      overrides: { accent: "#1d6647" } },
-    { id: "ink",    label: "Monochrome",    swatch: ["#0e1116", "#fbfbfa"],
-      overrides: { accent: "#0e1116" } },
-  ],
-  // The five "Company Profile System" layouts share one accent picker — a
-  // single adjustable `accent` per template (the design's renderVals derives
-  // every other colour role from it). Each list leads with that template's
-  // own default accent, then offers the same curated set.
+  // All eight "Company Profile System" layouts share one accent picker — a
+  // single adjustable `accent` per template (each template derives every
+  // other colour role from it). Each list leads with that template's own
+  // default accent, then offers the same curated set. Wadani, Annual and
+  // Minimal were rebuilt onto this system, so they join the same picker
+  // rather than carrying their own bespoke palette overrides.
   ...companyAccentThemes(),
 };
 
-// Build the accent-only theme lists for the five new company templates. Each
-// gets the same five curated accents, ordered so the template's design
-// default comes first (becomes the picker's initial selection).
+// Build the accent-only theme lists for the company templates. Each gets the
+// same curated accents, ordered so the template's design default comes first
+// (becomes the picker's initial selection).
 function companyAccentThemes(): Record<string, PdfTheme[]> {
   const NAVY = "#20304d", TEAL = "#1d3b3b", CHARCOAL = "#262626", FOREST = "#243d31", OXBLOOD = "#532330";
   const meta: Record<string, [string, string]> = {
@@ -115,6 +87,9 @@ function companyAccentThemes(): Record<string, PdfTheme[]> {
     banner:     ["navy", "teal", "charcoal", "forest", "oxblood"],
     broadsheet: ["forest", "navy", "teal", "charcoal", "oxblood"],
     bento:      ["oxblood", "navy", "teal", "charcoal", "forest"],
+    wadani:     ["teal", "navy", "charcoal", "forest", "oxblood"],
+    annual:     ["navy", "teal", "charcoal", "forest", "oxblood"],
+    minimal:    ["charcoal", "navy", "teal", "forest", "oxblood"],
   };
   const out: Record<string, PdfTheme[]> = {};
   for (const [tpl, ids] of Object.entries(order)) {
