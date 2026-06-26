@@ -4,8 +4,9 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/Button";
-import { SectionCard, Field, NewItemPanel, IconButton } from "../SectionCard";
-import { CheckDot, HollowDot, PencilIcon, TrashIcon } from "../icons";
+import { SectionCard, Field, NewItemPanel } from "../SectionCard";
+import { RowMenu } from "../RowMenu";
+import { CheckDot, HollowDot } from "../icons";
 import { RequestVerifyButton } from "@/components/verification/RequestVerifyButton";
 import { certificationSchema, type CertificationValues } from "@/lib/schemas";
 import { addCertification, updateCertification, deleteCertification } from "@/lib/actions/profile";
@@ -70,7 +71,7 @@ function CertRowDisplay({ item, pending: pendingVerify, onEdit }: { item: CertRo
   return (
     <article className="relative pl-9">
       <span className="absolute left-0 top-0.5">{item.verified ? <CheckDot /> : <HollowDot />}</span>
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-serif text-[17px] tracking-tightish">{item.name}</h3>
@@ -90,13 +91,8 @@ function CertRowDisplay({ item, pending: pendingVerify, onEdit }: { item: CertRo
             </div>
           )}
         </div>
-        <div className="flex gap-0.5 shrink-0">
-          <IconButton label="Edit" onClick={onEdit}><PencilIcon size={15} /></IconButton>
-          <IconButton label="Delete" danger disabled={pending}
-            onClick={() => { if (confirm("Delete this certification?")) startTransition(() => { void deleteCertification(item.id); }); }}>
-            <TrashIcon size={15} />
-          </IconButton>
-        </div>
+        <RowMenu onEdit={onEdit} pending={pending}
+          onDelete={() => { if (confirm("Delete this certification?")) startTransition(() => { void deleteCertification(item.id); }); }} />
       </div>
     </article>
   );

@@ -57,15 +57,15 @@ export function SkillsCard({ items }: { items: SkillRow[] }) {
       defaultOpen={items.length < 3}
       count={rows.length}
     >
-      <ul className="flex flex-wrap gap-2">
+      <ul className="flex flex-wrap gap-1.5">
         {rows.map((s) => (
-          <li key={s.id} className="inline-flex items-center gap-1 rounded-full bg-cream border border-border px-3 py-1 text-[13px] text-ink-soft">
+          <li key={s.id} className="group inline-flex items-center gap-1.5 rounded-full bg-cream/70 border border-border-soft pl-3 pr-1.5 py-1 text-[12.5px] text-ink-soft transition hover:border-border">
             {s.name}
             <button
               type="button"
               aria-label={`Remove ${s.name}`}
               onClick={() => remove(s.id)}
-              className="ml-1 text-muted hover:text-red-700"
+              className="w-4 h-4 rounded-full flex items-center justify-center text-[14px] leading-none text-muted/70 hover:bg-red-50 hover:text-red-600 transition"
             >×</button>
           </li>
         ))}

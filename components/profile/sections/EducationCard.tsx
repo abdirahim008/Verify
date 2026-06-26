@@ -4,8 +4,9 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/Button";
-import { SectionCard, Field, NewItemPanel, IconButton } from "../SectionCard";
-import { CheckDot, HollowDot, CapIcon, CalendarIcon, PencilIcon, TrashIcon } from "../icons";
+import { SectionCard, Field, NewItemPanel } from "../SectionCard";
+import { RowMenu } from "../RowMenu";
+import { CheckDot, HollowDot, CapIcon, CalendarIcon } from "../icons";
 import { RequestVerifyButton } from "@/components/verification/RequestVerifyButton";
 import { educationSchema, type EducationValues } from "@/lib/schemas";
 import { addEducation, updateEducation, deleteEducation } from "@/lib/actions/profile";
@@ -80,7 +81,7 @@ function EducationRowDisplay({ item, pending: pendingVerify, onEdit }: { item: E
   return (
     <article className="relative pl-9">
       <span className="absolute left-0 top-0.5">{item.verified ? <CheckDot /> : <HollowDot />}</span>
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-serif text-[18px] tracking-tightish">{qualLabel}{item.field_of_study ? ` · ${item.field_of_study}` : ""}</h3>
@@ -105,13 +106,8 @@ function EducationRowDisplay({ item, pending: pendingVerify, onEdit }: { item: E
             )}
           </div>
         </div>
-        <div className="flex gap-0.5 shrink-0">
-          <IconButton label="Edit" onClick={onEdit}><PencilIcon size={15} /></IconButton>
-          <IconButton label="Delete" danger disabled={pending}
-            onClick={() => { if (confirm("Delete this education?")) startTransition(() => { void deleteEducation(item.id); }); }}>
-            <TrashIcon size={15} />
-          </IconButton>
-        </div>
+        <RowMenu onEdit={onEdit} pending={pending}
+          onDelete={() => { if (confirm("Delete this education?")) startTransition(() => { void deleteEducation(item.id); }); }} />
       </div>
     </article>
   );

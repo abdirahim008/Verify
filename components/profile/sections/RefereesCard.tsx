@@ -4,8 +4,8 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/Button";
-import { SectionCard, Field, NewItemPanel, IconButton } from "../SectionCard";
-import { PencilIcon, TrashIcon } from "../icons";
+import { SectionCard, Field, NewItemPanel } from "../SectionCard";
+import { RowMenu } from "../RowMenu";
 import { refereeSchema, type RefereeValues } from "@/lib/schemas";
 import { addReferee, updateReferee, deleteReferee } from "@/lib/actions/profile";
 
@@ -96,14 +96,8 @@ function RefereeRowDisplay({ item, experiences, onEdit }: { item: RefereeRow; ex
                 </p>
               )}
             </div>
-            {/* Controls reveal on hover (desktop); always visible on touch */}
-            <div className="flex gap-0.5 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-              <IconButton label="Edit" onClick={onEdit}><PencilIcon size={15} /></IconButton>
-              <IconButton label="Delete" danger disabled={pending}
-                onClick={() => { if (confirm("Delete this referee?")) startTransition(() => { void deleteReferee(item.id); }); }}>
-                <TrashIcon size={15} />
-              </IconButton>
-            </div>
+            <RowMenu onEdit={onEdit} pending={pending}
+              onDelete={() => { if (confirm("Delete this referee?")) startTransition(() => { void deleteReferee(item.id); }); }} />
           </div>
 
           {/* Chips: relationship + vouches-for */}

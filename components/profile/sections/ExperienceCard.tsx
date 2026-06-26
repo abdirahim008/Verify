@@ -4,8 +4,9 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/Button";
-import { SectionCard, Field, NewItemPanel, IconButton, Clamp } from "../SectionCard";
-import { CheckDot, HollowDot, OrgIcon, PinIcon, CalendarIcon, PencilIcon, TrashIcon } from "../icons";
+import { SectionCard, Field, NewItemPanel, Clamp } from "../SectionCard";
+import { RowMenu } from "../RowMenu";
+import { CheckDot, HollowDot, OrgIcon, PinIcon, CalendarIcon } from "../icons";
 import { RequestVerifyButton } from "@/components/verification/RequestVerifyButton";
 import { experienceSchema, type ExperienceValues } from "@/lib/schemas";
 import {
@@ -97,7 +98,7 @@ function ExperienceRowView({ item, pending: pendingVerify, onEdit }: { item: Exp
     <article className="relative pl-9">
       <span className="absolute left-0 top-0.5">{item.verified ? <CheckDot /> : <HollowDot />}</span>
 
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-serif text-[18px] tracking-tightish">{item.title}</h3>
@@ -129,15 +130,13 @@ function ExperienceRowView({ item, pending: pendingVerify, onEdit }: { item: Exp
               </span>
             )}
           </div>
-
-          {item.description && <Clamp text={item.description} lines={3} className="mt-2.5" />}
         </div>
 
-        <div className="flex gap-0.5 shrink-0">
-          <IconButton label="Edit" onClick={onEdit}><PencilIcon size={15} /></IconButton>
-          <IconButton label="Delete" danger disabled={pending} onClick={handleDelete}><TrashIcon size={15} /></IconButton>
-        </div>
+        <RowMenu onEdit={onEdit} onDelete={handleDelete} pending={pending} />
       </div>
+
+      {/* Description spans the full card width — not boxed beside the actions. */}
+      {item.description && <Clamp text={item.description} lines={3} className="mt-2.5" />}
     </article>
   );
 }

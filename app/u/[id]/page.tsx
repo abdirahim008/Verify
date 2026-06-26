@@ -183,9 +183,9 @@ function IndividualProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPub
       {(p.skills.length > 0 || p.languages.length > 0) && (
         <div className="grid sm:grid-cols-[1.4fr_1fr] gap-4 mt-4">
           {p.skills.length > 0 && (
-            <SectionCard title="Skills" bodyClass="px-6 sm:px-7 py-5 flex flex-wrap gap-2.5">
+            <SectionCard title="Skills" bodyClass="px-6 sm:px-7 py-5 flex flex-wrap gap-1.5">
               {p.skills.map((s) => (
-                <span key={s.id} className="rounded-full px-[15px] py-2 text-[12.5px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{s.name}</span>
+                <span key={s.id} className="rounded-full px-3 py-1 text-[12px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{s.name}</span>
               ))}
             </SectionCard>
           )}
