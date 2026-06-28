@@ -3,7 +3,7 @@ import { updateSession } from "@/lib/supabase/middleware";
 
 // Routes the matcher protects/handles. Extending protection to new routes
 // means adding to BOTH the matcher below AND the logic here.
-const PUBLIC_PATHS = new Set(["/login", "/signup", "/auth/callback"]);
+const PUBLIC_PATHS = new Set(["/login", "/signup", "/auth/callback", "/forgot-password", "/reset-password"]);
 
 export async function middleware(request: NextRequest) {
   const { response, user } = await updateSession(request);

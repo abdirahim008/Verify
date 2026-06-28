@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -64,7 +65,10 @@ export function LoginForm({ nextPath, initialError }: { nextPath?: string; initi
 
       {mode === "password" && (
         <div>
-          <label className="label" htmlFor="password">Password</label>
+          <div className="flex items-baseline justify-between">
+            <label className="label" htmlFor="password">Password</label>
+            <Link href="/forgot-password" className="text-[12.5px] text-sienna hover:underline">Forgot password?</Link>
+          </div>
           <input id="password" type="password" autoComplete="current-password" className="field" {...register("password")} />
           {errors.password && <p className="helper text-red-600">{errors.password.message}</p>}
         </div>
