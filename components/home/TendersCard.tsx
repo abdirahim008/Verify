@@ -7,23 +7,17 @@ export function TendersCard({ items }: { items: JobItem[] }) {
   if (items.length === 0) return null;
   return (
     <section className="card">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="section-eyebrow text-sienna">Opportunities</span>
-            <span className="text-[10.5px] font-semibold text-sienna bg-sienna/[0.08] border border-sienna/20 rounded-full px-2 py-0.5">SomKenJobs.com</span>
-          </div>
-          <h2 className="font-serif text-[22px] tracking-tightish mt-1">Tenders &amp; consultancies</h2>
-          <p className="text-[12.5px] text-muted mt-0.5">RFPs, terms of reference and short-term contracts</p>
-        </div>
-        <a href="https://somkenjobs.com" target="_blank" rel="noopener noreferrer" className="shrink-0 text-[13px] font-medium text-sienna hover:underline">Browse all ↗</a>
+      <div className="min-w-0">
+        <span className="section-eyebrow text-sienna">Opportunities · SomKenJobs</span>
+        <h2 className="font-serif text-[19px] tracking-tightish mt-1 leading-snug">Tenders &amp; consultancies</h2>
+        <p className="text-[12px] text-muted mt-0.5">RFPs, ToRs and short-term contracts</p>
       </div>
 
-      <ul className="mt-2">
-        {items.map((t) => <OpportunityRow key={t.link} item={t} />)}
+      <ul className="mt-1.5">
+        {items.map((t) => <OpportunityRow key={t.link} item={t} compact />)}
       </ul>
 
-      <p className="mt-3 text-[11.5px] text-muted">Syndicated from SomKenJobs.com. Titles and short details only, with a link back to apply.</p>
+      <a href="https://somkenjobs.com" target="_blank" rel="noopener noreferrer" className="mt-3 pt-3 border-t border-border-soft text-[12.5px] font-medium text-sienna hover:underline">Browse all tenders ↗</a>
     </section>
   );
 }

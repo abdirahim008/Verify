@@ -12,40 +12,36 @@ export function JobsCard({ matched, categories }: { matched: MatchedJobs; catego
 
   return (
     <section className="card">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="section-eyebrow text-sienna">Jobs</span>
-            <span className="text-[10.5px] font-semibold text-sienna bg-sienna/[0.08] border border-sienna/20 rounded-full px-2 py-0.5">SomKenJobs.com</span>
-          </div>
-          <h2 className="font-serif text-[22px] tracking-tightish mt-1">
-            {personalised ? "Roles matched to your profile" : "Latest roles in the sector"}
+          <span className="section-eyebrow text-sienna">Jobs · SomKenJobs</span>
+          <h2 className="font-serif text-[19px] tracking-tightish mt-1 leading-snug">
+            {personalised ? "Matched to your profile" : "Latest roles in the sector"}
           </h2>
           {personalised && labels.length > 0 ? (
-            <p className="text-[12.5px] text-muted mt-0.5 truncate">{labels.join(" · ")}</p>
+            <p className="text-[12px] text-muted mt-0.5 truncate">{labels.join(" · ")}</p>
           ) : (
-            <p className="text-[12.5px] text-muted mt-0.5">
-              <Link href="/profile" className="text-sienna font-medium hover:underline">Pick your career interests</Link> to personalise this.
+            <p className="text-[12px] text-muted mt-0.5">
+              <Link href="/profile" className="text-sienna font-medium hover:underline">Pick interests</Link> to personalise.
             </p>
           )}
         </div>
-        <a href="https://somkenjobs.com" target="_blank" rel="noopener noreferrer" className="shrink-0 text-[13px] font-medium text-sienna hover:underline">Browse all ↗</a>
       </div>
 
       {items.length === 0 ? (
-        <p className="mt-4 text-[13.5px] text-ink-soft">
+        <p className="mt-4 text-[13px] text-ink-soft">
           {personalised ? "No current openings match your interests. " : "No openings to show right now. "}
-          <a href="https://somkenjobs.com" target="_blank" rel="noopener noreferrer" className="text-sienna font-medium hover:underline">Browse all roles on SomKenJobs ↗</a>
+          <a href="https://somkenjobs.com" target="_blank" rel="noopener noreferrer" className="text-sienna font-medium hover:underline">Browse all ↗</a>
         </p>
       ) : (
-        <ul className="mt-2">
+        <ul className="mt-1.5">
           {items.map((job) => (
-            <OpportunityRow key={job.link} item={job} badge={topMatchLink === job.link ? "TOP MATCH" : undefined} />
+            <OpportunityRow key={job.link} item={job} compact badge={topMatchLink === job.link ? "MATCH" : undefined} />
           ))}
         </ul>
       )}
 
-      <p className="mt-3 text-[11.5px] text-muted">Jobs are syndicated from SomKenJobs.com. Titles and short details only, with a link back to apply.</p>
+      <a href="https://somkenjobs.com" target="_blank" rel="noopener noreferrer" className="mt-3 pt-3 border-t border-border-soft text-[12.5px] font-medium text-sienna hover:underline">Browse all roles ↗</a>
     </section>
   );
 }

@@ -14,8 +14,40 @@ export interface OppRowData {
   deadlineISO: string | null;
 }
 
-export function OpportunityRow({ item, badge }: { item: OppRowData; badge?: string }) {
+export function OpportunityRow({ item, badge, compact }: { item: OppRowData; badge?: string; compact?: boolean }) {
   const dl = deadlineLabel(item);
+
+  // Compact rows power the dense side-by-side Jobs | Tenders columns: no
+  // avatar, a single meta line, and the deadline/urgency sitting inline so a
+  // narrow column stays readable. The full row (below) is used on its own.
+  if (compact) {
+    const meta = [item.org, item.location].filter(Boolean).join(" · ");
+    return (
+      <li>
+        <a
+          href={item.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group block py-3 border-t border-border-soft hover:bg-cream/40 rounded-lg px-2 -mx-2 transition"
+        >
+          <span className="flex items-start gap-2">
+            <span className="font-serif text-[15px] leading-snug text-ink line-clamp-2 group-hover:text-sienna transition-colors">{item.title}</span>
+            {badge && <span className="shrink-0 mt-0.5 text-[9.5px] font-semibold tracking-wide text-verified bg-verified/[0.12] rounded-full px-1.5 py-0.5">{badge}</span>}
+          </span>
+          {meta && <span className="block text-[12px] text-ink-soft mt-1 truncate">{meta}</span>}
+          <span className="flex items-center gap-2 mt-1.5">
+            {dl ? (
+              <span className={`text-[11px] font-medium ${dl.urgent ? "text-amber-700" : "text-muted"}`}>{dl.text}</span>
+            ) : item.postedAt ? (
+              <span className="text-[11px] text-muted">{ago(item.postedAt)}</span>
+            ) : null}
+            {item.sector && <span className="text-[11px] text-muted truncate">· {labelFor(item.sector)}</span>}
+          </span>
+        </a>
+      </li>
+    );
+  }
+
   return (
     <li>
       <a
