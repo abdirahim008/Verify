@@ -6,6 +6,7 @@ import { useState } from "react";
 import { SahanMark } from "./SahanMark";
 import { cn } from "@/lib/cn";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { FEATURES } from "@/lib/flags";
 import type { AccountType } from "@/lib/types";
 
 interface Props {
@@ -14,10 +15,11 @@ interface Props {
   isAdmin: boolean;
 }
 
+// "Verification" is only in the nav when the feature is enabled (lib/flags.ts).
 const ITEMS: Array<{ href: string; label: string }> = [
   { href: "/home", label: "Home" },
   { href: "/profile", label: "My profile" },
-  { href: "/verification", label: "Verification" },
+  ...(FEATURES.verification ? [{ href: "/verification", label: "Verification" }] : []),
 ];
 
 export function TopNav({ accountType, displayName, isAdmin }: Props) {
@@ -58,10 +60,12 @@ export function TopNav({ accountType, displayName, isAdmin }: Props) {
             })}
             {isAdmin && (
               <>
-                <Link href="/admin" className={cn("text-[13.5px] pb-[3px] border-b-[1.5px] transition",
-                  (pathname === "/admin" || (pathname.startsWith("/admin/") && !pathname.startsWith("/admin/feed"))) ? "text-ink font-semibold border-sienna" : "text-muted border-transparent hover:text-ink")}>
-                  Admin
-                </Link>
+                {FEATURES.verification && (
+                  <Link href="/admin" className={cn("text-[13.5px] pb-[3px] border-b-[1.5px] transition",
+                    (pathname === "/admin" || (pathname.startsWith("/admin/") && !pathname.startsWith("/admin/feed"))) ? "text-ink font-semibold border-sienna" : "text-muted border-transparent hover:text-ink")}>
+                    Admin
+                  </Link>
+                )}
                 <Link href="/admin/feed" className={cn("text-[13.5px] pb-[3px] border-b-[1.5px] transition",
                   pathname.startsWith("/admin/feed") ? "text-ink font-semibold border-sienna" : "text-muted border-transparent hover:text-ink")}>
                   Feed
@@ -123,10 +127,12 @@ export function TopNav({ accountType, displayName, isAdmin }: Props) {
         })}
         {isAdmin && (
           <>
-            <Link href="/admin" className={cn("text-[13px] whitespace-nowrap py-1.5 px-0.5 border-b-[1.5px] min-h-[36px] inline-flex items-center",
-              (pathname === "/admin" || (pathname.startsWith("/admin/") && !pathname.startsWith("/admin/feed"))) ? "text-ink font-semibold border-sienna" : "text-muted border-transparent")}>
-              Admin
-            </Link>
+            {FEATURES.verification && (
+              <Link href="/admin" className={cn("text-[13px] whitespace-nowrap py-1.5 px-0.5 border-b-[1.5px] min-h-[36px] inline-flex items-center",
+                (pathname === "/admin" || (pathname.startsWith("/admin/") && !pathname.startsWith("/admin/feed"))) ? "text-ink font-semibold border-sienna" : "text-muted border-transparent")}>
+                Admin
+              </Link>
+            )}
             <Link href="/admin/feed" className={cn("text-[13px] whitespace-nowrap py-1.5 px-0.5 border-b-[1.5px] min-h-[36px] inline-flex items-center",
               pathname.startsWith("/admin/feed") ? "text-ink font-semibold border-sienna" : "text-muted border-transparent")}>
               Feed

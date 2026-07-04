@@ -27,7 +27,7 @@ export function RefereesCard({ items, experiences }: { items: RefereeRow[]; expe
       eyebrow="Section 7"
       title="Referees"
       metaNoun="referee"
-      description="Private — never shown to other users or in public profiles. We only reveal contact details to an admin during verification, with your consent."
+      description="Private — never shown to other users or in public profiles. We only reveal contact details with your explicit consent."
       defaultOpen={false}
       count={items.length}
       headerAction={!adding ? addButton : undefined}
@@ -120,7 +120,7 @@ function RefereeRowDisplay({ item, experiences, onEdit }: { item: RefereeRow; ex
           {/* Locked-contact badge */}
           <div className="mt-3 inline-flex items-center gap-1.5 text-[11.5px] text-muted">
             <LockMini />
-            Contact details hidden — visible to admins during verification only
+            Contact details hidden — never shown on your public profile
           </div>
         </div>
       </div>

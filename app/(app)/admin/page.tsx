@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { loadAdminRequests } from "@/lib/verification-data";
 import { TARGET_LABELS } from "@/lib/verification";
+import { FEATURES } from "@/lib/flags";
 
 export const metadata = { title: "Admin" };
 
@@ -14,6 +16,8 @@ const FILTERS = [
 export default async function AdminPage({
   searchParams,
 }: { searchParams: { status?: string } }) {
+  // Verification queue is hidden this release; the feed queue stays available.
+  if (!FEATURES.verification) redirect("/admin/feed");
   const status = (FILTERS.find((f) => f.key === searchParams.status)?.key ?? "pending") as
     "pending" | "verified" | "rejected" | "all";
   const rows = await loadAdminRequests(status);

@@ -5,6 +5,7 @@ import { Button } from "@/components/Button";
 import { RequestVerificationModal } from "./RequestVerificationModal";
 import { PendingBadge } from "@/components/PendingBadge";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { FEATURES } from "@/lib/flags";
 import type { TargetType } from "@/lib/verification";
 
 interface Props {
@@ -23,6 +24,9 @@ interface Props {
 // Drops cleanly into any section card's header row.
 export function RequestVerifyButton({ verified, verifiedNote, pending, target }: Props) {
   const [open, setOpen] = useState(false);
+  // Verification is hidden for this release (see lib/flags.ts). Render nothing
+  // in the builder — no request button and no verified/pending badge.
+  if (!FEATURES.verification) return null;
   if (verified) return <VerifiedBadge note={verifiedNote || undefined} />;
   if (pending) return <PendingBadge />;
   return (

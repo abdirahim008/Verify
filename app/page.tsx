@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { SahanMark } from "@/components/SahanMark";
 import { Button } from "@/components/Button";
-import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { AuthCard } from "@/components/landing/AuthCard";
 import { FeatureShowcase } from "@/components/landing/FeatureShowcase";
 import { CV_TEMPLATES } from "@/components/templates/CvThumbnails";
@@ -17,7 +16,6 @@ export default function LandingPage() {
       <TrustStrip />
       <FeatureShowcase />
       <HowItWorks />
-      <VerifiedShowcase />
       <Templates />
       <PhonePitch />
       <ClosingCta />
@@ -34,7 +32,7 @@ function SiteHeader() {
         <Link href="/" aria-label="Sahan home"><SahanMark /></Link>
         <nav className="hidden lg:flex items-center gap-7 text-[13px] text-ink-soft">
           <a href="#how" className="hover:text-ink transition">How it works</a>
-          <a href="#verification" className="hover:text-ink transition">Verification</a>
+          <a href="#build" className="hover:text-ink transition">What you&apos;ll create</a>
           <a href="#templates" className="hover:text-ink transition">Templates</a>
           <Link href="/guides" className="hover:text-ink transition">Guides</Link>
         </nav>
@@ -69,11 +67,11 @@ function Hero() {
           </p>
 
           <h1 className="font-serif font-medium text-[38px] sm:text-[54px] lg:text-[60px] leading-[1.04] tracking-[-0.025em] mt-5">
-            Your work, <em className="text-sienna font-medium not-italic underline decoration-sienna/25 underline-offset-[6px]">verified</em> by the people you did it for.
+            A genuinely <em className="text-sienna font-medium not-italic underline decoration-sienna/25 underline-offset-[6px]">elegant</em> CV or company profile — in a tap.
           </h1>
 
           <p className="mt-5 max-w-xl text-[15px] sm:text-[17px] text-ink-soft leading-relaxed">
-            Sahan turns your experience into a structured, verifiable record — then a genuinely elegant CV or company profile you can download in a tap. Built for the consultants, engineers, programme staff and firms whose work never fit a LinkedIn box.
+            Sahan turns your experience into a structured profile — then a genuinely elegant CV, company profile or business card you can download in a tap. Built for the consultants, engineers, programme staff and firms whose work never fit a LinkedIn box.
           </p>
 
           <ul className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
@@ -87,7 +85,7 @@ function Hero() {
               secondary nudge without competing with it. */}
           <div className="mt-8 hidden lg:flex items-center gap-4 text-[13px] text-muted">
             <span className="inline-flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-verified" /> Verified per-claim, never a vague global badge
+              <span className="w-1.5 h-1.5 rounded-full bg-verified" /> Eight editorial templates — switch any time, nothing re-typed
             </span>
           </div>
         </div>
@@ -120,15 +118,15 @@ function TrustStrip() {
 function HowItWorks() {
   const steps = [
     { n: "01", title: "Build your profile", body: "Fill in structured sections once — experience, projects, education. Preview the real PDF on screen as you go." },
-    { n: "02", title: "Request verification", body: "Pick a single claim. An admin contacts the employer or client that issued it. Referee contacts stay private." },
-    { n: "03", title: "Share or export", body: "Publish a public profile link, or download an A4 PDF in three editorial templates — verified badges inline." },
+    { n: "02", title: "Choose a template", body: "Pick from eight editorial CV templates, or a matching set of company-profile designs. Switch any time — your details flow into every one." },
+    { n: "03", title: "Share or export", body: "Publish a public profile link, download an A4 print-clean PDF, or share a digital business card with a QR to your live profile." },
   ];
   return (
     <section id="how" className="bg-cream">
       <div className="mx-auto max-w-6xl px-5 sm:px-8 pt-14 sm:pt-20 pb-6">
         <p className="section-eyebrow text-sienna">How it works</p>
         <h2 className="font-serif text-[28px] sm:text-[40px] tracking-[-0.02em] mt-3 max-w-2xl leading-[1.13]">
-          From a blank form to a verified record — in three steps.
+          From a blank form to a polished PDF — in three steps.
         </h2>
         <div className="mt-9 grid gap-4 md:grid-cols-3">
           {steps.map((s) => (
@@ -138,51 +136,6 @@ function HowItWorks() {
               <p className="mt-2 text-[13.5px] text-ink-soft leading-relaxed">{s.body}</p>
             </article>
           ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ── Verified showcase (the differentiator) ───────────────────────────────
-function VerifiedShowcase() {
-  return (
-    <section id="verification" className="bg-cream">
-      <div className="mx-auto max-w-6xl px-5 sm:px-8 pt-8 pb-16 sm:pb-24">
-        <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:gap-12 items-center">
-          <div className="min-w-0">
-            <p className="section-eyebrow text-sienna">Why a Sahan profile is different</p>
-            <h2 className="font-serif text-[26px] sm:text-[38px] tracking-[-0.02em] mt-3 leading-[1.13]">
-              A green check next to the <em className="text-sienna not-italic">specific</em> claim that was checked.
-            </h2>
-            <p className="mt-4 text-[14.5px] text-ink-soft leading-relaxed max-w-md">
-              Verification isn&apos;t a vague global badge. You pick one experience, project or qualification and submit it for review. When the issuing employer confirms it, the badge sits inline next to that one claim — on your profile and on the PDF.
-            </p>
-            <ul className="mt-5 space-y-2.5 text-[13.5px]">
-              <Check>Per-claim, never global</Check>
-              <Check>Employer-confirmed, not self-asserted</Check>
-              <Check>Referee contacts stay private</Check>
-              <Check>Evidence kept in an admin-only bucket</Check>
-            </ul>
-          </div>
-
-          <div className="min-w-0 rounded-2xl border border-border bg-paper p-6 sm:p-7 shadow-[0_24px_60px_-40px_rgba(28,28,28,0.4)]">
-            <p className="section-eyebrow">From the Editorial CV</p>
-            <article className="mt-3">
-              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                <span className="font-serif text-[18px] font-medium">Senior Health Coordinator</span>
-                <span className="font-serif text-[18px] italic text-sienna">· UNICEF Somalia</span>
-                <VerifiedBadge />
-              </div>
-              <p className="text-[12px] text-muted mt-1">Mogadishu · Mar 2021 — Present</p>
-              <p className="text-[13.5px] text-ink-soft leading-[1.6] mt-2.5">
-                Led a team of fourteen across Banadir, Lower Shabelle and Middle Shabelle. Designed the cold-chain expansion that brought routine immunisation to 64 previously unreached settlements.
-              </p>
-            </article>
-            <div className="mt-6 pt-5 border-t border-border-soft text-[12.5px] text-muted">
-              Same role, no badge: a claim. <span className="text-ink-soft font-medium">With the badge: a record.</span>
-            </div>
-          </div>
         </div>
       </div>
     </section>
@@ -263,7 +216,7 @@ function ClosingCta() {
             Build the record your work deserves.
           </h2>
           <p className="mt-4 text-[15px] text-paper/75 max-w-xl mx-auto leading-relaxed relative">
-            Create a free profile, download an elegant CV or company profile today, and add verified badges when you&apos;re ready.
+            Create a free profile and download an elegant CV, company profile or business card today — no design skills needed.
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3 relative">
             <a href="#get-started">
@@ -301,7 +254,7 @@ function SiteFooter() {
         <div>
           <SahanMark size={18} />
           <p className="mt-3 text-muted max-w-[24ch] leading-relaxed">
-            Verified profiles, elegant CVs and company profiles — built for Somalia &amp; East Africa.
+            Elegant CVs, company profiles and business cards — built for Somalia &amp; East Africa.
           </p>
         </div>
         <div>

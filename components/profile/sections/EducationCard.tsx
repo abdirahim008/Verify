@@ -8,6 +8,7 @@ import { SectionCard, Field, NewItemPanel } from "../SectionCard";
 import { RowMenu } from "../RowMenu";
 import { CheckDot, HollowDot, CapIcon, CalendarIcon } from "../icons";
 import { RequestVerifyButton } from "@/components/verification/RequestVerifyButton";
+import { FEATURES } from "@/lib/flags";
 import { educationSchema, type EducationValues } from "@/lib/schemas";
 import { addEducation, updateEducation, deleteEducation } from "@/lib/actions/profile";
 import { QUALIFICATION_LABELS, yearRange, type QualLevel } from "@/lib/format";
@@ -80,7 +81,7 @@ function EducationRowDisplay({ item, pending: pendingVerify, onEdit }: { item: E
   const dateStr = yearRange(item.start_year, item.end_year);
   return (
     <article className="relative pl-9">
-      <span className="absolute left-0 top-0.5">{item.verified ? <CheckDot /> : <HollowDot />}</span>
+      <span className="absolute left-0 top-0.5">{FEATURES.verification && item.verified ? <CheckDot /> : <HollowDot />}</span>
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">

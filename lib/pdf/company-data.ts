@@ -1,6 +1,7 @@
 import "server-only";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { yearRange } from "@/lib/format";
+import { FEATURES } from "@/lib/flags";
 
 // PDF-ready view of the company profile. CLAUDE.md §10: only public-marked
 // clients flow into the PDF; everything else respects RLS via the calling
@@ -149,7 +150,7 @@ export async function loadCompanyDataForPdf(userId: string): Promise<CompanyData
       yearEnd: p.year_end ?? null,
       scope: p.scope ?? "",
       media: mediaByProject.get(p.id) ?? [],
-      verified: !!p.verified,
+      verified: FEATURES.verification && !!p.verified,
       verifiedNote: p.verified_note ?? "",
     })),
     clients: clientRows.map((c) => c.client_name),
@@ -174,7 +175,7 @@ export async function loadCompanyDataForPdf(userId: string): Promise<CompanyData
       name: c.name,
       issuer: c.issuer ?? "",
       year: c.year ? String(c.year) : "",
-      verified: !!c.verified,
+      verified: FEATURES.verification && !!c.verified,
       verifiedNote: c.verified_note ?? "",
     })),
     year: new Date().getFullYear(),

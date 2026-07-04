@@ -17,7 +17,7 @@ export default function LoginPage({ searchParams }: { searchParams: { next?: str
             One profile.<br />A CV the room remembers.
           </h2>
           <p className="text-[14px] text-paper/70 mt-5 leading-relaxed">
-            Pick up where you left off — your structured profile, your verified claims, your downloadable CV.
+            Pick up where you left off — your structured profile, your templates, your downloadable CV.
           </p>
         </div>
         <p className="relative text-[12px] text-paper/40">&copy; {new Date().getFullYear()} Sahan</p>

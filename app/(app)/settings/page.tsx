@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { INDIVIDUAL_SECTIONS, COMPANY_SECTIONS, defaultVisibility, type VisibilityLevel } from "@/lib/visibility";
 import { VisibilityForm } from "@/components/settings/VisibilityForm";
+import { FEATURES } from "@/lib/flags";
 
 export const metadata = { title: "Settings" };
 
@@ -34,7 +35,9 @@ export default async function SettingsPage() {
         <ul className="mt-2 space-y-1 text-[13px] text-ink-soft">
           <li>&middot; Referee contact details are <strong>always private</strong> — they&apos;re third parties who didn&apos;t sign up here.</li>
           <li>&middot; Contact info and location <strong>cannot be set public</strong>. Default is registered-only.</li>
-          <li>&middot; Verification evidence is admin-only. Never visible to other users.</li>
+          {FEATURES.verification && (
+            <li>&middot; Verification evidence is admin-only. Never visible to other users.</li>
+          )}
         </ul>
       </div>
 

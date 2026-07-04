@@ -7,6 +7,7 @@ import { Button } from "@/components/Button";
 import { SectionCard, Field, NewItemPanel } from "../SectionCard";
 import { RowMenu } from "../RowMenu";
 import { CheckDot, HollowDot } from "../icons";
+import { FEATURES } from "@/lib/flags";
 import { RequestVerifyButton } from "@/components/verification/RequestVerifyButton";
 import { certificationSchema, type CertificationValues } from "@/lib/schemas";
 import { addCertification, updateCertification, deleteCertification } from "@/lib/actions/profile";
@@ -70,7 +71,7 @@ function CertRowDisplay({ item, pending: pendingVerify, onEdit }: { item: CertRo
   const [pending, startTransition] = useTransition();
   return (
     <article className="relative pl-9">
-      <span className="absolute left-0 top-0.5">{item.verified ? <CheckDot /> : <HollowDot />}</span>
+      <span className="absolute left-0 top-0.5">{FEATURES.verification && item.verified ? <CheckDot /> : <HollowDot />}</span>
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">

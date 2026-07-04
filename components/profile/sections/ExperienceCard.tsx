@@ -8,6 +8,7 @@ import { SectionCard, Field, NewItemPanel, Clamp } from "../SectionCard";
 import { RowMenu } from "../RowMenu";
 import { CheckDot, HollowDot, OrgIcon, PinIcon, CalendarIcon } from "../icons";
 import { RequestVerifyButton } from "@/components/verification/RequestVerifyButton";
+import { FEATURES } from "@/lib/flags";
 import { experienceSchema, type ExperienceValues } from "@/lib/schemas";
 import {
   addExperience, updateExperience, deleteExperience,
@@ -39,7 +40,7 @@ export function ExperienceCard({ items, pendingIds }: { items: ExperienceRow[]; 
       eyebrow="Section 2"
       title="Experience"
       metaNoun="role"
-      description="One entry per role. Verified entries get a green check on your CV."
+      description="One entry per role — most recent first."
       required
       defaultOpen={items.length === 0}
       count={items.length}
@@ -96,7 +97,7 @@ function ExperienceRowView({ item, pending: pendingVerify, onEdit }: { item: Exp
 
   return (
     <article className="relative pl-9">
-      <span className="absolute left-0 top-0.5">{item.verified ? <CheckDot /> : <HollowDot />}</span>
+      <span className="absolute left-0 top-0.5">{FEATURES.verification && item.verified ? <CheckDot /> : <HollowDot />}</span>
 
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
@@ -208,8 +209,7 @@ function ExperienceForm({
       {serverError && (
         <div className="sm:col-span-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-700">{serverError}</div>
       )}
-      <div className="sm:col-span-2 flex justify-between items-center">
-        <span className="text-[12px] text-muted">You can request verification after saving.</span>
+      <div className="sm:col-span-2 flex justify-end items-center">
         <div className="flex gap-2">
           <Button type="button" kind="ghost" size="md" onClick={onCancel} disabled={pending}>Cancel</Button>
           <Button type="submit" kind="primary" size="md" disabled={pending}>

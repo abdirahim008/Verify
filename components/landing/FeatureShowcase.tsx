@@ -16,11 +16,11 @@ export function FeatureShowcase() {
           One profile, every format your sector needs.
         </h2>
         <p className="mt-3 text-[14.5px] sm:text-[15.5px] text-ink-soft max-w-xl leading-relaxed">
-          Fill it in once. Export an elegant CV, a bid-ready company profile, or a shareable digital business card — all from the same verified record.
+          Fill it in once. Export an elegant CV, a bid-ready company profile, or a shareable digital business card — all from the same profile.
         </p>
 
         <div className="mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <Tile kind="For individuals" label="An elegant CV" desc="A4, print-clean, in eight editorial templates — with verified badges inline.">
+          <Tile kind="For individuals" label="An elegant CV" desc="A4, print-clean, in eight editorial templates — download in a tap.">
             <div className="drop-shadow-[0_12px_28px_rgba(0,0,0,0.16)]"><ProfileThumb /></div>
           </Tile>
 
@@ -28,7 +28,7 @@ export function FeatureShowcase() {
             <div className="drop-shadow-[0_12px_28px_rgba(0,0,0,0.16)]"><WadaniThumb /></div>
           </Tile>
 
-          <Tile kind="Share anywhere" label="A digital business card" desc="A landscape card with a QR that opens your live, always-current verified profile.">
+          <Tile kind="Share anywhere" label="A digital business card" desc="A landscape card with a QR that opens your live, always-current profile.">
             <BusinessCardMock />
           </Tile>
         </div>
@@ -61,12 +61,8 @@ function BusinessCardMock() {
     >
       {/* Left: identity + contact */}
       <div style={{ flex: 1.35, background: ACCENT, padding: "16px 15px", display: "flex", flexDirection: "column", color: "#fff" }}>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center">
           <div style={{ width: 30, height: 30, borderRadius: "50%", border: "1.4px solid rgba(255,255,255,0.32)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Source Serif 4, Georgia, serif", fontWeight: 600, fontSize: 12 }}>AM</div>
-          <div className="flex items-center gap-1" style={{ background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.28)", borderRadius: 999, padding: "3px 7px" }}>
-            <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#36c98a", color: "#0b3a26", fontSize: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>✓</span>
-            <span style={{ fontSize: 7, fontWeight: 700, letterSpacing: "0.06em" }}>VERIFIED</span>
-          </div>
         </div>
         <div style={{ marginTop: 12, fontFamily: "Source Serif 4, Georgia, serif", fontWeight: 600, fontSize: 16, lineHeight: 1.1 }}>Abdirahim M.</div>
         <div style={{ marginTop: 3, fontSize: 8, fontWeight: 600 }}>Senior Health Coordinator</div>

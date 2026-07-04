@@ -35,7 +35,7 @@ export function CompanyProjectsCard({ items, pendingIds }: { items: ProjectRow[]
     <SectionCard
       eyebrow="Section 4"
       title="Selected projects"
-      description="The projects you'd put on a tender. Verified projects get a green check on the PDF — this is what verification is for."
+      description="The projects you'd put on a tender — client, sector, value and scope."
       required
       defaultOpen={items.length === 0}
       count={items.length}
@@ -205,8 +205,7 @@ function ProjectForm({
       </div>
 
       {serverError && <div className="sm:col-span-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-700">{serverError}</div>}
-      <div className="sm:col-span-2 flex justify-between items-center">
-        <span className="text-[12px] text-muted">Verification is requested separately, per project.</span>
+      <div className="sm:col-span-2 flex justify-end items-center">
         <div className="flex gap-2">
           <Button type="button" kind="ghost" size="md" onClick={onCancel} disabled={pending}>Cancel</Button>
           <Button type="submit" kind="primary" size="md" disabled={pending}>{pending ? "Saving..." : submitLabel}</Button>

@@ -21,7 +21,7 @@ export default function SignupPage({ searchParams }: { searchParams: { type?: st
             <span className="text-paper/70">Elegant document.</span>
           </h2>
           <p className="text-[14px] text-paper/70 mt-5 leading-relaxed">
-            Free to start. Verified claims when it matters. No spam, no ads, no public scraping.
+            Free to start. Elegant CVs, company profiles and business cards. No spam, no ads, no public scraping.
           </p>
         </div>
         <p className="relative text-[12px] text-paper/40">By signing up you agree to our terms.</p>

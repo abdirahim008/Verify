@@ -6,6 +6,7 @@ import { loadIndividualProfile } from "@/lib/profile-data";
 import { loadCompanyProfile } from "@/lib/company-data";
 import { renderCard } from "@/lib/pdf/render";
 import { BusinessCard, type BusinessCardData } from "@/components/cv/BusinessCard";
+import { FEATURES } from "@/lib/flags";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -61,7 +62,7 @@ export async function GET(req: NextRequest) {
       phone: b.phone || "",
       location: b.country || b.locations?.[0] || "",
       photoUrl: b.logo_url || "",
-      verified: verified > 0,
+      verified: FEATURES.verification && verified > 0,
       profileUrl,
       profileLabel: url.host,
       qrDataUrl,
@@ -85,7 +86,7 @@ export async function GET(req: NextRequest) {
       phone: b.phone || "",
       location: b.location || "",
       photoUrl: b.photo_url || "",
-      verified: verified > 0,
+      verified: FEATURES.verification && verified > 0,
       profileUrl,
       profileLabel: url.host,
       qrDataUrl,

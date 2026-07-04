@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { loadIndividualProfile, hasMinimumCore, profileCompleteness } from "@/lib/profile-data";
 import { loadCompanyProfile, hasCompanyMinimumCore, companyCompleteness } from "@/lib/company-data";
 import { loadPendingTargetIds } from "@/lib/verification-data";
+import { FEATURES } from "@/lib/flags";
 // Individual sections
 import { BasicsCard } from "@/components/profile/sections/BasicsCard";
 import { ExperienceCard } from "@/components/profile/sections/ExperienceCard";
@@ -50,7 +51,7 @@ export default async function ProfilePage() {
 async function IndividualBuilder({ userId }: { userId: string }) {
   const [data, pendingSet] = await Promise.all([
     loadIndividualProfile(userId),
-    loadPendingTargetIds(userId),
+    FEATURES.verification ? loadPendingTargetIds(userId) : Promise.resolve(new Set<string>()),
   ]);
   const percent = profileCompleteness(data);
   const minCore = hasMinimumCore(data);
@@ -145,7 +146,7 @@ async function IndividualBuilder({ userId }: { userId: string }) {
 async function CompanyBuilder({ userId }: { userId: string }) {
   const [data, pendingSet] = await Promise.all([
     loadCompanyProfile(userId),
-    loadPendingTargetIds(userId),
+    FEATURES.verification ? loadPendingTargetIds(userId) : Promise.resolve(new Set<string>()),
   ]);
   const percent = companyCompleteness(data);
   const minCore = hasCompanyMinimumCore(data);

@@ -90,7 +90,7 @@ export function BusinessCard({ data, theme }: { data: BusinessCardData; theme?: 
           <img src={data.qrDataUrl} alt="QR code to profile" style={{ width: "100%", height: "100%", display: "block" }} />
         </div>
         <div style={{ marginTop: 16, fontFamily: SERIF, fontWeight: 600, fontSize: 17, color: INK }}>Scan to view profile</div>
-        <p style={{ margin: "6px 0 0", fontSize: 12, lineHeight: 1.5, color: "#6a6a64", maxWidth: 230 }}>Opens the full verified CV and contact details, always up to date.</p>
+        <p style={{ margin: "6px 0 0", fontSize: 12, lineHeight: 1.5, color: "#6a6a64", maxWidth: 230 }}>Opens the full CV and contact details, always up to date.</p>
         {data.profileLabel && <div style={{ marginTop: 10, fontSize: 12, fontWeight: 600, color: C.accent, wordBreak: "break-all" }}>{data.profileLabel}</div>}
         <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid #efedea", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
           <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: 15, color: INK }}>Sahan<span style={{ color: C.accent }}>.</span></span>

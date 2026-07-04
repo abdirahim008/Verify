@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { loadAdminRequestDetail } from "@/lib/verification-data";
 import { TARGET_LABELS } from "@/lib/verification";
+import { FEATURES } from "@/lib/flags";
 import { AdminResolveForm } from "@/components/admin/AdminResolveForm";
 import { EvidenceList } from "@/components/admin/EvidenceList";
 import { MarkPaidButton } from "@/components/admin/MarkPaidButton";
@@ -9,6 +10,7 @@ import { MarkPaidButton } from "@/components/admin/MarkPaidButton";
 export const metadata = { title: "Admin · request" };
 
 export default async function AdminRequestDetailPage({ params }: { params: { id: string } }) {
+  if (!FEATURES.verification) redirect("/admin/feed");
   const detail = await loadAdminRequestDetail(params.id);
   if (!detail) notFound();
   const { request: r, requester, requesterAuthEmail, target } = detail;

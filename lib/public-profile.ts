@@ -5,6 +5,7 @@ import {
   INDIVIDUAL_SECTIONS, COMPANY_SECTIONS, defaultVisibility, canView,
   type VisibilityLevel, type ViewerContext,
 } from "@/lib/visibility";
+import { FEATURES } from "@/lib/flags";
 
 // Public profile loading. Uses the service-role client because non-admin
 // users cannot read other users' rows under default RLS — visibility is
@@ -129,13 +130,13 @@ export async function loadPublicProfile(
         valueLabel: p.value_amount != null ? `${p.currency ?? "USD"} ${p.value_amount}` : "",
         dateRange: yearRange(p.year_start, p.year_end),
         scope: p.scope ?? "",
-        verified: !!p.verified, verifiedNote: p.verified_note ?? "",
+        verified: FEATURES.verification && !!p.verified, verifiedNote: p.verified_note ?? "",
         media: mediaByProject.get(p.id) ?? [],
       })) : [],
       team: visible.has("team") ? (teamRes.data ?? []).map((t) => ({ id: t.id, person_name: t.person_name, role: t.role ?? "" })) : [],
       certifications: visible.has("certifications") ? (certRes.data ?? []).map((c) => ({
         id: c.id, name: c.name, issuer: c.issuer ?? "", year: c.year ? String(c.year) : "",
-        verified: !!c.verified, verifiedNote: c.verified_note ?? "",
+        verified: FEATURES.verification && !!c.verified, verifiedNote: c.verified_note ?? "",
       })) : [],
       publicClients: visible.has("clients") ? (clientsRes.data ?? []).map((c) => ({ name: c.client_name, logoUrl: (c.logo_url as string | null) ?? "" })) : [],
     };
@@ -166,18 +167,18 @@ export async function loadPublicProfile(
       id: e.id, title: e.title, organization: e.organization, location: e.location ?? "",
       dateRange: dateRange(e.start_date, e.end_date),
       description: e.description ?? "",
-      verified: !!e.verified, verifiedNote: e.verified_note ?? "",
+      verified: FEATURES.verification && !!e.verified, verifiedNote: e.verified_note ?? "",
     })) : [],
     educations: visible.has("educations") ? (eduRes.data ?? []).map((e) => ({
       id: e.id, qualification: QUALIFICATION_LABELS[e.qualification_level as QualLevel] ?? e.qualification_level,
       institution: e.institution, field: e.field_of_study ?? "",
       dateRange: yearRange(e.start_year, e.end_year),
-      verified: !!e.verified, verifiedNote: e.verified_note ?? "",
+      verified: FEATURES.verification && !!e.verified, verifiedNote: e.verified_note ?? "",
     })) : [],
     skills: visible.has("skills") ? (skillsRes.data ?? []).map((s) => ({ id: s.id, name: s.name })) : [],
     certifications: visible.has("certifications") ? (certsRes.data ?? []).map((c) => ({
       id: c.id, name: c.name, issuer: c.issuer ?? "", year: c.year ? String(c.year) : "",
-      verified: !!c.verified, verifiedNote: c.verified_note ?? "",
+      verified: FEATURES.verification && !!c.verified, verifiedNote: c.verified_note ?? "",
     })) : [],
   };
 }

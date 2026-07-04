@@ -1,6 +1,7 @@
 import "server-only";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { dateRange, yearRange, QUALIFICATION_LABELS, type QualLevel } from "@/lib/format";
+import { FEATURES } from "@/lib/flags";
 
 // PDF-ready view of the individual profile. Shapes the DB rows into the
 // exact fields the templates render — keeps each template clean and means
@@ -86,7 +87,7 @@ export async function loadCVData(userId: string): Promise<CVData | null> {
       location: e.location ?? "",
       dateRange: dateRange(e.start_date, e.end_date),
       description: e.description ?? "",
-      verified: !!e.verified,
+      verified: FEATURES.verification && !!e.verified,
       verifiedNote: e.verified_note ?? "",
     })),
     educations: (eduRes.data ?? []).map((e) => ({
@@ -94,14 +95,14 @@ export async function loadCVData(userId: string): Promise<CVData | null> {
       institution: e.institution,
       field: e.field_of_study ?? "",
       dateRange: yearRange(e.start_year, e.end_year),
-      verified: !!e.verified,
+      verified: FEATURES.verification && !!e.verified,
       verifiedNote: e.verified_note ?? "",
     })),
     certifications: (certRes.data ?? []).map((c) => ({
       name: c.name,
       issuer: c.issuer ?? "",
       year: c.year ? String(c.year) : "",
-      verified: !!c.verified,
+      verified: FEATURES.verification && !!c.verified,
       verifiedNote: c.verified_note ?? "",
     })),
     referees: (refRes.data ?? []).map((r) => ({

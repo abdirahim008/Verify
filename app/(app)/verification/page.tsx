@@ -3,12 +3,15 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { loadOwnRequests, type VerificationRequestRow } from "@/lib/verification-data";
 import { TARGET_LABELS } from "@/lib/verification";
+import { FEATURES } from "@/lib/flags";
 import { Button } from "@/components/Button";
 import { CancelRequestButton } from "@/components/verification/CancelRequestButton";
 
 export const metadata = { title: "Verification" };
 
 export default async function VerificationPage() {
+  // Feature hidden for this release (lib/flags.ts) — no public entry point.
+  if (!FEATURES.verification) redirect("/home");
   const supabase = createSupabaseServerClient();
   if (!supabase) redirect("/login");
   const { data: { user } } = await supabase.auth.getUser();

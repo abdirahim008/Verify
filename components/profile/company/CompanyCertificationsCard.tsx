@@ -22,7 +22,7 @@ export function CompanyCertificationsCard({ items, pendingIds }: { items: CertRo
     <SectionCard
       eyebrow="Section 7"
       title="Accreditations"
-      description="ISO, FIDIC, sector certifications. Verified entries get a green check on the PDF."
+      description="ISO, FIDIC, sector certifications — issuer and year."
       defaultOpen={false}
       count={items.length}
     >

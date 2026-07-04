@@ -64,9 +64,9 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
         {/* CTA */}
         {ctx !== "owner" ? (
           <div className="mt-[30px] rounded-[18px] p-8 sm:p-9 text-center" style={{ background: "#15171c" }}>
-            <div className="text-[11px] font-semibold tracking-[0.2em]" style={{ color: "#8a93a6" }}>VERIFIED ON SAHAN</div>
+            <div className="text-[11px] font-semibold tracking-[0.2em]" style={{ color: "#8a93a6" }}>BUILD YOURS ON SAHAN</div>
             <div className="font-serif font-semibold text-[22px] sm:text-[24px] text-white mt-3 leading-[1.3] max-w-[440px] mx-auto" style={{ fontFamily: SERIF }}>
-              Build your own verified profile and share it with a single link.
+              Build your own professional profile and share it with a single link.
             </div>
             <p className="mt-3 text-[13.5px] leading-[1.55] max-w-[420px] mx-auto" style={{ color: "#aeb4bf" }}>
               Free, on any phone. Generate a recruiter-ready CV or company profile in minutes.

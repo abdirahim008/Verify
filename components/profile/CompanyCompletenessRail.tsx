@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/Button";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { FEATURES } from "@/lib/flags";
 import { CompanyDownloadModal } from "./CompanyDownloadModal";
 
 interface Todo { label: string; done: boolean }
@@ -49,6 +50,7 @@ export function CompanyCompletenessRail({
 
       <CompanyDownloadModal open={chooser} onClose={() => setChooser(false)} />
 
+      {FEATURES.verification && (
       <div className="card">
         <p className="section-eyebrow">Verified projects</p>
         {verifiedCount > 0 ? (
@@ -64,6 +66,7 @@ export function CompanyCompletenessRail({
           </>
         )}
       </div>
+      )}
     </div>
   );
 }
