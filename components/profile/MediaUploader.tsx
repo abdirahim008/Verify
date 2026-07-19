@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/Button";
 import { cn } from "@/lib/cn";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { downscaleImage } from "@/lib/resizeImage";
 
 type Kind = "avatar" | "logo";
 
@@ -41,8 +42,8 @@ export function MediaUploader({ kind, currentUrl, onSave }: Props) {
   const shapeClass = isAvatar ? "rounded-full" : "rounded-lg";
   const labelText = isAvatar ? "Photo" : "Logo";
   const hint = isAvatar
-    ? "Square crops cleanly. JPEG / PNG / WebP, up to 5 MB."
-    : "Use a transparent PNG if you have one. Up to 5 MB.";
+    ? "Square crops cleanly. Big photos are resized automatically."
+    : "Use a transparent PNG if you have one. Big files are resized automatically.";
 
   async function handle(file: File) {
     setError(null);
@@ -63,12 +64,22 @@ export function MediaUploader({ kind, currentUrl, onSave }: Props) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("Sign in to upload.");
 
-        const ext = (file.name.split(".").pop() || "").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+        // Downscale before upload: nothing displays larger than ~800px, and
+        // raw phone photos (3–8 MB) made both the upload and every later
+        // page load slow. Logos keep transparency via PNG; photos go JPEG.
+        const blob = isAvatar
+          ? await downscaleImage(file, { maxW: 800, maxH: 800, format: "jpeg" })
+          : await downscaleImage(file, { maxW: 640, maxH: 640, format: "png" });
+        // downscaleImage can hand back the original file when re-encoding
+        // wouldn't help, so map whatever type actually comes back.
+        const ext = ({ "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/gif": "gif" } as Record<string, string>)[blob.type] ?? "jpg";
         const path = `${user.id}/${kind}.${ext}`;
-        const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file, {
+        const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, blob, {
           upsert: true,
-          contentType: file.type,
-          cacheControl: "3600",
+          contentType: blob.type || file.type,
+          // The saved URL is cache-busted with ?v=<timestamp> on every
+          // replace, so the file itself can be cached for a year.
+          cacheControl: "31536000",
         });
         if (upErr) throw new Error(`Upload failed: ${upErr.message}`);
 
@@ -109,8 +120,10 @@ export function MediaUploader({ kind, currentUrl, onSave }: Props) {
         )}
       >
         {displayUrl ? (
+          // Avatars crop to fill the circle; logos must never be cropped —
+          // contain them with a little breathing room instead.
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={displayUrl} alt="" className="w-full h-full object-cover" />
+          <img src={displayUrl} alt="" className={cn("w-full h-full", isAvatar ? "object-cover" : "object-contain p-1.5")} />
         ) : (
           <span className="text-muted text-[10.5px] uppercase tracking-[0.14em] font-semibold">
             {labelText}

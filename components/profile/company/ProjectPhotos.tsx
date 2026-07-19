@@ -52,7 +52,8 @@ export function ProjectPhotos({ projectId, initial }: { projectId: string; initi
       const blob = await resizeToJpeg(file);
       const key = crypto.randomUUID?.() ?? String(Date.now());
       const path = `${user.id}/projects/${projectId}/${key}.jpg`;
-      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, blob, { upsert: true, contentType: "image/jpeg", cacheControl: "3600" });
+      // Unique key per upload → the file never changes; cache for a year.
+      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, blob, { upsert: true, contentType: "image/jpeg", cacheControl: "31536000" });
       if (upErr) throw new Error(`Upload failed: ${upErr.message}`);
       const url = `${supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl}?v=${Date.now()}`;
       const id = await addProjectMedia(projectId, { url, caption: "" });

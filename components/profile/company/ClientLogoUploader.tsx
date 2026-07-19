@@ -65,7 +65,8 @@ export function ClientLogoUploader({ value, onChange }: { value: string; onChang
       const key = (crypto.randomUUID?.() ?? String(Date.now()));
       const path = `${user.id}/client-logos/${key}.${ext}`;
       const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, blob, {
-        upsert: true, contentType: blob.type || (ext === "svg" ? "image/svg+xml" : "image/png"), cacheControl: "3600",
+        // Unique key per upload + ?v= cache-buster → the file can cache for a year.
+        upsert: true, contentType: blob.type || (ext === "svg" ? "image/svg+xml" : "image/png"), cacheControl: "31536000",
       });
       if (upErr) throw new Error(`Upload failed: ${upErr.message}`);
       const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);

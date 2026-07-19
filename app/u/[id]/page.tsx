@@ -358,7 +358,7 @@ function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublic
               c.logoUrl ? (
                 <span key={i} className="inline-flex items-center justify-center h-[52px] px-3.5 rounded-lg border bg-white" style={{ borderColor: C.chipBorder }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={c.logoUrl} alt={c.name} className="max-h-9 max-w-[130px] object-contain block" />
+                  <img src={c.logoUrl} alt={c.name} className="max-h-9 max-w-[130px] object-contain block" loading="lazy" decoding="async" />
                 </span>
               ) : (
                 <span key={i} className="inline-flex items-center h-[52px] rounded-full px-[15px] text-[12.5px] border" style={{ borderColor: C.chipBorder, background: C.chipBg, color: "#3a3a34" }}>{c.name}</span>
