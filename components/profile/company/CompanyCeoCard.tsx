@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/Button";
-import { SectionCard, Field } from "../SectionCard";
+import { SectionCard, Field, Clamp } from "../SectionCard";
 import { companyCeoSchema, type CompanyCeoValues } from "@/lib/schemas";
 import { saveCompanyCeo } from "@/lib/actions/company";
 
@@ -97,7 +97,9 @@ function Display({ initial, onEdit }: { initial: Props["initial"]; onEdit: () =>
           <div className="text-[13.5px]"><span className="font-medium text-ink">{initial.ceo_name}</span>{initial.ceo_title && <span className="text-muted"> · {initial.ceo_title}</span>}</div>
         )}
         {initial.ceo_quote && <p className="font-serif text-[15px] text-sienna mt-1.5 leading-snug">&ldquo;{initial.ceo_quote}&rdquo;</p>}
-        {initial.ceo_message && <p className="text-[13px] text-ink-soft mt-2 line-clamp-3">{initial.ceo_message}</p>}
+        {/* whitespace-pre-line keeps the message's paragraph breaks (white-space
+            inherits into Clamp's inner <p>); Clamp adds the Read more toggle. */}
+        {initial.ceo_message && <Clamp text={initial.ceo_message} lines={3} className="mt-2 whitespace-pre-line" />}
       </div>
       <Button kind="ghost" size="sm" onClick={onEdit}>Edit</Button>
     </div>
