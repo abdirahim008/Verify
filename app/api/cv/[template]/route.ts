@@ -1,6 +1,7 @@
 import { createElement } from "react";
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseRouteClient } from "@/lib/supabase/route";
+import { trackEvent } from "@/lib/track";
 import { loadCVData } from "@/lib/pdf/data";
 import { renderPdf } from "@/lib/pdf/render";
 import { resolveThemeOverrides } from "@/lib/pdf/themes";
@@ -132,6 +133,12 @@ export async function GET(
     const msg = e instanceof Error ? e.message : "PDF generation failed";
     return NextResponse.json({ error: msg }, { status: 500 });
   }
+
+  await trackEvent(supabase, user.id, "cv_download", {
+    template: params.template,
+    theme: url.searchParams.get("theme") ?? "",
+    preview: inline,
+  });
 
   // NextResponse's BodyInit typing in v14 doesn't include Node's Buffer
   // directly — wrap in Uint8Array (Buffer extends it) so the cast is safe.

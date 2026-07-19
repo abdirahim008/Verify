@@ -1,6 +1,7 @@
 import { createElement } from "react";
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseRouteClient } from "@/lib/supabase/route";
+import { trackEvent } from "@/lib/track";
 import { loadCompanyDataForPdf } from "@/lib/pdf/company-data";
 import { renderPdf } from "@/lib/pdf/render";
 import { resolveThemeOverrides } from "@/lib/pdf/themes";
@@ -105,6 +106,13 @@ export async function GET(
     const msg = e instanceof Error ? e.message : "PDF generation failed";
     return NextResponse.json({ error: msg }, { status: 500 });
   }
+
+  await trackEvent(supabase, user.id, "company_download", {
+    template: params.template,
+    theme: url.searchParams.get("theme") ?? "",
+    preview: inline,
+    ...(from || to ? { from, to } : {}),
+  });
 
   const body = new Uint8Array(pdf);
   return new NextResponse(body, {

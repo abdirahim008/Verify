@@ -70,6 +70,10 @@ export function TopNav({ accountType, displayName, isAdmin }: Props) {
                   pathname.startsWith("/admin/feed") ? "text-ink font-semibold border-sienna" : "text-muted border-transparent hover:text-ink")}>
                   Feed
                 </Link>
+                <Link href="/admin/metrics" className={cn("text-[13.5px] pb-[3px] border-b-[1.5px] transition",
+                  pathname.startsWith("/admin/metrics") ? "text-ink font-semibold border-sienna" : "text-muted border-transparent hover:text-ink")}>
+                  Metrics
+                </Link>
               </>
             )}
           </nav>
@@ -136,6 +140,10 @@ export function TopNav({ accountType, displayName, isAdmin }: Props) {
             <Link href="/admin/feed" className={cn("text-[13px] whitespace-nowrap py-1.5 px-0.5 border-b-[1.5px] min-h-[36px] inline-flex items-center",
               pathname.startsWith("/admin/feed") ? "text-ink font-semibold border-sienna" : "text-muted border-transparent")}>
               Feed
+            </Link>
+            <Link href="/admin/metrics" className={cn("text-[13px] whitespace-nowrap py-1.5 px-0.5 border-b-[1.5px] min-h-[36px] inline-flex items-center",
+              pathname.startsWith("/admin/metrics") ? "text-ink font-semibold border-sienna" : "text-muted border-transparent")}>
+              Metrics
             </Link>
           </>
         )}

@@ -2,6 +2,7 @@ import { createElement } from "react";
 import { NextResponse, type NextRequest } from "next/server";
 import QRCode from "qrcode";
 import { createSupabaseRouteClient } from "@/lib/supabase/route";
+import { trackEvent } from "@/lib/track";
 import { loadIndividualProfile } from "@/lib/profile-data";
 import { loadCompanyProfile } from "@/lib/company-data";
 import { renderCard } from "@/lib/pdf/render";
@@ -100,6 +101,11 @@ export async function GET(req: NextRequest) {
     const msg = e instanceof Error ? e.message : "Card generation failed";
     return NextResponse.json({ error: msg }, { status: 500 });
   }
+
+  await trackEvent(supabase, user.id, "card_download", {
+    format,
+    kind: isCompany ? "company" : "individual",
+  });
 
   const body = new Uint8Array(buf);
   return new NextResponse(body, {
