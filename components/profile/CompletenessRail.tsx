@@ -10,8 +10,8 @@ import { CvDownloadModal } from "./CvDownloadModal";
 interface Todo { label: string; done: boolean }
 
 export function CompletenessRail({
-  percent, todos, hasMinimumCore, verifiedCount,
-}: { percent: number; todos: Todo[]; hasMinimumCore: boolean; verifiedCount: number }) {
+  percent, todos, hasMinimumCore, verifiedCount, children,
+}: { percent: number; todos: Todo[]; hasMinimumCore: boolean; verifiedCount: number; children?: React.ReactNode }) {
   const complete = percent >= 100;
   const [chooser, setChooser] = useState(false);
   return (
@@ -78,6 +78,8 @@ export function CompletenessRail({
         )}
       </div>
       )}
+
+      {children}
     </div>
   );
 }

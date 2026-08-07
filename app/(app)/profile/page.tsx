@@ -14,6 +14,7 @@ import { LanguagesCard } from "@/components/profile/sections/LanguagesCard";
 import { RefereesCard } from "@/components/profile/sections/RefereesCard";
 import { CareerInterestsCard } from "@/components/profile/sections/CareerInterestsCard";
 import { CompletenessRail } from "@/components/profile/CompletenessRail";
+import { FeedbackCard } from "@/components/profile/FeedbackCard";
 import { ProfileWorkspace, type WorkspaceSection } from "@/components/profile/ProfileWorkspace";
 // Company sections
 import { CompanyBasicsCard } from "@/components/profile/company/CompanyBasicsCard";
@@ -42,13 +43,20 @@ export default async function ProfilePage() {
     .eq("id", user.id)
     .maybeSingle();
 
+  // Ask for feedback only once the user has something built — and never
+  // again once they've rated or dismissed (a row exists either way).
+  // maybeSingle() errors harmlessly to null before migration 0008.
+  const { data: feedbackRow } = await supabase
+    .from("app_feedback").select("profile_id").eq("profile_id", user.id).maybeSingle();
+  const askFeedback = !feedbackRow;
+
   if (profile?.account_type === "company") {
-    return <CompanyBuilder userId={user.id} />;
+    return <CompanyBuilder userId={user.id} askFeedback={askFeedback} />;
   }
-  return <IndividualBuilder userId={user.id} />;
+  return <IndividualBuilder userId={user.id} askFeedback={askFeedback} />;
 }
 
-async function IndividualBuilder({ userId }: { userId: string }) {
+async function IndividualBuilder({ userId, askFeedback }: { userId: string; askFeedback: boolean }) {
   const [data, pendingSet] = await Promise.all([
     loadIndividualProfile(userId),
     FEATURES.verification ? loadPendingTargetIds(userId) : Promise.resolve(new Set<string>()),
@@ -138,12 +146,16 @@ async function IndividualBuilder({ userId }: { userId: string }) {
         label: "You've passed the minimum — your CV is ready to download.",
         hint: "Add basics, one experience, one education, and one skill to unlock your first CV.",
       }}
-      rail={<CompletenessRail percent={percent} todos={todos} hasMinimumCore={minCore} verifiedCount={verifiedCount} />}
+      rail={
+        <CompletenessRail percent={percent} todos={todos} hasMinimumCore={minCore} verifiedCount={verifiedCount}>
+          {askFeedback && minCore && <FeedbackCard />}
+        </CompletenessRail>
+      }
     />
   );
 }
 
-async function CompanyBuilder({ userId }: { userId: string }) {
+async function CompanyBuilder({ userId, askFeedback }: { userId: string; askFeedback: boolean }) {
   const [data, pendingSet] = await Promise.all([
     loadCompanyProfile(userId),
     FEATURES.verification ? loadPendingTargetIds(userId) : Promise.resolve(new Set<string>()),
@@ -254,7 +266,11 @@ async function CompanyBuilder({ userId }: { userId: string }) {
         label: "You've passed the minimum — your company profile is ready to download.",
         hint: "Add basics, an about paragraph, and one project to unlock the download.",
       }}
-      rail={<CompanyCompletenessRail percent={percent} todos={todos} hasMinimumCore={minCore} verifiedCount={verifiedCount} />}
+      rail={
+        <CompanyCompletenessRail percent={percent} todos={todos} hasMinimumCore={minCore} verifiedCount={verifiedCount}>
+          {askFeedback && minCore && <FeedbackCard />}
+        </CompanyCompletenessRail>
+      }
     />
   );
 }

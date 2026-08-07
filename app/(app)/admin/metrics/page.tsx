@@ -76,6 +76,35 @@ export default async function MetricsPage() {
         </section>
       )}
 
+      {/* Feedback */}
+      {m.feedback.items.length > 0 && (
+        <section className="mt-8">
+          <div className="flex items-baseline gap-3">
+            <h2 className="font-serif text-[22px] tracking-tightish">Feedback</h2>
+            {m.feedback.average != null && (
+              <span className="text-[13px] text-muted">
+                <span className="text-amber-500">★</span>{" "}
+                <span className="font-semibold text-ink">{m.feedback.average.toFixed(1)}</span> from {m.feedback.count} rating{m.feedback.count === 1 ? "" : "s"}
+              </span>
+            )}
+          </div>
+          <ul className="mt-3 grid gap-2">
+            {m.feedback.items.map((f, i) => (
+              <li key={i} className="rounded-[10px] border border-border bg-paper px-4 py-3">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-[13px] font-medium">{f.name}</span>
+                  <span className="text-[11.5px] text-muted whitespace-nowrap">
+                    {f.rating != null && <span className="text-amber-500 mr-2">{"★".repeat(f.rating)}<span className="text-border">{"★".repeat(5 - f.rating)}</span></span>}
+                    {fmtDate(f.created_at)}
+                  </span>
+                </div>
+                {f.comment && <p className="text-[13px] text-ink-soft mt-1.5 leading-relaxed whitespace-pre-line">{f.comment}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* Per-user table */}
       <section className="mt-8">
         <h2 className="font-serif text-[22px] tracking-tightish">Users</h2>

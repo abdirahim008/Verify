@@ -10,8 +10,8 @@ import { CompanyDownloadModal } from "./CompanyDownloadModal";
 interface Todo { label: string; done: boolean }
 
 export function CompanyCompletenessRail({
-  percent, todos, hasMinimumCore, verifiedCount,
-}: { percent: number; todos: Todo[]; hasMinimumCore: boolean; verifiedCount: number }) {
+  percent, todos, hasMinimumCore, verifiedCount, children,
+}: { percent: number; todos: Todo[]; hasMinimumCore: boolean; verifiedCount: number; children?: React.ReactNode }) {
   const [chooser, setChooser] = useState(false);
   return (
     <div className="space-y-4 lg:sticky lg:top-6">
@@ -67,6 +67,8 @@ export function CompanyCompletenessRail({
         )}
       </div>
       )}
+
+      {children}
     </div>
   );
 }

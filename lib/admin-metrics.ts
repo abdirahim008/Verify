@@ -42,6 +42,12 @@ export interface AdminMetrics {
   users: AdminUserRow[];
   /** False until migration 0007 (usage_events) is applied. */
   eventsAvailable: boolean;
+  feedback: {
+    /** Average of submitted ratings (null when nobody has rated). */
+    average: number | null;
+    count: number;
+    items: Array<{ name: string; rating: number | null; comment: string; created_at: string }>;
+  };
 }
 
 interface EventRow {
@@ -61,10 +67,12 @@ export async function loadAdminMetrics(): Promise<AdminMetrics | null> {
     "company_projects", "company_services", "company_team", "company_clients",
   ];
 
-  const [profilesRes, eventsRes, usersRes, ...contentRes] = await Promise.all([
+  const [profilesRes, eventsRes, feedbackRes, usersRes, ...contentRes] = await Promise.all([
     svc.from("profiles").select("id, display_name, account_type, is_admin, created_at"),
     svc.from("usage_events").select("profile_id, event, meta, created_at")
       .order("created_at", { ascending: false }).limit(5000),
+    svc.from("app_feedback").select("profile_id, rating, comment, created_at")
+      .order("created_at", { ascending: false }),
     // Emails + last sign-in live in auth.users; service role can list them.
     svc.auth.admin.listUsers({ page: 1, perPage: 1000 }).catch(() => null),
     ...contentTables.map((t) => svc.from(t).select("profile_id")),
@@ -110,6 +118,23 @@ export async function loadAdminMetrics(): Promise<AdminMetrics | null> {
     downloadsByProfile.set(e.profile_id, entry);
   }
 
+  // Ratings + comments (null-safe before migration 0008 is applied).
+  const nameById = new Map(profiles.map((p) => [p.id, p.display_name || "(no name)"]));
+  const fbRows = (feedbackRes.data as Array<{ profile_id: string; rating: number | null; comment: string | null; created_at: string }> | null) ?? [];
+  const rated = fbRows.filter((f) => f.rating != null);
+  const feedback = {
+    average: rated.length ? rated.reduce((s, f) => s + (f.rating ?? 0), 0) / rated.length : null,
+    count: rated.length,
+    items: fbRows
+      .filter((f) => f.rating != null || (f.comment ?? "").trim())
+      .map((f) => ({
+        name: nameById.get(f.profile_id) ?? "(unknown)",
+        rating: f.rating,
+        comment: (f.comment ?? "").trim(),
+        created_at: f.created_at,
+      })),
+  };
+
   const now = Date.now();
   const DAY = 86_400_000;
   const users: AdminUserRow[] = profiles
@@ -151,5 +176,6 @@ export async function loadAdminMetrics(): Promise<AdminMetrics | null> {
       .sort((a, b) => b.count - a.count),
     users,
     eventsAvailable,
+    feedback,
   };
 }
