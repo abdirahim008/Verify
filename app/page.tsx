@@ -86,10 +86,6 @@ function Hero({ memberCount }: { memberCount: number }) {
             A genuinely <em className="text-sienna font-medium not-italic underline decoration-sienna/25 underline-offset-[6px]">elegant</em> CV or company profile — in a tap.
           </h1>
 
-          <p className="mt-5 max-w-xl text-[15px] sm:text-[17px] text-ink-soft leading-relaxed">
-            Sahan turns your experience into a structured profile — then a genuinely elegant CV, company profile or business card you can download in a tap. Built for the consultants, engineers, programme staff and firms whose work never fit a LinkedIn box.
-          </p>
-
           <ul className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
             <Check>Free CV &amp; profile</Check>
             <Check>Works on any phone</Check>
