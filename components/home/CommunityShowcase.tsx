@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import type { ShowcaseMember } from "@/lib/showcase";
 
@@ -5,8 +8,23 @@ import type { ShowcaseMember } from "@/lib/showcase";
 // /home: a soft banner band, the photo straddling it, name, one line,
 // location, and a "View profile" pill. The point is aspiration: see what a
 // finished profile looks like, want one. The grid's last cell is a dark
-// "Your profile here" CTA. Server component — no JS.
+// "Your profile here" CTA.
+//
+// Filtering follows the LinkedIn register — pills within one feed, not
+// separate tabs — and the pills only render once BOTH kinds have enough
+// members to stand alone; a filter that reveals two cards reads as a dead
+// platform.
+const MIN_PER_KIND = 3;
+
+type Filter = "all" | "individual" | "company";
+
 export function CommunityShowcase({ members }: { members: ShowcaseMember[] }) {
+  const [filter, setFilter] = useState<Filter>("all");
+  const people = members.filter((m) => m.kind === "individual").length;
+  const companies = members.length - people;
+  const showFilters = people >= MIN_PER_KIND && companies >= MIN_PER_KIND;
+  const shown = filter === "all" || !showFilters ? members : members.filter((m) => m.kind === filter);
+
   if (members.length < 3) return null; // a two-card "gallery" looks like a bug
 
   return (
@@ -19,8 +37,26 @@ export function CommunityShowcase({ members }: { members: ShowcaseMember[] }) {
         <p className="hidden sm:block text-[12px] text-muted">Members with a finished profile.</p>
       </div>
 
+      {showFilters && (
+        <div className="mt-3 flex gap-2" role="group" aria-label="Filter profiles">
+          {([["all", "All"], ["individual", "People"], ["company", "Organisations"]] as [Filter, string][]).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={filter === key}
+              onClick={() => setFilter(key)}
+              className={`rounded-full border px-3.5 py-1.5 text-[12.5px] font-medium transition ${
+                filter === key ? "bg-ink text-paper border-ink" : "bg-paper text-ink-soft border-border hover:border-muted"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5">
-        {members.map((m) => (
+        {shown.map((m) => (
           <Link
             key={m.id}
             href={`/u/${m.id}`}
