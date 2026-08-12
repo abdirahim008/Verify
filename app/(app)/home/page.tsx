@@ -8,7 +8,9 @@ import { fetchTraining } from "@/lib/feeds/training";
 import { JobsCard } from "@/components/home/JobsCard";
 import { TendersCard } from "@/components/home/TendersCard";
 import { TrainingCard } from "@/components/home/TrainingCard";
-import { FeaturedOpportunity } from "@/components/home/FeaturedOpportunity";
+import { HeroJobsSlider, type SlideJob } from "@/components/home/HeroJobsSlider";
+import { CommunityShowcase } from "@/components/home/CommunityShowcase";
+import { loadShowcaseMembers } from "@/lib/showcase";
 import { labelFor } from "@/lib/jobs/sectors";
 
 export const metadata = { title: "Home" };
@@ -33,13 +35,15 @@ export default async function HomePage() {
   // Home is a curated landing — opportunities + learning + sector news. The
   // jobs feed is shared (also powers tenders, shown to companies too); only the
   // personalised jobs list is individual-only.
-  const [feed, jobs, training] = await Promise.all([
+  const [feed, jobs, training, showcase] = await Promise.all([
     loadApprovedFeed(6),
     fetchJobs(),
     fetchTraining(4),
+    loadShowcaseMembers(12),
   ]);
-  const matchedJobs = selectJobs(jobs, careerCategories, 5);
-  const tenders = selectConsultancies(jobs, 5);
+  // Enough for the hero slideshow (up to 5) plus the lists beneath it.
+  const matchedJobs = selectJobs(jobs, careerCategories, 10);
+  const tenders = selectConsultancies(jobs, 8);
 
   // Live counts for the digest strip — all derived from what we actually
   // fetched (never fabricated, per CLAUDE.md §11).
@@ -52,16 +56,19 @@ export default async function HomePage() {
     { n: coursesCount, label: coursesCount === 1 ? "free course" : "free courses" },
   ].filter((d) => d.n > 0);
 
-  // One focal opportunity: strongest role match for individuals, freshest
-  // tender for companies. It's pulled out of its list below so it isn't shown
-  // twice.
-  const featured = !isCompany ? matchedJobs.items[0] : (tenders[0] ?? jobs[0]);
-  const featuredEyebrow = isCompany
-    ? "Featured tender"
-    : matchedJobs.personalised ? "Top match for you" : "Featured role";
-  const featuredLink = featured?.link ?? null;
-  const jobItems = matchedJobs.items.filter((j) => j.link !== featuredLink);
-  const tenderItems = tenders.filter((t) => t.link !== featuredLink);
+  // Hero slideshow: the strongest role matches for individuals, freshest
+  // tenders for companies. Those slides are pulled out of the lists below so
+  // the same opportunity isn't shown twice on the page.
+  const slidePool = !isCompany ? matchedJobs.items : (tenders.length ? tenders : jobs);
+  const slides: SlideJob[] = slidePool.slice(0, 5).map((j) => ({
+    title: j.title, org: j.org, location: j.location, link: j.link, deadline: j.deadline,
+  }));
+  const slideEyebrow = isCompany
+    ? "Curated tenders"
+    : matchedJobs.personalised ? "Curated for you" : "Curated roles";
+  const slideLinks = new Set(slides.map((s) => s.link));
+  const jobItems = matchedJobs.items.filter((j) => !slideLinks.has(j.link)).slice(0, 5);
+  const tenderItems = (isCompany ? tenders.filter((t) => !slideLinks.has(t.link)) : tenders).slice(0, 5);
 
   const { greeting, dateLabel } = nowInEAT();
 
@@ -98,11 +105,14 @@ export default async function HomePage() {
               <a href="https://somkenjobs.com" target="_blank" rel="noopener noreferrer"><Button kind="primary" size="md">Explore jobs ↗</Button></a>
             )}
           </div>
+
+          {/* Rotating curated-opportunity slideshow */}
+          <HeroJobsSlider jobs={slides} eyebrow={slideEyebrow} />
         </div>
       </section>
 
-      {/* ── Featured focal opportunity ─────────────────────────────── */}
-      {featured && <FeaturedOpportunity item={featured} eyebrow={featuredEyebrow} />}
+      {/* ── Community showcase: real member profiles ───────────────── */}
+      <CommunityShowcase members={showcase} />
 
       {/* ── Main column + curated right rail ───────────────────────── */}
       <div className="grid gap-6 lg:grid-cols-[1fr_320px] items-start">

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { INDIVIDUAL_SECTIONS, COMPANY_SECTIONS, defaultVisibility, type VisibilityLevel } from "@/lib/visibility";
 import { VisibilityForm } from "@/components/settings/VisibilityForm";
+import { ShowcaseToggle } from "@/components/settings/ShowcaseToggle";
 import { FEATURES } from "@/lib/flags";
 
 export const metadata = { title: "Settings" };
@@ -14,6 +15,10 @@ export default async function SettingsPage() {
   const { data: profile } = await supabase
     .from("profiles").select("account_type, section_visibility")
     .eq("id", user.id).maybeSingle();
+  // Separate query: before migration 0009 the column doesn't exist, and this
+  // failing must not take the visibility form down with it.
+  const { data: showcaseRow } = await supabase
+    .from("profiles").select("showcase").eq("id", user.id).maybeSingle();
 
   const sections = profile?.account_type === "company" ? COMPANY_SECTIONS : INDIVIDUAL_SECTIONS;
   const raw = (profile?.section_visibility ?? {}) as Record<string, VisibilityLevel>;
@@ -40,6 +45,8 @@ export default async function SettingsPage() {
           )}
         </ul>
       </div>
+
+      <ShowcaseToggle initial={showcaseRow?.showcase ?? true} />
 
       <div className="mt-6"><VisibilityForm sections={sections} initial={current} /></div>
     </div>
