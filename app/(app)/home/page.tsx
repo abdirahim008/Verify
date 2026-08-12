@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Button } from "@/components/Button";
 import { loadApprovedFeed } from "@/lib/feed-data";
-import { fetchJobs, selectJobs, selectConsultancies, isConsultancy } from "@/lib/jobs/feed";
+import { fetchJobs, selectJobs, selectConsultancies } from "@/lib/jobs/feed";
 import { fetchTraining } from "@/lib/feeds/training";
 import { TrainingCard } from "@/components/home/TrainingCard";
 import { HeroJobsSlider, type SlideJob } from "@/components/home/HeroJobsSlider";
@@ -25,7 +25,6 @@ export default async function HomePage() {
     .eq("id", user.id)
     .maybeSingle();
 
-  const displayName = profile?.display_name || user.email || "";
   const isCompany = profile?.account_type === "company";
   const careerCategories: string[] = profile?.career_categories ?? [];
   const noInterests = !isCompany && careerCategories.length === 0;
@@ -41,17 +40,6 @@ export default async function HomePage() {
   ]);
   const matchedJobs = selectJobs(jobs, careerCategories, 8);
   const tenders = selectConsultancies(jobs, 6);
-
-  // Live counts for the digest strip — all derived from what we actually
-  // fetched (never fabricated, per CLAUDE.md §11).
-  const rolesCount = jobs.length;
-  const tendersCount = jobs.filter(isConsultancy).length;
-  const coursesCount = training.length;
-  const digest = [
-    { n: rolesCount, label: rolesCount === 1 ? "live role" : "live roles" },
-    { n: tendersCount, label: tendersCount === 1 ? "open tender" : "open tenders" },
-    { n: coursesCount, label: coursesCount === 1 ? "free course" : "free courses" },
-  ].filter((d) => d.n > 0);
 
   // The hero slideshow is now the ONLY jobs surface on the page — the old
   // "Matched to your profile" and "Tenders & consultancies" cards fold into
@@ -80,43 +68,17 @@ export default async function HomePage() {
     ? "Curated tenders"
     : matchedJobs.personalised ? "Curated for you" : "Curated opportunities";
 
-  const { greeting, dateLabel } = nowInEAT();
-
   return (
     <div className="space-y-6">
-      {/* ── Masthead hero: greeting, date, live digest ─────────────── */}
-      <section className="card relative overflow-hidden">
-        <div className="absolute -right-24 -top-24 w-80 h-80 rounded-full bg-sienna/[0.06] blur-3xl" aria-hidden />
-        <div className="absolute -left-16 bottom-0 w-64 h-64 rounded-full bg-ink/[0.03] blur-3xl" aria-hidden />
-        <div className="relative">
-          <p className="section-eyebrow text-sienna">{dateLabel} · Horn of Africa</p>
-          <h1 className="font-serif text-[28px] sm:text-[38px] tracking-[-0.02em] leading-[1.1] mt-3 max-w-2xl">
-            {greeting}{firstName(displayName) ? `, ${firstName(displayName)}` : ""}.
-          </h1>
+      {/* ── Masthead: the curated-opportunity slideshow ────────────── */}
+      <HeroJobsSlider jobs={slides} eyebrow={slideEyebrow} />
 
-          {digest.length > 0 && (
-            <div className="mt-5 flex flex-wrap gap-2.5">
-              {digest.map((d) => (
-                <span key={d.label} className="inline-flex items-baseline gap-1.5 rounded-full border border-border bg-cream/60 px-3.5 py-1.5">
-                  <span className="font-serif text-[16px] text-sienna leading-none">{d.n}</span>
-                  <span className="text-[12.5px] text-ink-soft">{d.label}</span>
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Only nudge: interest selection (it personalises the slideshow).
-              The SomKenJobs link lives in the right rail. */}
-          {noInterests && (
-            <div className="mt-5">
-              <Link href="/profile"><Button kind="primary" size="md">Pick your career interests</Button></Link>
-            </div>
-          )}
-
-          {/* Rotating curated-opportunity slideshow */}
-          <HeroJobsSlider jobs={slides} eyebrow={slideEyebrow} />
+      {/* Only nudge: interest selection (it personalises the slideshow). */}
+      {noInterests && (
+        <div>
+          <Link href="/profile"><Button kind="primary" size="md">Pick your career interests</Button></Link>
         </div>
-      </section>
+      )}
 
       {/* ── Community showcase: real member profiles ───────────────── */}
       <CommunityShowcase members={showcase} />
@@ -200,19 +162,4 @@ export default async function HomePage() {
       </div>
     </div>
   );
-}
-
-function firstName(s: string) {
-  const f = s.trim().split(/\s+/)[0];
-  return f ? f.charAt(0).toUpperCase() + f.slice(1) : "";
-}
-
-// Greeting + date in East Africa Time (the audience is Somalia / the Horn),
-// so it reads right regardless of where the server runs.
-function nowInEAT() {
-  const now = new Date();
-  const hour = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Mogadishu", hour: "numeric", hour12: false }).format(now));
-  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-  const dateLabel = new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Mogadishu", weekday: "long", day: "numeric", month: "long" }).format(now);
-  return { greeting, dateLabel };
 }

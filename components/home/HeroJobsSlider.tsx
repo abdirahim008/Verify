@@ -31,7 +31,7 @@ export function HeroJobsSlider({ jobs, eyebrow }: { jobs: SlideJob[]; eyebrow: s
 
   return (
     <div
-      className="mt-6 rounded-[14px] border border-border bg-paper/70 backdrop-blur-sm px-5 py-4 sm:px-6"
+      className="rounded-[14px] border border-border bg-paper px-5 py-4 sm:px-6 sm:py-5"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
