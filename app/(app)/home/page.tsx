@@ -93,9 +93,6 @@ export default async function HomePage() {
           <h1 className="font-serif text-[28px] sm:text-[38px] tracking-[-0.02em] leading-[1.1] mt-3 max-w-2xl">
             {greeting}{firstName(displayName) ? `, ${firstName(displayName)}` : ""}.
           </h1>
-          <p className="mt-3 text-[15px] text-ink-soft max-w-xl leading-relaxed">
-            The latest roles, tenders and free courses from across the sector — curated in one place and refreshed through the week.
-          </p>
 
           {digest.length > 0 && (
             <div className="mt-5 flex flex-wrap gap-2.5">
