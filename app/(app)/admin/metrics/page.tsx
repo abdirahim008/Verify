@@ -1,4 +1,5 @@
 import { loadAdminMetrics, type AdminUserRow } from "@/lib/admin-metrics";
+import { FeatureToggle } from "@/components/admin/FeatureToggle";
 
 export const metadata = { title: "Metrics" };
 export const dynamic = "force-dynamic";
@@ -118,7 +119,8 @@ export default async function MetricsPage() {
                 <th className="px-3 py-3 font-semibold">Last sign-in</th>
                 <th className="px-3 py-3 font-semibold text-right">Items</th>
                 <th className="px-3 py-3 font-semibold text-right">Downloads</th>
-                <th className="px-4 py-3 font-semibold">Last download</th>
+                <th className="px-3 py-3 font-semibold">Last download</th>
+                <th className="px-4 py-3 font-semibold" title="Feature on the public landing page (with the member's consent)">Feat.</th>
               </tr>
             </thead>
             <tbody>
@@ -155,7 +157,12 @@ function UserRow({ u, eventsAvailable }: { u: AdminUserRow; eventsAvailable: boo
           : <span className="text-muted">—</span>}
         {eventsAvailable && u.previews > 0 && <span className="ml-1 text-[11px] text-muted">(+{u.previews}p)</span>}
       </td>
-      <td className="px-4 py-3 text-ink-soft whitespace-nowrap">{u.lastDownload ? fmtDate(u.lastDownload) : "—"}</td>
+      <td className="px-3 py-3 text-ink-soft whitespace-nowrap">{u.lastDownload ? fmtDate(u.lastDownload) : "—"}</td>
+      <td className="px-4 py-3">
+        {u.featured == null
+          ? <span className="text-muted" title="Run migration 0010 to enable featuring">—</span>
+          : <FeatureToggle profileId={u.id} initial={u.featured} name={u.name} />}
+      </td>
     </tr>
   );
 }

@@ -19,18 +19,46 @@ export interface ShowcaseMember {
 }
 
 export async function loadShowcaseMembers(limit = 12): Promise<ShowcaseMember[]> {
+  return loadMembers("showcase", limit);
+}
+
+// Featured members for the LOGGED-OUT landing page. Stricter than the
+// members-only showcase: admin-curated with the member's consent
+// (profiles.featured, migration 0010), and still respects the showcase
+// opt-out as an override.
+export async function loadFeaturedMembers(limit = 8): Promise<ShowcaseMember[]> {
+  return loadMembers("featured", limit);
+}
+
+// Live member count for the landing hero's social-proof line. Excludes
+// nothing — a profile row is a signup.
+export async function countMembers(): Promise<number> {
+  const svc = createSupabaseServiceClient();
+  if (!svc) return 0;
+  const { count, error } = await svc.from("profiles").select("id", { count: "exact", head: true });
+  return error ? 0 : (count ?? 0);
+}
+
+async function loadMembers(mode: "showcase" | "featured", limit: number): Promise<ShowcaseMember[]> {
   const svc = createSupabaseServiceClient();
   if (!svc) return [];
 
+  // "featured" needs its own select so a missing 0010 column can't break the
+  // /home showcase (and vice versa for 0009 on the landing page).
+  const profilesQuery = mode === "featured"
+    ? svc.from("profiles").select("id, account_type, showcase, featured, created_at")
+        .eq("featured", true).order("created_at", { ascending: false }).limit(200)
+    : svc.from("profiles").select("id, account_type, showcase, created_at")
+        .order("created_at", { ascending: false }).limit(200);
+
   const [profilesRes, indRes, coRes] = await Promise.all([
-    svc.from("profiles").select("id, account_type, showcase, created_at")
-      .order("created_at", { ascending: false }).limit(200),
+    profilesQuery,
     svc.from("individual_details").select("profile_id, full_name, headline, location, photo_url"),
     svc.from("company_details").select("profile_id, company_name, tagline, logo_url, country, sectors"),
   ]);
 
-  // Before migration 0009, `showcase` is missing and the profiles query
-  // errors — degrade to an empty gallery rather than breaking /home.
+  // Before the relevant migration the flag column is missing and the query
+  // errors — degrade to an empty gallery rather than breaking the page.
   if (profilesRes.error) return [];
 
   const ind = new Map((indRes.data ?? []).map((r) => [r.profile_id, r]));

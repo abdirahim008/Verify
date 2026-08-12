@@ -25,6 +25,8 @@ export interface AdminUserRow {
   downloads: number;
   previews: number;
   lastDownload: string | null;    // ISO
+  /** Featured on the public landing page (null until migration 0010). */
+  featured: boolean | null;
 }
 
 export interface AdminMetrics {
@@ -67,12 +69,14 @@ export async function loadAdminMetrics(): Promise<AdminMetrics | null> {
     "company_projects", "company_services", "company_team", "company_clients",
   ];
 
-  const [profilesRes, eventsRes, feedbackRes, usersRes, ...contentRes] = await Promise.all([
+  const [profilesRes, eventsRes, feedbackRes, featuredRes, usersRes, ...contentRes] = await Promise.all([
     svc.from("profiles").select("id, display_name, account_type, is_admin, created_at"),
     svc.from("usage_events").select("profile_id, event, meta, created_at")
       .order("created_at", { ascending: false }).limit(5000),
     svc.from("app_feedback").select("profile_id, rating, comment, created_at")
       .order("created_at", { ascending: false }),
+    // Separate query so a missing 0010 column can't break the dashboard.
+    svc.from("profiles").select("id, featured"),
     // Emails + last sign-in live in auth.users; service role can list them.
     svc.auth.admin.listUsers({ page: 1, perPage: 1000 }).catch(() => null),
     ...contentTables.map((t) => svc.from(t).select("profile_id")),
@@ -135,6 +139,10 @@ export async function loadAdminMetrics(): Promise<AdminMetrics | null> {
       })),
   };
 
+  const featuredById = featuredRes.error
+    ? null
+    : new Map((featuredRes.data as Array<{ id: string; featured: boolean }> | null ?? []).map((r) => [r.id, !!r.featured]));
+
   const now = Date.now();
   const DAY = 86_400_000;
   const users: AdminUserRow[] = profiles
@@ -153,6 +161,7 @@ export async function loadAdminMetrics(): Promise<AdminMetrics | null> {
         downloads: dl?.real ?? 0,
         previews: dl?.previews ?? 0,
         lastDownload: dl?.last ?? null,
+        featured: featuredById ? (featuredById.get(p.id) ?? false) : null,
       };
     })
     .sort((a, b) => +new Date(b.joined) - +new Date(a.joined));

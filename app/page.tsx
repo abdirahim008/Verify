@@ -3,17 +3,33 @@ import { SahanMark } from "@/components/SahanMark";
 import { Button } from "@/components/Button";
 import { AuthCard } from "@/components/landing/AuthCard";
 import { FeatureShowcase } from "@/components/landing/FeatureShowcase";
+import { FeaturedProfiles } from "@/components/landing/FeaturedProfiles";
 import { CV_TEMPLATES } from "@/components/templates/CvThumbnails";
+import { loadFeaturedMembers, countMembers } from "@/lib/showcase";
 
 // Public marketing landing. Logged-out visitors (and crawlers) land here;
 // logged-in users are redirected to /home by middleware.ts. The signup/sign-in
 // forms live inline in the hero via <AuthCard />.
-export default function LandingPage() {
+//
+// ISR: the featured strip + member count come from the DB, but a marketing
+// page shouldn't hit it per request — revalidate every 30 minutes.
+export const revalidate = 1800;
+
+// The social-proof line only appears once it stops sounding small. Real
+// count from the DB, never fabricated (CLAUDE.md §11).
+const SOCIAL_PROOF_MIN = 50;
+
+export default async function LandingPage() {
+  const [featured, memberCount] = await Promise.all([
+    loadFeaturedMembers(4),
+    countMembers(),
+  ]);
   return (
     <div className="min-h-screen bg-cream">
       <SiteHeader />
-      <Hero />
+      <Hero memberCount={memberCount} />
       <TrustStrip />
+      <FeaturedProfiles members={featured} />
       <FeatureShowcase />
       <HowItWorks />
       <Templates />
@@ -50,7 +66,7 @@ function SiteHeader() {
 }
 
 // ── Hero ─────────────────────────────────────────────────────────────────
-function Hero() {
+function Hero({ memberCount }: { memberCount: number }) {
   return (
     <section className="relative overflow-hidden">
       {/* Soft layered backdrop — subtle, print-paper feel. */}
@@ -85,7 +101,10 @@ function Hero() {
               secondary nudge without competing with it. */}
           <div className="mt-8 hidden lg:flex items-center gap-4 text-[13px] text-muted">
             <span className="inline-flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-verified" /> Eight editorial templates — switch any time, nothing re-typed
+              <span className="w-1.5 h-1.5 rounded-full bg-verified" />
+              {memberCount >= SOCIAL_PROOF_MIN
+                ? <>Join {memberCount} professionals &amp; firms already building verified profiles</>
+                : <>Eight editorial templates — switch any time, nothing re-typed</>}
             </span>
           </div>
         </div>
