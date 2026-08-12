@@ -105,13 +105,13 @@ export default async function HomePage() {
             </div>
           )}
 
-          <div className="mt-5 flex flex-wrap gap-3">
-            {noInterests ? (
+          {/* Only nudge: interest selection (it personalises the slideshow).
+              The SomKenJobs link lives in the right rail. */}
+          {noInterests && (
+            <div className="mt-5">
               <Link href="/profile"><Button kind="primary" size="md">Pick your career interests</Button></Link>
-            ) : (
-              <a href="https://somkenjobs.com" target="_blank" rel="noopener noreferrer"><Button kind="primary" size="md">Explore jobs ↗</Button></a>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Rotating curated-opportunity slideshow */}
           <HeroJobsSlider jobs={slides} eyebrow={slideEyebrow} />
