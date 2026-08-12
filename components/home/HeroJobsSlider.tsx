@@ -8,6 +8,8 @@ export interface SlideJob {
   location: string | null;
   link: string;
   deadline: string | null;
+  /** Small chip shown on the slide, e.g. "Role" / "Tender". */
+  tag?: string;
 }
 
 // Auto-rotating showcase of curated opportunities inside the /home hero.
@@ -73,6 +75,11 @@ export function HeroJobsSlider({ jobs, eyebrow }: { jobs: SlideJob[]; eyebrow: s
               {j.title} ↗
             </a>
             <p className="mt-1 text-[12.5px] text-muted">
+              {j.tag && (
+                <span className={`inline-block align-[1px] mr-2 rounded-full border px-2 py-[1px] text-[10px] font-semibold uppercase tracking-[0.1em] ${
+                  j.tag === "Tender" ? "border-sienna/40 text-sienna" : "border-border text-ink-soft"
+                }`}>{j.tag}</span>
+              )}
               {[j.org, j.location].filter(Boolean).join(" · ")}
               {j.deadline && <span className="text-sienna font-medium"> · closes {j.deadline}</span>}
             </p>

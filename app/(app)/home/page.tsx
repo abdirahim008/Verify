@@ -5,8 +5,6 @@ import { Button } from "@/components/Button";
 import { loadApprovedFeed } from "@/lib/feed-data";
 import { fetchJobs, selectJobs, selectConsultancies, isConsultancy } from "@/lib/jobs/feed";
 import { fetchTraining } from "@/lib/feeds/training";
-import { JobsCard } from "@/components/home/JobsCard";
-import { TendersCard } from "@/components/home/TendersCard";
 import { TrainingCard } from "@/components/home/TrainingCard";
 import { HeroJobsSlider, type SlideJob } from "@/components/home/HeroJobsSlider";
 import { CommunityShowcase } from "@/components/home/CommunityShowcase";
@@ -41,9 +39,8 @@ export default async function HomePage() {
     fetchTraining(4),
     loadShowcaseMembers(12),
   ]);
-  // Enough for the hero slideshow (up to 5) plus the lists beneath it.
-  const matchedJobs = selectJobs(jobs, careerCategories, 10);
-  const tenders = selectConsultancies(jobs, 8);
+  const matchedJobs = selectJobs(jobs, careerCategories, 8);
+  const tenders = selectConsultancies(jobs, 6);
 
   // Live counts for the digest strip — all derived from what we actually
   // fetched (never fabricated, per CLAUDE.md §11).
@@ -56,19 +53,32 @@ export default async function HomePage() {
     { n: coursesCount, label: coursesCount === 1 ? "free course" : "free courses" },
   ].filter((d) => d.n > 0);
 
-  // Hero slideshow: the strongest role matches for individuals, freshest
-  // tenders for companies. Those slides are pulled out of the lists below so
-  // the same opportunity isn't shown twice on the page.
-  const slidePool = !isCompany ? matchedJobs.items : (tenders.length ? tenders : jobs);
-  const slides: SlideJob[] = slidePool.slice(0, 5).map((j) => ({
-    title: j.title, org: j.org, location: j.location, link: j.link, deadline: j.deadline,
-  }));
+  // The hero slideshow is now the ONLY jobs surface on the page — the old
+  // "Matched to your profile" and "Tenders & consultancies" cards fold into
+  // it. Individuals get matched roles then tenders (tagged per slide);
+  // companies get tenders. Dedup by link so a consultancy that also matched
+  // as a role appears once.
+  const toSlide = (j: (typeof jobs)[number], tag: string): SlideJob => ({
+    title: j.title, org: j.org, location: j.location, link: j.link, deadline: j.deadline, tag,
+  });
+  const slides: SlideJob[] = [];
+  const seen = new Set<string>();
+  // [pool, tag, cap] — caps keep a balanced roles/tenders mix for individuals.
+  const pools: Array<[typeof jobs, string, number]> = isCompany
+    ? [[tenders.length ? tenders : jobs, "Tender", 6]]
+    : [[matchedJobs.items, "Role", 6], [tenders, "Tender", 3]];
+  for (const [pool, tag, cap] of pools) {
+    let taken = 0;
+    for (const j of pool) {
+      if (taken >= cap || seen.has(j.link)) continue;
+      seen.add(j.link);
+      slides.push(toSlide(j, tag));
+      taken++;
+    }
+  }
   const slideEyebrow = isCompany
     ? "Curated tenders"
-    : matchedJobs.personalised ? "Curated for you" : "Curated roles";
-  const slideLinks = new Set(slides.map((s) => s.link));
-  const jobItems = matchedJobs.items.filter((j) => !slideLinks.has(j.link)).slice(0, 5);
-  const tenderItems = (isCompany ? tenders.filter((t) => !slideLinks.has(t.link)) : tenders).slice(0, 5);
+    : matchedJobs.personalised ? "Curated for you" : "Curated opportunities";
 
   const { greeting, dateLabel } = nowInEAT();
 
@@ -117,15 +127,7 @@ export default async function HomePage() {
       {/* ── Main column + curated right rail ───────────────────────── */}
       <div className="grid gap-6 lg:grid-cols-[1fr_320px] items-start">
         <main className="space-y-6 min-w-0">
-          {/* Jobs | Tenders — two dense columns, not two stacked cards */}
-          {!isCompany ? (
-            <div className="grid gap-5 md:grid-cols-2 items-start">
-              <JobsCard matched={{ items: jobItems, personalised: matchedJobs.personalised, topMatchLink: null }} categories={careerCategories} />
-              {tenderItems.length > 0 && <TendersCard items={tenderItems} />}
-            </div>
-          ) : (
-            tenderItems.length > 0 && <TendersCard items={tenderItems} />
-          )}
+          {/* Jobs & tenders live in the hero slideshow above. */}
 
           {/* Learning — warm accent band */}
           <TrainingCard items={training} />
