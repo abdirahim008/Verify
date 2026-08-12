@@ -121,8 +121,10 @@ export default async function HomePage() {
       {/* ── Community showcase: real member profiles ───────────────── */}
       <CommunityShowcase members={showcase} />
 
-      {/* ── Main column + curated right rail ───────────────────────── */}
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px] items-start">
+      {/* ── Main column + curated right rail. Companies have no rail cards
+          (the interests card is individual-only), so they get the full
+          width instead of a blank 320px column. ── */}
+      <div className={`grid gap-6 items-start ${!isCompany ? "lg:grid-cols-[1fr_320px]" : ""}`}>
         <main className="space-y-6 min-w-0">
           {/* Jobs & tenders live in the hero slideshow above. */}
 
@@ -170,9 +172,9 @@ export default async function HomePage() {
           </section>
         </main>
 
-        {/* Right rail — curated, not profile-record data. */}
-        <aside className="space-y-4 lg:sticky lg:top-6">
-          {!isCompany && (
+        {/* Right rail (individuals only) — curated, not profile-record data. */}
+        {!isCompany && (
+          <aside className="space-y-4 lg:sticky lg:top-6">
             <div className="card">
               <p className="section-eyebrow text-sienna">Your feed</p>
               {careerCategories.length > 0 ? (
@@ -193,19 +195,8 @@ export default async function HomePage() {
                 </>
               )}
             </div>
-          )}
-
-          <div className="card bg-ink text-paper border-ink">
-            <p className="section-eyebrow text-paper/60">SomKenJobs</p>
-            <h3 className="font-serif text-[19px] tracking-tightish mt-2 leading-snug">Turn your CV into applications.</h3>
-            <p className="mt-2 text-[12.5px] text-paper/70 leading-relaxed">
-              Browse roles across Somalia, Kenya and the wider region, and apply with the profile you build here.
-            </p>
-            <a href="https://somkenjobs.com" target="_blank" rel="noopener noreferrer" className="inline-block mt-4 rounded-lg bg-paper text-ink text-[13px] font-semibold px-4 py-2 hover:bg-paper/90 transition">
-              Explore jobs →
-            </a>
-          </div>
-        </aside>
+          </aside>
+        )}
       </div>
     </div>
   );
