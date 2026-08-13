@@ -38,32 +38,38 @@ export default async function HomePage() {
     fetchTraining(4),
     loadShowcaseMembers(12),
   ]);
-  const matchedJobs = selectJobs(jobs, careerCategories, 8);
-  const tenders = selectConsultancies(jobs, 6);
+  const matchedJobs = selectJobs(jobs, careerCategories, 14);
+  const tenders = selectConsultancies(jobs, 8);
 
-  // The hero slideshow is now the ONLY jobs surface on the page — the old
-  // "Matched to your profile" and "Tenders & consultancies" cards fold into
-  // it. Individuals get matched roles then tenders (tagged per slide);
-  // companies get tenders. Dedup by link so a consultancy that also matched
-  // as a role appears once.
+  // The carousel is the ONLY jobs surface on the page — the old "Matched to
+  // your profile" and "Tenders & consultancies" cards fold into it.
+  // Individuals lead with matched roles then tenders; companies lead with
+  // tenders. Both top up from the wider feed so the carousel stays full even
+  // when interest-matching is narrow. Deduped by link, so a consultancy that
+  // also matched as a role appears once.
+  const TARGET_SLIDES = 18;
   const toSlide = (j: (typeof jobs)[number], tag: string): SlideJob => ({
     title: j.title, org: j.org, location: j.location, link: j.link, deadline: j.deadline, tag,
   });
   const slides: SlideJob[] = [];
   const seen = new Set<string>();
-  // [pool, tag, cap] — caps keep a balanced roles/tenders mix for individuals.
-  const pools: Array<[typeof jobs, string, number]> = isCompany
-    ? [[tenders.length ? tenders : jobs, "Tender", 6]]
-    : [[matchedJobs.items, "Role", 6], [tenders, "Tender", 3]];
-  for (const [pool, tag, cap] of pools) {
+  const take = (pool: typeof jobs, tag: string, cap: number) => {
     let taken = 0;
     for (const j of pool) {
-      if (taken >= cap || seen.has(j.link)) continue;
+      if (taken >= cap || slides.length >= TARGET_SLIDES) break;
+      if (seen.has(j.link)) continue;
       seen.add(j.link);
       slides.push(toSlide(j, tag));
       taken++;
     }
+  };
+  if (isCompany) {
+    take(tenders, "Tender", 8);
+  } else {
+    take(matchedJobs.items, "Role", 12);
+    take(tenders, "Tender", 6);
   }
+  take(jobs, "Role", TARGET_SLIDES); // top up to a full carousel
   const slideEyebrow = isCompany
     ? "Curated tenders"
     : matchedJobs.personalised ? "Curated for you" : "Curated opportunities";

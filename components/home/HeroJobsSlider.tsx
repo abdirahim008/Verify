@@ -19,6 +19,10 @@ export interface SlideJob {
 // Built on a native scroll-snap track rather than a transform: it gives
 // touch-swipe for free on phones (most of the audience), degrades to a plain
 // scrollable row without JS, and keeps keyboard focus working.
+
+// Above this many pages the dot row stops being scannable and we show a
+// "3 / 12" counter instead.
+const MAX_DOTS = 6;
 export function HeroJobsSlider({ jobs, eyebrow }: { jobs: SlideJob[]; eyebrow: string }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(0);
@@ -87,19 +91,28 @@ export function HeroJobsSlider({ jobs, eyebrow }: { jobs: SlideJob[]; eyebrow: s
         <p className="section-eyebrow text-sienna">{eyebrow}</p>
         {pages > 1 && (
           <div className="flex items-center gap-2.5">
-            <div className="flex items-center gap-1.5">
-              {Array.from({ length: pages }).map((_, d) => (
-                <button
-                  key={d}
-                  type="button"
-                  aria-label={`Page ${d + 1} of ${pages}`}
-                  aria-current={d === page}
-                  onClick={() => goto(d)}
-                  className={`h-[7px] rounded-full transition-all ${d === page ? "w-5 bg-sienna" : "w-[7px] bg-border hover:bg-muted-soft"}`}
-                />
-              ))}
-            </div>
-            <div className="hidden sm:flex items-center gap-1">
+            {/* Dots only while they stay countable — a phone showing one card
+                at a time would otherwise render a dot per job. Past that, a
+                plain counter reads better and takes no room. */}
+            {pages <= MAX_DOTS ? (
+              <div className="flex items-center gap-1.5">
+                {Array.from({ length: pages }).map((_, d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    aria-label={`Page ${d + 1} of ${pages}`}
+                    aria-current={d === page}
+                    onClick={() => goto(d)}
+                    className={`h-[7px] rounded-full transition-all ${d === page ? "w-5 bg-sienna" : "w-[7px] bg-border hover:bg-muted-soft"}`}
+                  />
+                ))}
+              </div>
+            ) : (
+              <span className="text-[12px] tabular-nums text-muted" aria-live="polite">
+                {Math.min(page + 1, pages)} / {pages}
+              </span>
+            )}
+            <div className="flex items-center gap-1">
               <Arrow dir="prev" onClick={() => goto(Math.max(0, page - 1))} disabled={page === 0} />
               <Arrow dir="next" onClick={() => goto(Math.min(pages - 1, page + 1))} disabled={page >= pages - 1} />
             </div>
