@@ -39,14 +39,17 @@ export default async function HomePage() {
     loadShowcaseMembers(12),
   ]);
   const matchedJobs = selectJobs(jobs, careerCategories, 14);
-  const tenders = selectConsultancies(jobs, 8);
+  // Companies only ever see tenders, so take every one the feed has.
+  const tenders = selectConsultancies(jobs, isCompany ? 40 : 8);
 
   // The carousel is the ONLY jobs surface on the page — the old "Matched to
   // your profile" and "Tenders & consultancies" cards fold into it.
-  // Individuals lead with matched roles then tenders; companies lead with
-  // tenders. Both top up from the wider feed so the carousel stays full even
-  // when interest-matching is narrow. Deduped by link, so a consultancy that
-  // also matched as a role appears once.
+  //
+  // Companies get tenders and nothing else: individual vacancies are noise to
+  // a firm looking for work to bid on, so a shorter carousel beats a padded
+  // one. Individuals lead with matched roles, then tenders, then top up from
+  // the wider feed so a narrow interest match doesn't leave gaps. Deduped by
+  // link, so a consultancy that also matched as a role appears once.
   const TARGET_SLIDES = 18;
   const toSlide = (j: (typeof jobs)[number], tag: string): SlideJob => ({
     title: j.title, org: j.org, location: j.location, link: j.link, deadline: j.deadline, tag,
@@ -64,12 +67,12 @@ export default async function HomePage() {
     }
   };
   if (isCompany) {
-    take(tenders, "Tender", 8);
+    take(tenders, "Tender", TARGET_SLIDES);
   } else {
     take(matchedJobs.items, "Role", 12);
     take(tenders, "Tender", 6);
+    take(jobs, "Role", TARGET_SLIDES); // top up to a full carousel
   }
-  take(jobs, "Role", TARGET_SLIDES); // top up to a full carousel
   const slideEyebrow = isCompany
     ? "Curated tenders"
     : matchedJobs.personalised ? "Curated for you" : "Curated opportunities";
@@ -78,6 +81,17 @@ export default async function HomePage() {
     <div className="space-y-6">
       {/* ── Masthead: the curated-opportunity slideshow ────────────── */}
       <HeroJobsSlider jobs={slides} eyebrow={slideEyebrow} />
+
+      {/* Companies see tenders only, so an empty feed would otherwise drop
+          the masthead with no explanation. */}
+      {isCompany && slides.length === 0 && (
+        <div className="card">
+          <p className="section-eyebrow text-sienna">Curated tenders</p>
+          <p className="mt-2 text-[13.5px] text-ink-soft leading-relaxed">
+            No open tenders in the feed right now. New RFPs and terms of reference appear here as they&rsquo;re published.
+          </p>
+        </div>
+      )}
 
       {/* Only nudge: interest selection (it personalises the slideshow). */}
       {noInterests && (
