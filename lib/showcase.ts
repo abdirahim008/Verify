@@ -51,10 +51,12 @@ async function loadMembers(mode: "showcase" | "featured", limit: number): Promis
     : svc.from("profiles").select("id, account_type, showcase, created_at")
         .order("created_at", { ascending: false }).limit(200);
 
-  const [profilesRes, indRes, coRes] = await Promise.all([
+  const [profilesRes, indRes, coRes, expRes, projRes] = await Promise.all([
     profilesQuery,
     svc.from("individual_details").select("profile_id, full_name, headline, location, photo_url"),
     svc.from("company_details").select("profile_id, company_name, tagline, logo_url, country, sectors"),
+    svc.from("experiences").select("profile_id"),
+    svc.from("company_projects").select("profile_id"),
   ]);
 
   // Before the relevant migration the flag column is missing and the query
@@ -63,6 +65,8 @@ async function loadMembers(mode: "showcase" | "featured", limit: number): Promis
 
   const ind = new Map((indRes.data ?? []).map((r) => [r.profile_id, r]));
   const co = new Map((coRes.data ?? []).map((r) => [r.profile_id, r]));
+  const hasExperience = new Set((expRes.data ?? []).map((r) => r.profile_id));
+  const hasProject = new Set((projRes.data ?? []).map((r) => r.profile_id));
 
   const out: ShowcaseMember[] = [];
   for (const p of profilesRes.data ?? []) {
@@ -70,11 +74,15 @@ async function loadMembers(mode: "showcase" | "featured", limit: number): Promis
     if (p.account_type === "company") {
       const c = co.get(p.id);
       const line = c?.tagline || (c?.sectors ?? []).slice(0, 2).join(" · ");
-      if (!c?.company_name || !c.logo_url || !line) continue;
+      // Presentation (name + logo + a line) AND substance (>=1 project) —
+      // a card that looks finished but opens onto an empty profile
+      // undermines the gallery's whole point.
+      if (!c?.company_name || !c.logo_url || !line || !hasProject.has(p.id)) continue;
       out.push({ id: p.id, kind: "company", name: c.company_name, line, location: c.country ?? "", photoUrl: c.logo_url });
     } else {
       const d = ind.get(p.id);
-      if (!d?.full_name || !d.photo_url || !d.headline) continue;
+      // Same rule for individuals: photo + headline AND >=1 real experience.
+      if (!d?.full_name || !d.photo_url || !d.headline || !hasExperience.has(p.id)) continue;
       out.push({ id: p.id, kind: "individual", name: d.full_name, line: d.headline, location: d.location ?? "", photoUrl: d.photo_url });
     }
     if (out.length >= limit) break;
