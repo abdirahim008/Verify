@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/Button";
 import { SectionCard, Field, NewItemPanel, Clamp } from "../SectionCard";
@@ -14,6 +14,8 @@ import {
   addExperience, updateExperience, deleteExperience,
 } from "@/lib/actions/profile";
 import { dateRange, dateToMonthInput } from "@/lib/format";
+import { MonthYearSelect } from "../DateSelect";
+import { EXPERIENCE_YEARS } from "@/lib/dates";
 
 interface ExperienceRow {
   id: string;
@@ -156,7 +158,7 @@ function ExperienceForm({
   const [serverError, setServerError] = useState<string | null>(null);
   const isCurrentInitial = !!initial && !initial.end_date && !!initial.start_date;
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<ExperienceValues>({
+  const { register, handleSubmit, watch, control, setValue, formState: { errors } } = useForm<ExperienceValues>({
     resolver: zodResolver(experienceSchema),
     defaultValues: {
       organization: initial?.organization ?? "",
@@ -189,16 +191,47 @@ function ExperienceForm({
       <Field label="Location" error={errors.location?.message}>
         <input className="field" placeholder="e.g. Mogadishu" {...register("location")} />
       </Field>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="sm:col-span-2 grid gap-4 sm:grid-cols-2">
         <Field label="Start" error={errors.start_date?.message}>
-          <input type="month" className="field" {...register("start_date")} />
+          <Controller
+            control={control}
+            name="start_date"
+            render={({ field }) => (
+              <MonthYearSelect
+                label="Start"
+                years={EXPERIENCE_YEARS}
+                value={field.value ?? ""}
+                onChange={field.onChange}
+              />
+            )}
+          />
         </Field>
         <Field label="End" error={errors.end_date?.message}>
-          <input type="month" className="field" disabled={isCurrent} {...register("end_date")} />
+          <Controller
+            control={control}
+            name="end_date"
+            render={({ field }) => (
+              <MonthYearSelect
+                label="End"
+                years={EXPERIENCE_YEARS}
+                disabled={isCurrent}
+                value={field.value ?? ""}
+                onChange={field.onChange}
+              />
+            )}
+          />
         </Field>
       </div>
       <label className="sm:col-span-2 flex items-center gap-2 text-[13px] text-ink-soft">
-        <input type="checkbox" className="rounded border-border accent-sienna" {...register("is_current")} />
+        <input
+          type="checkbox"
+          className="rounded border-border accent-sienna"
+          {...register("is_current", {
+            // Clear the end date so a half-picked value can't fail validation
+            // on a field the checkbox has just disabled.
+            onChange: (e) => { if (e.target.checked) setValue("end_date", ""); },
+          })}
+        />
         I currently work here
       </label>
       <div className="sm:col-span-2">

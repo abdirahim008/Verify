@@ -26,9 +26,10 @@ export function dateToMonthInput(dateLike: string | null | undefined): string {
 
 export const QUALIFICATION_LABELS = {
   high_school: "High school",
-  diploma: "Diploma",
   certificate: "Certificate",
+  diploma: "Diploma",
   degree: "Bachelor's degree",
+  postgraduate_diploma: "Postgraduate diploma",
   masters: "Master's degree",
   phd: "PhD",
 } as const;

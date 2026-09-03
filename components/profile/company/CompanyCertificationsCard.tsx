@@ -8,6 +8,8 @@ import { SectionCard, Field, NewItemPanel } from "../SectionCard";
 import { RequestVerifyButton } from "@/components/verification/RequestVerifyButton";
 import { companyCertificationSchema, type CompanyCertificationValues } from "@/lib/schemas";
 import { addCompanyCertification, updateCompanyCertification, deleteCompanyCertification } from "@/lib/actions/company";
+import { YearSelect } from "../DateSelect";
+import { CERTIFICATION_YEARS } from "@/lib/dates";
 
 interface CertRow {
   id: string; name: string; issuer: string | null; year: number | null;
@@ -124,7 +126,7 @@ function CertForm({
         </Field>
       </div>
       <Field label="Year" error={errors.year?.message}>
-        <input type="number" min={1900} max={2100} className="field" {...register("year")} />
+        <YearSelect years={CERTIFICATION_YEARS} {...register("year")} />
       </Field>
       <div className="sm:col-span-3">
         <Field label="Issuer" error={errors.issuer?.message}>

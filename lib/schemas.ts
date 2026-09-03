@@ -27,9 +27,11 @@ export const basicsSchema = z.object({
 });
 export type BasicsValues = z.infer<typeof basicsSchema>;
 
-// <input type="month"> emits YYYY-MM strings; empty allowed.
+// The month/year dropdowns emit YYYY-MM; empty allowed. A half-filled value
+// ("2019-" / "-03") is deliberately invalid so the user sees an error instead
+// of silently losing the half they did pick.
 const monthOrEmpty = z.string()
-  .refine((v) => v === "" || /^\d{4}-\d{2}$/.test(v), "Use YYYY-MM")
+  .refine((v) => v === "" || /^\d{4}-\d{2}$/.test(v), "Pick both a month and a year")
   .optional();
 
 export const experienceSchema = z.object({
@@ -46,7 +48,8 @@ export type ExperienceValues = z.infer<typeof experienceSchema>;
 export const educationSchema = z.object({
   institution: z.string().trim().min(1, "Required").max(200),
   qualification_level: z.enum([
-    "high_school", "diploma", "degree", "masters", "phd", "certificate",
+    "high_school", "diploma", "degree", "postgraduate_diploma", "masters",
+    "phd", "certificate",
   ]),
   field_of_study: optTrimmed,
   start_year: yearStr,

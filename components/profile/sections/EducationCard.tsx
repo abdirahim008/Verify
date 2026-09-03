@@ -12,6 +12,8 @@ import { FEATURES } from "@/lib/flags";
 import { educationSchema, type EducationValues } from "@/lib/schemas";
 import { addEducation, updateEducation, deleteEducation } from "@/lib/actions/profile";
 import { QUALIFICATION_LABELS, yearRange, type QualLevel } from "@/lib/format";
+import { YearSelect } from "../DateSelect";
+import { EDUCATION_YEARS } from "@/lib/dates";
 
 interface EducationRow {
   id: string;
@@ -161,10 +163,10 @@ function EducationForm({
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Start year" error={errors.start_year?.message}>
-          <input type="number" min={1900} max={2100} className="field" {...register("start_year")} />
+          <YearSelect years={EDUCATION_YEARS} {...register("start_year")} />
         </Field>
-        <Field label="End year" error={errors.end_year?.message}>
-          <input type="number" min={1900} max={2100} className="field" {...register("end_year")} />
+        <Field label="End year" error={errors.end_year?.message} hint="Leave blank if ongoing.">
+          <YearSelect years={EDUCATION_YEARS} {...register("end_year")} />
         </Field>
       </div>
       {serverError && (

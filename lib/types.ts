@@ -6,7 +6,8 @@
 export type AccountType = "individual" | "company";
 export type VisibilityLevel = "public" | "registered_only" | "private";
 export type QualificationLevel =
-  | "high_school" | "diploma" | "degree" | "masters" | "phd" | "certificate";
+  | "high_school" | "diploma" | "degree" | "postgraduate_diploma"
+  | "masters" | "phd" | "certificate";
 export type VerificationTargetType =
   | "experience" | "education" | "project" | "certification";
 export type VerificationStatus = "pending" | "verified" | "rejected";
