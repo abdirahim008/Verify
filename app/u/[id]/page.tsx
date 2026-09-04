@@ -153,7 +153,7 @@ function IndividualProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPub
               <TimelineItem key={e.id} first={i === 0} last={i === p.experiences.length - 1} verified={e.verified}
                 title={e.title} date={e.dateRange}
                 meta={[e.organization, e.location].filter(Boolean).join(" · ")} note={e.verifiedNote}
-                description={e.description} />
+                description={e.description} descriptionAsList />
             ))}
           </SectionCard>
         </section>

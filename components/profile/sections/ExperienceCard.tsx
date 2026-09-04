@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/Button";
-import { SectionCard, Field, NewItemPanel, Clamp } from "../SectionCard";
+import { SectionCard, Field, NewItemPanel } from "../SectionCard";
 import { RowMenu } from "../RowMenu";
 import { CheckDot, HollowDot, OrgIcon, PinIcon, CalendarIcon } from "../icons";
 import { RequestVerifyButton } from "@/components/verification/RequestVerifyButton";
@@ -14,8 +14,15 @@ import {
   addExperience, updateExperience, deleteExperience,
 } from "@/lib/actions/profile";
 import { dateRange, dateToMonthInput } from "@/lib/format";
+import { CollapsibleScope } from "@/components/CollapsibleScope";
 import { MonthYearSelect } from "../DateSelect";
 import { EXPERIENCE_YEARS } from "@/lib/dates";
+
+// Shown in the empty description box: three short lines, to demonstrate that
+// one line = one bullet without the member having to read the hint.
+const PLACEHOLDER = `Built referral protocol adopted by 5 MoH facilities
+Trained 96 community midwives across Banadir
+Managed a $1.2m ECHO grant, reported quarterly`;
 
 interface ExperienceRow {
   id: string;
@@ -138,8 +145,16 @@ function ExperienceRowView({ item, pending: pendingVerify, onEdit }: { item: Exp
         <RowMenu onEdit={onEdit} onDelete={handleDelete} pending={pending} />
       </div>
 
-      {/* Description spans the full card width — not boxed beside the actions. */}
-      {item.description && <Clamp text={item.description} lines={3} className="mt-2.5" />}
+      {/* Description spans the full card width — not boxed beside the actions.
+          Each line the member typed becomes its own accent-dot row, matching
+          how the CV templates bullet it. */}
+      {item.description && (
+        <CollapsibleScope
+          text={item.description}
+          dotColor="#0a5cad"
+          className="mt-2.5 text-[13.5px] text-ink-soft leading-relaxed"
+        />
+      )}
     </article>
   );
 }
@@ -235,8 +250,13 @@ function ExperienceForm({
         I currently work here
       </label>
       <div className="sm:col-span-2">
-        <Field label="Description" error={errors.description?.message} hint="What did you actually do? Quantify where you can.">
-          <textarea rows={4} className="field" placeholder="Built referral protocol used by 5 MoH facilities; trained 96 community midwives." {...register("description")} />
+        <Field label="Description" error={errors.description?.message} hint="One achievement per line — each line becomes its own bullet. Quantify where you can.">
+          <textarea
+            rows={5}
+            className="field"
+            placeholder={PLACEHOLDER}
+            {...register("description")}
+          />
         </Field>
       </div>
       {serverError && (

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { Button } from "@/components/Button";
 import { SectionCard } from "../SectionCard";
 import { addSkill, deleteSkill } from "@/lib/actions/profile";
+import { SkillCombobox } from "../SkillCombobox";
 
 interface SkillRow { id: string; name: string }
 
@@ -16,11 +17,19 @@ export function SkillsCard({ items }: { items: SkillRow[] }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  // Lowercased set of what's already on the profile — the combobox uses it to
+  // stop suggesting duplicates.
+  const taken = useMemo(() => new Set(rows.map((r) => r.name.toLowerCase())), [rows]);
+
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    const name = value.trim();
+    add(value);
+  }
+
+  function add(raw: string) {
+    const name = raw.trim();
     if (!name) return;
-    if (rows.some((s) => s.name.toLowerCase() === name.toLowerCase())) {
+    if (taken.has(name.toLowerCase())) {
       setError("You already have that skill."); return;
     }
     setError(null);
@@ -72,16 +81,16 @@ export function SkillsCard({ items }: { items: SkillRow[] }) {
         {rows.length === 0 && <li className="text-[13.5px] text-muted">No skills yet.</li>}
       </ul>
 
-      <form onSubmit={submit} className="mt-4 flex gap-2">
-        <input
-          className="field flex-1"
-          placeholder="e.g. Cold-chain logistics"
-          maxLength={80}
+      <form onSubmit={submit} className="mt-4 flex items-start gap-2">
+        <SkillCombobox
           value={value}
-          onChange={(e) => { setValue(e.target.value); setError(null); }}
+          onChange={(v) => { setValue(v); setError(null); }}
+          onPick={add}
+          exclude={taken}
         />
         <Button type="submit" kind="primary" size="md" disabled={pending || !value.trim()}>Add</Button>
       </form>
+      <p className="helper mt-1.5">Start typing for suggestions — or add your own wording.</p>
       {error && <p className="helper text-red-600 mt-1">{error}</p>}
     </SectionCard>
   );

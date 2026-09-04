@@ -160,7 +160,7 @@ export function Clamp({ text, lines = 3, className }: { text: string; lines?: 2 
   const longish = text.length > 180;
   return (
     <div className={className}>
-      <p className={cn("text-[13.5px] text-ink-soft leading-relaxed", !open && longish && CLAMP[lines])}>
+      <p className={cn("text-[13.5px] text-ink-soft leading-relaxed whitespace-pre-line", !open && longish && CLAMP[lines])}>
         {text}
       </p>
       {longish && (
