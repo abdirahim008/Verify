@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { noLinks, NO_LINKS_MSG } from "@/lib/spam";
 
 // Shared zod schemas. Used by both react-hook-form on the client AND by
 // server actions for server-side re-validation (defense in depth — don't
@@ -17,8 +18,10 @@ const yearStr = z.string()
   .optional();
 
 export const basicsSchema = z.object({
-  full_name: z.string().trim().min(1, "Required").max(120),
-  headline: optTrimmed,
+  // Links in a name or headline are the signature of SEO-spam signups —
+  // reject at save time so the profile never exists (see lib/spam.ts).
+  full_name: z.string().trim().min(1, "Required").max(120).refine(noLinks, NO_LINKS_MSG),
+  headline: optTrimmed.refine(noLinks, NO_LINKS_MSG),
   summary: longText,
   location: optTrimmed,
   phone: optTrimmed,
@@ -91,9 +94,9 @@ const countStr = z.string()
 
 // ─── Company schemas ───────────────────────────────────────────────
 export const companyBasicsSchema = z.object({
-  company_name: z.string().trim().min(1, "Required").max(200),
+  company_name: z.string().trim().min(1, "Required").max(200).refine(noLinks, NO_LINKS_MSG),
   logo_url: z.string().url("Use a full URL").or(z.literal("")).optional(),
-  tagline: optTrimmed,
+  tagline: optTrimmed.refine(noLinks, NO_LINKS_MSG),
   cover_statement: z.string().trim().max(400).optional(),
   locations: z.array(z.string().trim().min(1).max(80)).max(20),
   country: optTrimmed,

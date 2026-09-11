@@ -27,6 +27,9 @@ export interface AdminUserRow {
   lastDownload: string | null;    // ISO
   /** Featured on the public landing page (null until migration 0010). */
   featured: boolean | null;
+  /** Hidden everywhere as spam (null until migration 0011). */
+  blocked: boolean | null;
+  blockedReason: string;
 }
 
 export interface AdminMetrics {
@@ -37,6 +40,8 @@ export interface AdminMetrics {
     activated: number;
     /** Users with at least one real download. */
     downloaded: number;
+    /** Hidden as spam. */
+    blocked: number;
   };
   downloads: { cv: number; company: number; card: number; previews: number };
   /** Real downloads per template, most popular first. */
@@ -69,14 +74,15 @@ export async function loadAdminMetrics(): Promise<AdminMetrics | null> {
     "company_projects", "company_services", "company_team", "company_clients",
   ];
 
-  const [profilesRes, eventsRes, feedbackRes, featuredRes, usersRes, ...contentRes] = await Promise.all([
+  const [profilesRes, eventsRes, feedbackRes, featuredRes, blockedRes, usersRes, ...contentRes] = await Promise.all([
     svc.from("profiles").select("id, display_name, account_type, is_admin, created_at"),
     svc.from("usage_events").select("profile_id, event, meta, created_at")
       .order("created_at", { ascending: false }).limit(5000),
     svc.from("app_feedback").select("profile_id, rating, comment, created_at")
       .order("created_at", { ascending: false }),
-    // Separate query so a missing 0010 column can't break the dashboard.
+    // Separate queries so a missing 0010 / 0011 column can't break the dashboard.
     svc.from("profiles").select("id, featured"),
+    svc.from("profiles").select("id, blocked, blocked_reason"),
     // Emails + last sign-in live in auth.users; service role can list them.
     svc.auth.admin.listUsers({ page: 1, perPage: 1000 }).catch(() => null),
     ...contentTables.map((t) => svc.from(t).select("profile_id")),
@@ -142,6 +148,10 @@ export async function loadAdminMetrics(): Promise<AdminMetrics | null> {
   const featuredById = featuredRes.error
     ? null
     : new Map((featuredRes.data as Array<{ id: string; featured: boolean }> | null ?? []).map((r) => [r.id, !!r.featured]));
+  const blockedById = blockedRes.error
+    ? null
+    : new Map((blockedRes.data as Array<{ id: string; blocked: boolean; blocked_reason: string | null }> | null ?? [])
+        .map((r) => [r.id, { blocked: !!r.blocked, reason: r.blocked_reason ?? "" }]));
 
   const now = Date.now();
   const DAY = 86_400_000;
@@ -162,6 +172,8 @@ export async function loadAdminMetrics(): Promise<AdminMetrics | null> {
         previews: dl?.previews ?? 0,
         lastDownload: dl?.last ?? null,
         featured: featuredById ? (featuredById.get(p.id) ?? false) : null,
+        blocked: blockedById ? (blockedById.get(p.id)?.blocked ?? false) : null,
+        blockedReason: blockedById?.get(p.id)?.reason ?? "",
       };
     })
     .sort((a, b) => +new Date(b.joined) - +new Date(a.joined));
@@ -175,6 +187,7 @@ export async function loadAdminMetrics(): Promise<AdminMetrics | null> {
       new30: users.filter((u) => now - +new Date(u.joined) <= 30 * DAY).length,
       activated: users.filter((u) => u.contentCount > 0).length,
       downloaded: users.filter((u) => u.downloads > 0).length,
+      blocked: users.filter((u) => u.blocked).length,
     },
     downloads: { cv, company, card, previews },
     templates: [...templateCounts.entries()]

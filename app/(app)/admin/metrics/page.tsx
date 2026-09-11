@@ -1,5 +1,6 @@
 import { loadAdminMetrics, type AdminUserRow } from "@/lib/admin-metrics";
 import { FeatureToggle } from "@/components/admin/FeatureToggle";
+import { BlockToggle } from "@/components/admin/BlockToggle";
 
 export const metadata = { title: "Metrics" };
 export const dynamic = "force-dynamic";
@@ -13,7 +14,8 @@ export default async function MetricsPage() {
   }
 
   const tiles: Array<[string, string | number, string]> = [
-    ["Users", m.totals.users, `${m.totals.individuals} individual · ${m.totals.companies} company`],
+    ["Users", m.totals.users - m.totals.blocked,
+      `${m.totals.individuals} individual · ${m.totals.companies} company${m.totals.blocked ? ` · ${m.totals.blocked} blocked as spam` : ""}`],
     ["New this week", m.totals.new7, `${m.totals.new30} in the last 30 days`],
     ["Activated", m.totals.activated, "added at least one profile item"],
     ["Downloaded", m.eventsAvailable ? m.totals.downloaded : "—", "got a CV, profile or card"],
@@ -120,7 +122,8 @@ export default async function MetricsPage() {
                 <th className="px-3 py-3 font-semibold text-right">Items</th>
                 <th className="px-3 py-3 font-semibold text-right">Downloads</th>
                 <th className="px-3 py-3 font-semibold">Last download</th>
-                <th className="px-4 py-3 font-semibold" title="Feature on the public landing page (with the member's consent)">Feat.</th>
+                <th className="px-3 py-3 font-semibold" title="Feature on the public landing page (with the member's consent)">Feat.</th>
+                <th className="px-4 py-3 font-semibold" title="Hide as spam from the gallery, landing page, public profile and member count">Block</th>
               </tr>
             </thead>
             <tbody>
@@ -139,7 +142,7 @@ export default async function MetricsPage() {
 
 function UserRow({ u, eventsAvailable }: { u: AdminUserRow; eventsAvailable: boolean }) {
   return (
-    <tr className="border-b border-border-soft last:border-0">
+    <tr className={`border-b border-border-soft last:border-0 ${u.blocked ? "opacity-50" : ""}`}>
       <td className="px-4 py-3">
         <a href={`/u/${u.id}`} className="font-medium text-ink hover:underline">{u.name}</a>
         {u.isAdmin && <span className="ml-1.5 text-[10px] uppercase tracking-[0.1em] text-sienna font-semibold">admin</span>}
@@ -158,10 +161,17 @@ function UserRow({ u, eventsAvailable }: { u: AdminUserRow; eventsAvailable: boo
         {eventsAvailable && u.previews > 0 && <span className="ml-1 text-[11px] text-muted">(+{u.previews}p)</span>}
       </td>
       <td className="px-3 py-3 text-ink-soft whitespace-nowrap">{u.lastDownload ? fmtDate(u.lastDownload) : "—"}</td>
-      <td className="px-4 py-3">
+      <td className="px-3 py-3">
         {u.featured == null
           ? <span className="text-muted" title="Run migration 0010 to enable featuring">—</span>
           : <FeatureToggle profileId={u.id} initial={u.featured} name={u.name} />}
+      </td>
+      <td className="px-4 py-3">
+        {u.blocked == null
+          ? <span className="text-muted" title="Run migration 0011 to enable blocking">—</span>
+          : u.isAdmin
+            ? <span className="text-muted">—</span>
+            : <BlockToggle profileId={u.id} initial={u.blocked} reason={u.blockedReason} name={u.name} />}
       </td>
     </tr>
   );

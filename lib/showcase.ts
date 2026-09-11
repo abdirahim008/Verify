@@ -1,5 +1,6 @@
 import "server-only";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { containsLink } from "@/lib/spam";
 
 // Members for the home-page "Profiles on Sahan" gallery. Service-role client:
 // profiles RLS is owner-or-admin, but this needs a cross-member read. Shown
@@ -39,8 +40,13 @@ export async function loadFeaturedMembers(limit = 8): Promise<ShowcaseMember[]> 
 export async function countMembers(): Promise<number> {
   const svc = createSupabaseServiceClient();
   if (!svc) return 0;
-  const { count, error } = await svc.from("profiles").select("id", { count: "exact", head: true });
-  return error ? 0 : (count ?? 0);
+  const [all, blocked] = await Promise.all([
+    svc.from("profiles").select("id", { count: "exact", head: true }),
+    // Spam signups mustn't inflate the number; tolerate a missing 0011 column.
+    svc.from("profiles").select("id", { count: "exact", head: true }).eq("blocked", true),
+  ]);
+  if (all.error) return 0;
+  return Math.max(0, (all.count ?? 0) - (blocked.error ? 0 : blocked.count ?? 0));
 }
 
 // "Mohamed Sheikh Ahmed" → "MA"; "Xuub Engineering Limited" (company) → "XE";
@@ -68,26 +74,32 @@ async function loadMembers(mode: "showcase" | "featured", limit: number): Promis
     : svc.from("profiles").select("id, account_type, showcase, created_at")
         .order("created_at", { ascending: false }).limit(300);
 
-  const [profilesRes, indRes, coRes] = await Promise.all([
+  const [profilesRes, indRes, coRes, blockedRes] = await Promise.all([
     profilesQuery,
     svc.from("individual_details").select("profile_id, full_name, headline, location, photo_url"),
     svc.from("company_details").select("profile_id, company_name, tagline, logo_url, country, sectors"),
+    // Own query so a missing 0011 column degrades to "nobody blocked".
+    svc.from("profiles").select("id").eq("blocked", true),
   ]);
 
   // Before the relevant migration the flag column is missing and the query
   // errors — degrade to an empty gallery rather than breaking the page.
   if (profilesRes.error) return [];
+  const blocked = new Set((blockedRes.error ? [] : blockedRes.data ?? []).map((r) => r.id));
 
   const ind = new Map((indRes.data ?? []).map((r) => [r.profile_id, r]));
   const co = new Map((coRes.data ?? []).map((r) => [r.profile_id, r]));
 
   const all: ShowcaseMember[] = [];
   for (const p of profilesRes.data ?? []) {
-    if (!p.showcase) continue;
+    if (!p.showcase || blocked.has(p.id)) continue;
     if (p.account_type === "company") {
       const c = co.get(p.id);
       const line = c?.tagline || (c?.sectors ?? []).slice(0, 2).join(" · ");
       if (!c?.company_name || !line) continue;
+      // Defence in depth: link-spam that predates the save-time guard and
+      // hasn't been swept yet still never reaches the gallery.
+      if (containsLink(c.company_name) || containsLink(line)) continue;
       all.push({
         id: p.id, kind: "company", name: c.company_name, line,
         location: c.country ?? "", photoUrl: c.logo_url ?? "",
@@ -96,6 +108,7 @@ async function loadMembers(mode: "showcase" | "featured", limit: number): Promis
     } else {
       const d = ind.get(p.id);
       if (!d?.full_name || !d.headline) continue;
+      if (containsLink(d.full_name) || containsLink(d.headline)) continue;
       all.push({
         id: p.id, kind: "individual", name: d.full_name, line: d.headline,
         location: d.location ?? "", photoUrl: d.photo_url ?? "",

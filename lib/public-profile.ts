@@ -68,6 +68,11 @@ export async function loadPublicProfile(
     .eq("id", profileId).maybeSingle();
   if (!prof) return null;
 
+  // Blocked (spam) profiles are unreachable publicly — the page 404s. Own
+  // query so a missing 0011 column can't take every public profile down.
+  const { data: blockedRow } = await svc.from("profiles").select("blocked").eq("id", profileId).maybeSingle();
+  if (blockedRow?.blocked) return null;
+
   // Build the section_visibility map with defaults filled in.
   const sectionDefs = prof.account_type === "company" ? COMPANY_SECTIONS : INDIVIDUAL_SECTIONS;
   const sectionVis = (prof.section_visibility ?? {}) as Record<string, VisibilityLevel>;

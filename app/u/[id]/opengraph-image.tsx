@@ -50,6 +50,9 @@ async function loadCard(id: string): Promise<CardData | null> {
   try {
     const prof = await (await fetch(`${base}/rest/v1/profiles?id=eq.${id}&select=account_type`, { headers: h })).json();
     if (!Array.isArray(prof) || !prof[0]) return null;
+    // Blocked (spam) profiles get the generic brand card, never their text.
+    const blk = await (await fetch(`${base}/rest/v1/profiles?id=eq.${id}&select=blocked`, { headers: h })).json();
+    if (Array.isArray(blk) && blk[0]?.blocked) return null;
     if (prof[0].account_type === "company") {
       const [c] = await (await fetch(`${base}/rest/v1/company_details?profile_id=eq.${id}&select=company_name,tagline,logo_url,sectors`, { headers: h })).json();
       if (!c?.company_name) return null;
