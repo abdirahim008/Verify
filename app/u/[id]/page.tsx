@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { loadPublicProfile, viewerContext } from "@/lib/public-profile";
 import { ReadMore } from "@/components/ReadMore";
 import { CollapsibleScope } from "@/components/CollapsibleScope";
+import { ZoomableImage } from "@/components/ZoomableImage";
 
 // Public profile page — the QR / share destination, so it doubles as the
 // app's shop window. No (app) layout: reachable by logged-out viewers, with
@@ -309,8 +310,12 @@ function CompanyProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPublic
                     {proj.media.map((m, i) => (
                       <figure key={i} className="min-w-0">
                         <div className="rounded-[10px] overflow-hidden border" style={{ borderColor: C.cardBorder }}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={m.url} alt={m.caption || proj.project_name} className="w-full aspect-[4/3] object-cover block" loading="lazy" />
+                          <ZoomableImage
+                            src={m.url}
+                            alt={m.caption || proj.project_name}
+                            caption={m.caption}
+                            className="w-full aspect-[4/3] object-cover block"
+                          />
                         </div>
                         {m.caption && <figcaption className="mt-1.5 text-[11.5px] leading-snug" style={{ color: C.muted }}>{m.caption}</figcaption>}
                       </figure>
