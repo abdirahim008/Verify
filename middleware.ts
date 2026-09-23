@@ -3,7 +3,12 @@ import { updateSession } from "@/lib/supabase/middleware";
 
 // Routes the matcher protects/handles. Extending protection to new routes
 // means adding to BOTH the matcher below AND the logic here.
-const PUBLIC_PATHS = new Set(["/login", "/signup", "/auth/callback", "/forgot-password", "/reset-password"]);
+const PUBLIC_PATHS = new Set([
+  "/login", "/signup", "/auth/callback", "/forgot-password", "/reset-password",
+  // Zoho Mail domain ownership check — their crawler is logged out, so this
+  // static file must not bounce to /login (see public/zoho-domain-verification.html).
+  "/zoho-domain-verification.html",
+]);
 
 export async function middleware(request: NextRequest) {
   const { response, user } = await updateSession(request);
