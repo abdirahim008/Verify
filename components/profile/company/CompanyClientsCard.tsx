@@ -20,17 +20,13 @@ export function CompanyClientsCard({ items }: { items: ClientRow[] }) {
     <SectionCard
       eyebrow="Section 5"
       title="Clients"
-      description="Per CLAUDE.md §5/§10, clients are private unless you tick 'show publicly' — only public-ticked clients appear on the PDF."
+      description="Organisations and donors you've delivered for."
       defaultOpen={false}
       count={items.length}
       headerAction={!adding && <Button kind="quiet" size="sm" onClick={() => { setAdding(true); setEditingId(null); }}>+ Add client</Button>}
     >
-      <div className="rounded-md border border-border-soft bg-cream/70 p-3 text-[12.5px] text-ink-soft">
-        🔒 Clients listed here only appear on your PDF if you tick &ldquo;Show on PDF&rdquo;.
-      </div>
-
       {items.length > 0 && (
-        <div className="mt-4 grid sm:grid-cols-2 gap-x-10 gap-y-1">
+        <div className="grid sm:grid-cols-2 gap-x-10 gap-y-1">
           {items.map((item) =>
             editingId === item.id ? (
               <div key={item.id} className="sm:col-span-2 my-2">
