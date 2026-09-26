@@ -23,7 +23,9 @@ export interface ShowcaseMember {
   initials: string;
 }
 
-export async function loadShowcaseMembers(limit = 16): Promise<ShowcaseMember[]> {
+// 23 + the "Your profile here" card = 24 cells, which fills complete rows
+// at every breakpoint (2, 3 and 4 columns).
+export async function loadShowcaseMembers(limit = 23): Promise<ShowcaseMember[]> {
   return loadMembers("showcase", limit);
 }
 
@@ -133,8 +135,13 @@ async function loadMembers(mode: "showcase" | "featured", limit: number): Promis
     }
   }
 
-  // Photos first (each group keeps its newest-first order), then cap.
+  // Photos first (each group keeps its newest-first order), but a third of
+  // the slots are held for initials-avatar members so a growing number of
+  // photo profiles can never push them out of the grid entirely. Unused
+  // reserved slots fall back to photo members.
   const withPhoto = all.filter((m) => m.photoUrl);
   const withoutPhoto = all.filter((m) => !m.photoUrl);
-  return [...withPhoto, ...withoutPhoto].slice(0, limit);
+  const reserved = Math.min(withoutPhoto.length, Math.floor(limit / 3));
+  const photos = withPhoto.slice(0, limit - reserved);
+  return [...photos, ...withoutPhoto.slice(0, limit - photos.length)];
 }

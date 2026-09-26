@@ -36,7 +36,7 @@ export default async function HomePage() {
     loadApprovedFeed(6),
     fetchJobs(),
     fetchTraining(4),
-    loadShowcaseMembers(16),
+    loadShowcaseMembers(23),
   ]);
   const matchedJobs = selectJobs(jobs, careerCategories, 14);
   // Companies only ever see tenders, so take every one the feed has.
