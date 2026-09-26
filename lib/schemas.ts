@@ -84,7 +84,7 @@ export const refereeSchema = z.object({
 export type RefereeValues = z.infer<typeof refereeSchema>;
 
 export const languagesSchema = z.object({
-  languages: z.array(z.string().trim().min(1).max(80)).max(30),
+  languages: z.array(z.string().trim().min(1).max(160)).max(30),
 });
 
 // Non-negative integer entered as a string (form input); actions coerce.

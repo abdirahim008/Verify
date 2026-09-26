@@ -1,6 +1,6 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
-import { INK, VerifiedMark, toBullets, splitLang, pageFooterCss, EXP_BREAKS } from "./_inkShared";
+import { INK, VerifiedMark, toBullets, splitLang, pageFooterCss, EXP_BREAKS, LANG_CSS } from "./_inkShared";
 
 // CV 7 — The Endnote. White page, single-column experience over a two-up
 // lower grid, closing with referees. Archivo (display) + Newsreader (body).
@@ -16,7 +16,7 @@ export function EndnoteCV({ data }: { data: CVData; theme?: Record<string, strin
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + pageFooterCss(fullName, BODY) }} />
+      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + LANG_CSS + pageFooterCss(fullName, BODY) }} />
       <div className="page">
         <header className="hd">
           <div className="hd-row">
@@ -89,8 +89,8 @@ export function EndnoteCV({ data }: { data: CVData; theme?: Record<string, strin
                   <div className="h2" style={{ marginTop: skills.length ? "20px" : "0" }}>Languages</div>
                   <div className="langs">
                     {languages.map((l, i) => {
-                      const { name, level } = splitLang(l);
-                      return <div key={i} className="lang"><span style={{ color: INK.ink }}>{name}</span>{level && <span className="faint">{level}</span>}</div>;
+                      const { name, level, detail } = splitLang(l);
+                      return <div key={i}><div className="lang"><span style={{ color: INK.ink }}>{name}</span>{level && <span className="faint">{level}</span>}</div>{detail && <div className="lang-sub">{detail}</div>}</div>;
                     })}
                   </div>
                 </>

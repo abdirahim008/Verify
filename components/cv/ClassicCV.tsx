@@ -1,6 +1,6 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
-import { INK, VerifiedMark, toBullets, splitLang, contactParts, pageFooterCss, EXP_BREAKS } from "./_inkShared";
+import { INK, VerifiedMark, toBullets, splitLang, contactParts, pageFooterCss, EXP_BREAKS, LANG_CSS } from "./_inkShared";
 
 // CV 1 — The Classic. White page, single column, centred masthead.
 // Cormorant Garamond (display) + EB Garamond (body). Monochrome ink,
@@ -16,7 +16,7 @@ export function ClassicCV({ data }: { data: CVData; theme?: Record<string, strin
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + pageFooterCss(fullName, BODY) }} />
+      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + LANG_CSS + pageFooterCss(fullName, BODY) }} />
       <div className="cv">
         <header style={{ textAlign: "center" }}>
           <h1 className="name">{fullName}</h1>
@@ -82,8 +82,8 @@ export function ClassicCV({ data }: { data: CVData; theme?: Record<string, strin
                 <h2 className="h2">Languages</h2>
                 <div className="langs">
                   {languages.map((l, i) => {
-                    const { name, level } = splitLang(l);
-                    return <div key={i}>{name}{level && <span className="faint"> ({level})</span>}</div>;
+                    const { name, level, detail } = splitLang(l);
+                    return <div key={i}>{name}{level && <span className="faint"> ({level})</span>}{detail && <div className="lang-sub">{detail}</div>}</div>;
                   })}
                 </div>
               </section>

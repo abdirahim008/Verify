@@ -1,6 +1,6 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
-import { INK, VerifiedMark, toBullets, splitLang, bandColors, pageFooterCss, EXP_BREAKS } from "./_inkShared";
+import { INK, VerifiedMark, toBullets, splitLang, bandColors, pageFooterCss, EXP_BREAKS, LANG_CSS } from "./_inkShared";
 
 // CV 8 — The Frame. A white masthead framed by the accent colour — a heavy
 // bar above the name and a fine rule below — with accent section headings
@@ -24,7 +24,7 @@ export function FrameCV({ data, theme }: { data: CVData; theme?: Record<string, 
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles(C.accent, A) + EXP_BREAKS + pageFooterCss(fullName, BODY) }} />
+      <style dangerouslySetInnerHTML={{ __html: styles(C.accent, A) + EXP_BREAKS + LANG_CSS + pageFooterCss(fullName, BODY) }} />
       <div className="page">
         <header className="mast">
           <div className="mast-bar" data-band />
@@ -91,8 +91,8 @@ export function FrameCV({ data, theme }: { data: CVData; theme?: Record<string, 
                   <div className="h2">Languages</div>
                   <div className="langs">
                     {languages.map((l, i) => {
-                      const { name, level } = splitLang(l);
-                      return <div key={i} className="lang"><span style={{ color: INK.ink }}>{name}</span>{level && <span className="faint">{level}</span>}</div>;
+                      const { name, level, detail } = splitLang(l);
+                      return <div key={i}><div className="lang"><span style={{ color: INK.ink }}>{name}</span>{level && <span className="faint">{level}</span>}</div>{detail && <div className="lang-sub">{detail}</div>}</div>;
                     })}
                   </div>
                 </>

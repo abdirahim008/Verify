@@ -1,6 +1,6 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
-import { INK, VerifiedMark, initials, toBullets, splitLang, pageFooterCss, EXP_BREAKS } from "./_inkShared";
+import { INK, VerifiedMark, initials, toBullets, splitLang, pageFooterCss, EXP_BREAKS, LANG_CSS } from "./_inkShared";
 
 // CV 6 — The Crest. White body under an adjustable colour header band.
 // Marcellus (display) + Hanken Grotesk (body). The band's on-colour text
@@ -32,7 +32,7 @@ export function CrestCV({ data, theme }: { data: CVData; theme?: Record<string, 
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles(C) + EXP_BREAKS + pageFooterCss(fullName, BODY) }} />
+      <style dangerouslySetInnerHTML={{ __html: styles(C) + EXP_BREAKS + LANG_CSS + pageFooterCss(fullName, BODY) }} />
       <div className="page">
         <header className="band" data-band>
           <div className="band-top">
@@ -105,8 +105,8 @@ export function CrestCV({ data, theme }: { data: CVData; theme?: Record<string, 
                     <div className="h2">Languages</div>
                     <div className="langs">
                       {languages.map((l, i) => {
-                        const { name, level } = splitLang(l);
-                        return <div key={i} className="lang"><span style={{ color: INK.ink }}>{name}</span>{level && <span className="faint">{level}</span>}</div>;
+                        const { name, level, detail } = splitLang(l);
+                        return <div key={i}><div className="lang"><span style={{ color: INK.ink }}>{name}</span>{level && <span className="faint">{level}</span>}</div>{detail && <div className="lang-sub">{detail}</div>}</div>;
                       })}
                     </div>
                   </>

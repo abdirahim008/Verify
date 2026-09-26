@@ -1,6 +1,6 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
-import { INK, VerifiedMark, initials, toBullets, pageFooterCss, EXP_BREAKS } from "./_inkShared";
+import { INK, VerifiedMark, initials, toBullets, splitLang, pageFooterCss, EXP_BREAKS, LANG_CSS } from "./_inkShared";
 
 // CV 5 — The Statement. White page, bordered masthead with photo, then
 // label/content rows. Bodoni Moda (display) + Karla (body). Ported from
@@ -16,7 +16,7 @@ export function StatementCV({ data }: { data: CVData; theme?: Record<string, str
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + pageFooterCss(fullName, BODY) }} />
+      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + LANG_CSS + pageFooterCss(fullName, BODY) }} />
       <div className="page">
         <header className="masthead">
           <div className="meta">
@@ -84,7 +84,10 @@ export function StatementCV({ data }: { data: CVData; theme?: Record<string, str
           {languages.length > 0 && (
             <Row label="Languages" last={false}>
               <div className="langs">
-                {languages.map((l, i) => <span key={i}>{l}</span>)}
+                {languages.map((l, i) => {
+                  const { name, level, detail } = splitLang(l);
+                  return <div key={i}>{name}{level && <span className="faint"> · {level}</span>}{detail && <div className="lang-sub">{detail}</div>}</div>;
+                })}
               </div>
             </Row>
           )}

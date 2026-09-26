@@ -1,6 +1,6 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
-import { INK, VerifiedMark, initials, toBullets, splitLang, pageFooterCss, EXP_BREAKS } from "./_inkShared";
+import { INK, VerifiedMark, initials, toBullets, splitLang, pageFooterCss, EXP_BREAKS, LANG_CSS } from "./_inkShared";
 
 // CV 3 — The Editorial. White page, right sidebar with a tall photo panel.
 // Spectral (display) + Public Sans (body). Ported from the Claude Design
@@ -21,7 +21,7 @@ export function EditorialCV({ data }: { data: CVData; theme?: Record<string, str
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + pageFooterCss(fullName, BODY) }} />
+      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + LANG_CSS + pageFooterCss(fullName, BODY) }} />
       <div className="page">
         <aside className="sb">
           {photoUrl
@@ -48,8 +48,8 @@ export function EditorialCV({ data }: { data: CVData; theme?: Record<string, str
               <div className="sb-h sb-h-gap">Languages</div>
               <div className="sb-langs">
                 {languages.map((l, i) => {
-                  const { name, level } = splitLang(l);
-                  return <div key={i} className="sb-lang"><span style={{ color: INK.ink }}>{name}</span>{level && <span className="faint">{level}</span>}</div>;
+                  const { name, level, detail } = splitLang(l);
+                  return <div key={i}><div className="sb-lang"><span style={{ color: INK.ink }}>{name}</span>{level && <span className="faint">{level}</span>}</div>{detail && <div className="lang-sub">{detail}</div>}</div>;
                 })}
               </div>
             </>

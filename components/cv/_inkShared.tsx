@@ -1,4 +1,5 @@
 import "server-only";
+import { describeLanguage } from "@/lib/languages";
 
 // Shared pieces for the white-page "ink" CV templates (Classic, Profile,
 // Grid, Crest, …) ported from the Claude Design handoff. Pure monochrome
@@ -68,16 +69,17 @@ export function toBullets(description: string): string[] {
     .filter(Boolean);
 }
 
-// "English (fluent)" → { name: "English", level: "Fluent" }.
-export function splitLang(lang: string): { name: string; level: string } {
-  const m = lang.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
-  if (m) return { name: m[1].trim(), level: cap(m[2].trim()) };
-  return { name: lang.trim(), level: "" };
+// "English (Fluent; Writing: Beginner)" → { name: "English", level: "Fluent",
+// detail: "Writing: Beginner" }. Format and legacy handling: lib/languages.ts.
+export function splitLang(lang: string): { name: string; level: string; detail: string } {
+  return describeLanguage(lang);
 }
 
-function cap(s: string) {
-  return s ? s[0].toUpperCase() + s.slice(1) : s;
-}
+/** Small second line under a language for its speaking/reading/writing levels. */
+export const LANG_CSS = `
+.lang-sub { font-size: 10.5px; line-height: 1.4; color: ${INK.faint}; margin-top: 1px; }
+`;
+
 
 // Contact bits an individual actually has (no website/linkedin in schema).
 export function contactParts(d: { location: string; phone: string; email: string }): string[] {

@@ -1,6 +1,6 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
-import { INK, VerifiedMark, initials, toBullets, splitLang, pageFooterCss, EXP_BREAKS } from "./_inkShared";
+import { INK, VerifiedMark, initials, toBullets, splitLang, pageFooterCss, EXP_BREAKS, LANG_CSS } from "./_inkShared";
 
 // CV 2 — The Profile. White page, left sidebar with photo/monogram.
 // Space Grotesk (display) + Hanken Grotesk (body). Ported from the
@@ -23,7 +23,7 @@ export function ProfileCV({ data }: { data: CVData; theme?: Record<string, strin
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + pageFooterCss(fullName, BODY) }} />
+      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + LANG_CSS + pageFooterCss(fullName, BODY) }} />
       <div className="page">
         <aside className="sb">
           {photoUrl
@@ -52,8 +52,8 @@ export function ProfileCV({ data }: { data: CVData; theme?: Record<string, strin
               <div className="sb-h">Languages</div>
               <div className="sb-langs">
                 {languages.map((l, i) => {
-                  const { name, level } = splitLang(l);
-                  return <div key={i} className="sb-lang"><span style={{ color: INK.ink }}>{name}</span>{level && <span className="faint">{level}</span>}</div>;
+                  const { name, level, detail } = splitLang(l);
+                  return <div key={i}><div className="sb-lang"><span style={{ color: INK.ink }}>{name}</span>{level && <span className="faint">{level}</span>}</div>{detail && <div className="lang-sub">{detail}</div>}</div>;
                 })}
               </div>
             </div>

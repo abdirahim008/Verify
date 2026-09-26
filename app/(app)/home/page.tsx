@@ -40,10 +40,12 @@ export default async function HomePage() {
       .eq("id", user.id).select("id");
     // Only redirect when the marker stuck, so a failed write can't loop.
     if (marked?.length) {
-      await Promise.race([
-        sendOnboardingEmail(user.id, "welcome").catch(() => null),
-        new Promise((res) => setTimeout(res, 3500)),
-      ]);
+      // Wait for the send to finish: Vercel freezes the function once the
+      // response goes out, so a send still in flight would never complete
+      // (and its email_log claim would block any retry). Resend normally
+      // answers in well under a second.
+      const r = await sendOnboardingEmail(user.id, "welcome").catch((e) => ({ sent: false, reason: String(e) }));
+      if (!r.sent) console.warn("[home] welcome email not sent:", r.reason);
       redirect("/profile?welcome=1");
     }
   }

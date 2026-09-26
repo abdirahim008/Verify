@@ -1,6 +1,6 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
-import { INK, VerifiedMark, toBullets, splitLang, pageFooterCss, EXP_BREAKS } from "./_inkShared";
+import { INK, VerifiedMark, toBullets, splitLang, pageFooterCss, EXP_BREAKS, LANG_CSS } from "./_inkShared";
 
 // CV 4 — The Grid. White page under a heavy masthead rule, numbered section
 // labels. Archivo (display) + IBM Plex Sans (body). Ported from the Claude
@@ -43,8 +43,8 @@ export function GridCV({ data }: { data: CVData; theme?: Record<string, string> 
           <SecHead n={num()} label="Languages" spaced={skills.length > 0} />
           <div className="langs">
             {languages.map((l, i) => {
-              const { name, level } = splitLang(l);
-              return <div key={i} className="lang"><span style={{ color: INK.ink }}>{name}</span>{level && <span className="faint">{level}</span>}</div>;
+              const { name, level, detail } = splitLang(l);
+              return <div key={i}><div className="lang"><span style={{ color: INK.ink }}>{name}</span>{level && <span className="faint">{level}</span>}</div>{detail && <div className="lang-sub">{detail}</div>}</div>;
             })}
           </div>
         </>
@@ -118,7 +118,7 @@ export function GridCV({ data }: { data: CVData; theme?: Record<string, string> 
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + pageFooterCss(fullName, BODY) }} />
+      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + LANG_CSS + pageFooterCss(fullName, BODY) }} />
       <div className="page">
         <header>
           <div className="hd">

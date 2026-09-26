@@ -5,6 +5,7 @@ import { loadPublicProfile, viewerContext } from "@/lib/public-profile";
 import { ReadMore } from "@/components/ReadMore";
 import { CollapsibleScope } from "@/components/CollapsibleScope";
 import { ZoomableImage } from "@/components/ZoomableImage";
+import { describeLanguage } from "@/lib/languages";
 
 // Public profile page — the QR / share destination, so it doubles as the
 // app's shop window. No (app) layout: reachable by logged-out viewers, with
@@ -193,14 +194,15 @@ function IndividualProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPub
           {p.languages.length > 0 && (
             <SectionCard title="Languages" bodyClass="px-6 sm:px-7 py-5 flex flex-col gap-3">
               {p.languages.map((l, i) => {
-                const { name, level } = splitLang(l);
+                const { name, level, detail } = describeLanguage(l);
                 return (
                   <div key={i}>
                     {i > 0 && <div className="h-px -mt-1.5 mb-3" style={{ background: C.line }} />}
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-3">
                       <span className="text-[13.5px]" style={{ color: C.ink }}>{name}</span>
-                      {level && <span className="text-[12px]" style={{ color: C.faint }}>{level}</span>}
+                      {level && <span className="text-[12px] shrink-0" style={{ color: C.faint }}>{level}</span>}
                     </div>
+                    {detail && <p className="mt-0.5 text-[12px] leading-snug" style={{ color: C.faint }}>{detail}</p>}
                   </div>
                 );
               })}
@@ -596,7 +598,4 @@ function Organogram({ ceo, team }: {
   );
 }
 
-function splitLang(s: string): { name: string; level: string } {
-  const m = /^(.*?)\s*[([（]\s*(.+?)\s*[)\]）]\s*$/.exec(s.trim());
-  return m ? { name: m[1].trim(), level: m[2].trim() } : { name: s.trim(), level: "" };
-}
+
