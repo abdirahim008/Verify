@@ -47,6 +47,35 @@ export function degreeTitle(qualification: string, field: string): string {
   if (/^high school$/i.test(qualification)) return `${qualification} · ${f}`;
   return `${qualification} in ${f}`;
 }
+// ── Presentation tidy-up ────────────────────────────────────────────────
+// Members type fast on phones: "mogadishu", "Engineer - SURP 2  , BRA",
+// "drainage design". The stored text is theirs and stays untouched; these
+// only tidy what the CV prints. Deliberate casing (BRA, iPhone, eLearning)
+// is never changed: a word is only capitalised when it is all lowercase.
+
+/** Collapse runs of spaces and drop the space before , . ; : ) */
+function spacing(s: string): string {
+  return s.replace(/\s+/g, " ").replace(/\s+([,.;:)])/g, "$1").replace(/\(\s+/g, "(").trim();
+}
+
+const isLower = (w: string) => /^\p{Ll}/u.test(w) && !/\p{Lu}/u.test(w);
+
+/** Free text (headline, titles, skills): capitalise the first word if it's all lowercase. */
+export function tidyText(s: string | null | undefined): string {
+  const t = spacing(s ?? "");
+  const first = t.split(" ")[0] ?? "";
+  return isLower(first) ? t.charAt(0).toUpperCase() + t.slice(1) : t;
+}
+
+const SMALL = new Set(["and", "of", "the", "de", "es", "al", "el", "in", "on"]);
+/** Proper nouns (places, names): title-case every all-lowercase word. */
+export function tidyName(s: string | null | undefined): string {
+  return spacing(s ?? "")
+    .split(" ")
+    .map((w, i) => (isLower(w) && !(i > 0 && SMALL.has(w)) ? w.charAt(0).toUpperCase() + w.slice(1) : w))
+    .join(" ");
+}
+
 export interface CVCertification {
   name: string; issuer: string; year: string;
   verified: boolean; verifiedNote: string;
@@ -96,19 +125,19 @@ export async function loadCVData(userId: string): Promise<CVData | null> {
   if (!basics?.full_name) return null;
 
   return {
-    fullName: basics.full_name,
-    headline: basics.headline ?? "",
+    fullName: tidyName(basics.full_name),
+    headline: tidyText(basics.headline),
     summary: basics.summary ?? "",
-    location: basics.location ?? "",
+    location: tidyName(basics.location),
     email: basics.email ?? "",
     phone: basics.phone ?? "",
     photoUrl: basics.photo_url ?? "",
-    languages: basics.languages ?? [],
-    skills: (skillRes.data ?? []).map((s) => s.name),
+    languages: ((basics.languages ?? []) as string[]).map(tidyText),
+    skills: (skillRes.data ?? []).map((s) => tidyText(s.name)),
     experiences: (expRes.data ?? []).map((e) => ({
-      title: e.title,
-      organization: e.organization,
-      location: e.location ?? "",
+      title: tidyText(e.title),
+      organization: spacing(e.organization ?? ""),
+      location: tidyName(e.location),
       dateRange: dateRange(e.start_date, e.end_date),
       description: e.description ?? "",
       verified: FEATURES.verification && !!e.verified,
@@ -116,7 +145,7 @@ export async function loadCVData(userId: string): Promise<CVData | null> {
     })),
     educations: (eduRes.data ?? []).map((e) => ({
       qualification: QUALIFICATION_LABELS[e.qualification_level as QualLevel] ?? e.qualification_level,
-      institution: e.institution,
+      institution: spacing(e.institution ?? ""),
       field: e.field_of_study ?? "",
       title: degreeTitle(
         QUALIFICATION_LABELS[e.qualification_level as QualLevel] ?? e.qualification_level,
@@ -127,16 +156,16 @@ export async function loadCVData(userId: string): Promise<CVData | null> {
       verifiedNote: e.verified_note ?? "",
     })),
     certifications: (certRes.data ?? []).map((c) => ({
-      name: c.name,
-      issuer: c.issuer ?? "",
+      name: tidyText(c.name),
+      issuer: spacing(c.issuer ?? ""),
       year: c.year ? String(c.year) : "",
       verified: FEATURES.verification && !!c.verified,
       verifiedNote: c.verified_note ?? "",
     })),
     referees: (refRes.data ?? []).map((r) => ({
-      name: r.name,
-      position: r.position ?? "",
-      organization: r.organization ?? "",
+      name: tidyName(r.name),
+      position: tidyText(r.position),
+      organization: spacing(r.organization ?? ""),
       email: r.email ?? "",
       phone: r.phone ?? "",
     })),
