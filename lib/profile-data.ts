@@ -2,9 +2,10 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 // One-shot loader for the profile builder. Runs all section reads in
 // parallel; RLS scopes everything to the calling user automatically.
-// `userId` is the auth user id (= profile_id).
-export async function loadIndividualProfile(userId: string) {
-  const supabase = createSupabaseServerClient();
+// `userId` is the auth user id (= profile_id). Pass `client` only from
+// server jobs with no session (the onboarding-email cron's service client).
+export async function loadIndividualProfile(userId: string, client?: ReturnType<typeof createSupabaseServerClient>) {
+  const supabase = client ?? createSupabaseServerClient();
   if (!supabase) {
     return {
       profile: null, basics: null,

@@ -8,6 +8,9 @@ const PUBLIC_PATHS = new Set([
   // Zoho Mail domain ownership check — their crawler is logged out, so this
   // static file must not bounce to /login (see public/zoho-domain-verification.html).
   "/zoho-domain-verification.html",
+  // Vercel Cron (bearer-secret checked in the route) and the signed
+  // unsubscribe link in member emails — neither carries a session.
+  "/api/cron/onboarding-emails", "/api/email/unsubscribe",
 ]);
 
 export async function middleware(request: NextRequest) {

@@ -28,10 +28,12 @@ import { CompanyClientsCard } from "@/components/profile/company/CompanyClientsC
 import { CompanyTeamCard } from "@/components/profile/company/CompanyTeamCard";
 import { CompanyCertificationsCard } from "@/components/profile/company/CompanyCertificationsCard";
 import { CompanyCompletenessRail } from "@/components/profile/CompanyCompletenessRail";
+import { StarterSteps } from "@/components/profile/StarterSteps";
+import { individualProgress, companyProgress, type OnboardingProgress } from "@/lib/onboarding";
 
 export const metadata = { title: "My profile" };
 
-export default async function ProfilePage() {
+export default async function ProfilePage({ searchParams }: { searchParams?: { welcome?: string } }) {
   const supabase = createSupabaseServerClient();
   if (!supabase) redirect("/login");
   const { data: { user } } = await supabase.auth.getUser();
@@ -49,14 +51,28 @@ export default async function ProfilePage() {
   const { data: feedbackRow } = await supabase
     .from("app_feedback").select("profile_id").eq("profile_id", user.id).maybeSingle();
   const askFeedback = !feedbackRow;
+  // Set by Home's one-time redirect for a brand-new member.
+  const ctx: BuilderCtx = { askFeedback, welcome: searchParams?.welcome === "1", email: user.email ?? "" };
 
   if (profile?.account_type === "company") {
-    return <CompanyBuilder userId={user.id} askFeedback={askFeedback} />;
+    return <CompanyBuilder userId={user.id} ctx={ctx} />;
   }
-  return <IndividualBuilder userId={user.id} askFeedback={askFeedback} />;
+  return <IndividualBuilder userId={user.id} ctx={ctx} />;
 }
 
-async function IndividualBuilder({ userId, askFeedback }: { userId: string; askFeedback: boolean }) {
+interface BuilderCtx { askFeedback: boolean; welcome: boolean; email: string }
+
+// Starter banner while the download is locked: the required steps only.
+function starter(p: OnboardingProgress, welcome: boolean, displayName: string | null | undefined) {
+  if (p.minCore) return null;
+  const first = p.kind === "company" ? (displayName ?? "").trim() : (displayName ?? "").trim().split(/\s+/)[0];
+  const heading = welcome
+    ? `Welcome to Sahan${first ? `, ${first}` : ""}. Let's build your ${p.noun}.`
+    : `Unlock your ${p.noun}`;
+  return <StarterSteps heading={heading} noun={p.noun} steps={p.steps.filter((s) => s.required)} />;
+}
+
+async function IndividualBuilder({ userId, ctx }: { userId: string; ctx: BuilderCtx }) {
   const [data, pendingSet] = await Promise.all([
     loadIndividualProfile(userId),
     FEATURES.verification ? loadPendingTargetIds(userId) : Promise.resolve(new Set<string>()),
@@ -89,12 +105,13 @@ async function IndividualBuilder({ userId, askFeedback }: { userId: string; askF
     {
       id: "basics", label: "Basics", done: Boolean(data.basics?.full_name),
       node: <BasicsCard initial={{
-        full_name: data.basics?.full_name ?? "",
+        // New members: prefill from signup so step 1 starts half done.
+        full_name: data.basics?.full_name || data.profile?.display_name || "",
         headline: data.basics?.headline ?? "",
         summary: data.basics?.summary ?? "",
         location: data.basics?.location ?? "",
         phone: data.basics?.phone ?? "",
-        email: data.basics?.email ?? "",
+        email: data.basics?.email || (data.basics ? "" : ctx.email),
         photo_url: data.basics?.photo_url ?? "",
         hasRow: Boolean(data.basics),
       }} />,
@@ -138,6 +155,7 @@ async function IndividualBuilder({ userId, askFeedback }: { userId: string; askF
     <ProfileWorkspace
       eyebrow="Your profile"
       title="Profile builder"
+      intro={starter(individualProgress(data), ctx.welcome, data.profile?.display_name)}
       publicHref={`/u/${userId}`}
       businessCard
       sections={sections}
@@ -148,14 +166,14 @@ async function IndividualBuilder({ userId, askFeedback }: { userId: string; askF
       }}
       rail={
         <CompletenessRail percent={percent} todos={todos} hasMinimumCore={minCore} verifiedCount={verifiedCount}>
-          {askFeedback && minCore && <FeedbackCard />}
+          {ctx.askFeedback && minCore && <FeedbackCard />}
         </CompletenessRail>
       }
     />
   );
 }
 
-async function CompanyBuilder({ userId, askFeedback }: { userId: string; askFeedback: boolean }) {
+async function CompanyBuilder({ userId, ctx }: { userId: string; ctx: BuilderCtx }) {
   const [data, pendingSet] = await Promise.all([
     loadCompanyProfile(userId),
     FEATURES.verification ? loadPendingTargetIds(userId) : Promise.resolve(new Set<string>()),
@@ -185,7 +203,7 @@ async function CompanyBuilder({ userId, askFeedback }: { userId: string; askFeed
     {
       id: "basics", label: "Basics", done: Boolean(data.basics?.company_name),
       node: <CompanyBasicsCard initial={{
-        company_name: data.basics?.company_name ?? "",
+        company_name: data.basics?.company_name || data.profile?.display_name || "",
         logo_url: data.basics?.logo_url ?? "",
         tagline: data.basics?.tagline ?? "",
         cover_statement: data.basics?.cover_statement ?? "",
@@ -198,7 +216,7 @@ async function CompanyBuilder({ userId, askFeedback }: { userId: string; askFeed
         countries_count: data.basics?.countries_count != null ? String(data.basics.countries_count) : "",
         projects_count: data.basics?.projects_count != null ? String(data.basics.projects_count) : "",
         website: data.basics?.website ?? "",
-        email: data.basics?.email ?? "",
+        email: data.basics?.email || (data.basics ? "" : ctx.email),
         phone: data.basics?.phone ?? "",
         hasRow: Boolean(data.basics),
       }} />,
@@ -258,6 +276,7 @@ async function CompanyBuilder({ userId, askFeedback }: { userId: string; askFeed
     <ProfileWorkspace
       eyebrow="Your company"
       title="Company profile"
+      intro={starter(companyProgress(data), ctx.welcome, data.profile?.display_name)}
       publicHref={`/u/${userId}`}
       businessCard
       sections={sections}
@@ -268,7 +287,7 @@ async function CompanyBuilder({ userId, askFeedback }: { userId: string; askFeed
       }}
       rail={
         <CompanyCompletenessRail percent={percent} todos={todos} hasMinimumCore={minCore} verifiedCount={verifiedCount}>
-          {askFeedback && minCore && <FeedbackCard />}
+          {ctx.askFeedback && minCore && <FeedbackCard />}
         </CompanyCompletenessRail>
       }
     />

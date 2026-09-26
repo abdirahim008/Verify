@@ -22,8 +22,10 @@ export interface WorkspaceSection {
 // scrolls to that section; a scroll-spy highlights whichever section is
 // currently in view.
 export function ProfileWorkspace({
-  eyebrow, title, publicHref, sections, rail, minCore, businessCard,
+  eyebrow, title, publicHref, sections, rail, minCore, businessCard, intro,
 }: {
+  /** Optional banner above the first section (the starter steps). */
+  intro?: React.ReactNode;
   eyebrow: string;
   title: string;
   publicHref: string;
@@ -124,6 +126,7 @@ export function ProfileWorkspace({
 
       {/* ── Centre: every section stacked ────────────────────────────── */}
       <main className="min-w-0 space-y-4">
+        {intro}
         <WorkspaceMode.Provider value={true}>
           {sections.map((s) => (
             <div key={s.id} id={`sec-${s.id}`} data-sec={s.id} className="scroll-mt-6">{s.node}</div>

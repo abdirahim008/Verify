@@ -10,6 +10,9 @@ import { HeroJobsSlider, type SlideJob } from "@/components/home/HeroJobsSlider"
 import { CommunityShowcase } from "@/components/home/CommunityShowcase";
 import { loadShowcaseMembers } from "@/lib/showcase";
 import { labelFor } from "@/lib/jobs/sectors";
+import { loadOnboardingProgress } from "@/lib/onboarding";
+import { sendOnboardingEmail } from "@/lib/onboarding-emails";
+import { ProgressCard } from "@/components/home/ProgressCard";
 
 export const metadata = { title: "Home" };
 
@@ -21,9 +24,29 @@ export default async function HomePage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("account_type, display_name, career_categories")
+    .select("account_type, display_name, career_categories, welcomed_at")
     .eq("id", user.id)
     .maybeSingle();
+
+  const progress = await loadOnboardingProgress(user.id, profile?.account_type);
+
+  // First visit with an empty profile: take the member straight into the
+  // builder, once. Nearly everyone who builds a profile does it in their
+  // first hour, and Home (a jobs feed) never told them to. welcomed_at makes
+  // it one-shot, so clicking back to Home afterwards isn't bounced again.
+  if (profile && !profile.welcomed_at && !progress.started) {
+    const { data: marked } = await supabase
+      .from("profiles").update({ welcomed_at: new Date().toISOString() })
+      .eq("id", user.id).select("id");
+    // Only redirect when the marker stuck, so a failed write can't loop.
+    if (marked?.length) {
+      await Promise.race([
+        sendOnboardingEmail(user.id, "welcome").catch(() => null),
+        new Promise((res) => setTimeout(res, 3500)),
+      ]);
+      redirect("/profile?welcome=1");
+    }
+  }
 
   const isCompany = profile?.account_type === "company";
   const careerCategories: string[] = profile?.career_categories ?? [];
@@ -93,8 +116,12 @@ export default async function HomePage() {
         </div>
       )}
 
-      {/* Only nudge: interest selection (it personalises the slideshow). */}
-      {noInterests && (
+      {/* Finish-your-profile card, until the profile is complete. */}
+      <ProgressCard progress={progress} />
+
+      {/* Interest selection personalises the slideshow. Held back while the
+          CV is still locked, so the progress card is the one clear ask. */}
+      {noInterests && progress.minCore && (
         <div>
           <Link href="/profile"><Button kind="primary" size="md">Pick your career interests</Button></Link>
         </div>

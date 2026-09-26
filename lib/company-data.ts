@@ -1,7 +1,9 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export async function loadCompanyProfile(userId: string) {
-  const supabase = createSupabaseServerClient();
+// Pass `client` only from server jobs with no session (the onboarding-email
+// cron's service client); otherwise RLS scopes reads to the caller.
+export async function loadCompanyProfile(userId: string, client?: ReturnType<typeof createSupabaseServerClient>) {
+  const supabase = client ?? createSupabaseServerClient();
   if (!supabase) {
     return {
       profile: null, basics: null,
