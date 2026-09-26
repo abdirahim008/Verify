@@ -83,3 +83,41 @@ function cap(s: string) {
 export function contactParts(d: { location: string; phone: string; email: string }): string[] {
   return [d.location, d.phone, d.email].filter(Boolean);
 }
+
+// Encode text as a CSS string body using hex escapes for everything except
+// letters, digits and spaces. The name is user input embedded in a <style>
+// block, so this must be airtight: no quote can close the string, and no
+// "</style>" can close the tag.
+function cssText(s: string): string {
+  let out = "";
+  for (const ch of s) {
+    out += /[A-Za-z0-9 ]/.test(ch) ? ch : `\\${ch.codePointAt(0)!.toString(16).padStart(6, "0")}`;
+  }
+  return out;
+}
+
+// Running footer — "Name · Page 2 of 3" in the bottom page margin of every
+// page except the first (a one-page CV gets none). Continuation pages of a
+// printed or scanned CV are otherwise anonymous. Uses CSS page-margin boxes
+// (Chromium 131+); older engines ignore the rules and simply print no footer.
+export function pageFooterCss(name: string, font: string, color: string = INK.faint): string {
+  return `
+@page {
+  @bottom-center {
+    content: "${cssText(`${name}  ·  Page `)}" counter(page) "${cssText(" of ")}" counter(pages);
+    font-family: ${font}; font-size: 8pt; letter-spacing: 0.04em; color: ${color};
+  }
+}
+@page :first { @bottom-center { content: none; } }
+`;
+}
+
+// Page-break behaviour for experience entries. A whole role used to be
+// unbreakable, so any role that didn't fit jumped to the next page and left
+// a large blank band behind. Instead: the role's heading (.exp-head) stays
+// glued to its first two bullets, and the rest may continue overleaf.
+export const EXP_BREAKS = `
+.exp-head { break-inside: avoid; break-after: avoid; page-break-after: avoid; }
+.bullets li { break-inside: avoid; }
+.bullets li:first-child { break-after: avoid; page-break-after: avoid; }
+`;

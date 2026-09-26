@@ -1,6 +1,6 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
-import { INK, VerifiedMark, toBullets, splitLang, contactParts } from "./_inkShared";
+import { INK, VerifiedMark, toBullets, splitLang, contactParts, pageFooterCss, EXP_BREAKS } from "./_inkShared";
 
 // CV 1 — The Classic. White page, single column, centred masthead.
 // Cormorant Garamond (display) + EB Garamond (body). Monochrome ink,
@@ -16,7 +16,7 @@ export function ClassicCV({ data }: { data: CVData; theme?: Record<string, strin
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
+      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + pageFooterCss(fullName, BODY) }} />
       <div className="cv">
         <header style={{ textAlign: "center" }}>
           <h1 className="name">{fullName}</h1>
@@ -30,38 +30,40 @@ export function ClassicCV({ data }: { data: CVData; theme?: Record<string, strin
 
         {summary && <p className="summary">{summary}</p>}
 
+        {experiences.length > 0 && (
+          <section className="sec">
+            <h2 className="h2">Experience</h2>
+            {experiences.map((e, i) => (
+              <div key={i} className="exp">
+                <div className="exp-head">
+                  <div className="row">
+                    <div className="exp-title">{e.title}</div>
+                    {e.dateRange && <div className="dates">{e.dateRange}</div>}
+                  </div>
+                  <div className="exp-org">
+                    {[e.organization, e.location].filter(Boolean).join(" · ")}
+                    {e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}
+                  </div>
+                </div>
+                <Bullets text={e.description} />
+              </div>
+            ))}
+          </section>
+        )}
+
         {educations.length > 0 && (
           <section className="sec">
             <h2 className="h2">Education</h2>
             {educations.map((e, i) => (
               <div key={i} className="edu-row">
                 <div>
-                  <div className="edu-qual">{e.qualification}</div>
+                  <div className="edu-qual">{e.title}</div>
                   <div className="edu-inst">
-                    {e.institution}{e.field ? ` · ${e.field}` : ""}
+                    {e.institution}
                     {e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}
                   </div>
                 </div>
                 {e.dateRange && <div className="dates">{e.dateRange}</div>}
-              </div>
-            ))}
-          </section>
-        )}
-
-        {experiences.length > 0 && (
-          <section className="sec">
-            <h2 className="h2">Experience</h2>
-            {experiences.map((e, i) => (
-              <div key={i} className="exp">
-                <div className="row">
-                  <div className="exp-title">{e.title}</div>
-                  {e.dateRange && <div className="dates">{e.dateRange}</div>}
-                </div>
-                <div className="exp-org">
-                  {[e.organization, e.location].filter(Boolean).join(" · ")}
-                  {e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}
-                </div>
-                <Bullets text={e.description} />
               </div>
             ))}
           </section>
@@ -150,13 +152,15 @@ const styles = `
 .role { margin-top: 8px; font-style: italic; font-size: 16px; color: ${INK.muted2}; letter-spacing: 0.04em; }
 .rule { height: 1.5px; background: ${INK.ink}; margin: 16px 0 8px; }
 .contact { text-align: center; font-size: 12px; letter-spacing: 0.04em; color: ${INK.muted}; }
-.summary { margin: 16px auto 20px; max-width: 560px; font-size: 14.5px; line-height: 1.55; text-align: center; color: ${INK.body}; font-style: italic; }
+/* Left-aligned roman: a long centred italic paragraph is hard to read. The
+   masthead above stays centred. */
+.summary { margin: 18px 0 20px; font-size: 14.5px; line-height: 1.6; color: ${INK.body}; }
 
 .sec { margin-bottom: 15px; }
 .h2 { margin: 0 0 12px; font-family: ${BODY}; font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.24em; color: ${INK.ink}; border-bottom: 1px solid ${INK.ink}; padding-bottom: 6px; break-after: avoid; page-break-after: avoid; }
 .refs > div { break-inside: avoid; }
 
-.exp { margin-bottom: 13px; break-inside: avoid; }
+.exp { margin-bottom: 13px; }
 .row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
 .exp-title { font-weight: 600; font-size: 15.5px; color: ${INK.ink}; }
 .dates { font-size: 12px; color: ${INK.faint}; letter-spacing: 0.05em; white-space: nowrap; flex: none; }
@@ -172,7 +176,7 @@ const styles = `
 .edu-qual { font-weight: 600; font-size: 14.5px; color: ${INK.ink}; }
 .edu-inst { font-style: italic; font-size: 13.5px; color: ${INK.muted}; margin-top: 1px; }
 
-.twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 34px; margin-bottom: 15px; }
+.twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 34px; margin-bottom: 15px; break-inside: avoid; }
 .skills { font-size: 13.5px; line-height: 1.85; color: ${INK.body}; }
 .langs { font-size: 13.5px; line-height: 1.85; color: ${INK.ink}; }
 .faint { color: ${INK.faint}; }

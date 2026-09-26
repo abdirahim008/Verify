@@ -1,10 +1,15 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
-import { INK, VerifiedMark, initials, toBullets, splitLang } from "./_inkShared";
+import { INK, VerifiedMark, initials, toBullets, splitLang, pageFooterCss, EXP_BREAKS } from "./_inkShared";
 
 // CV 3 — The Editorial. White page, right sidebar with a tall photo panel.
 // Spectral (display) + Public Sans (body). Ported from the Claude Design
 // handoff.
+//
+// The sidebar is a right float, not a flex column: page 1 reads as two
+// columns, and once the sidebar's content ends the main content flows full
+// width — continuation pages no longer carry an empty column. Main blocks
+// are flow-root so they sit beside the float cleanly and widen past it.
 
 const DISPLAY = `"Spectral", Georgia, serif`;
 const BODY = `"Public Sans", system-ui, sans-serif`;
@@ -16,63 +21,8 @@ export function EditorialCV({ data }: { data: CVData; theme?: Record<string, str
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
+      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + pageFooterCss(fullName, BODY) }} />
       <div className="page">
-        <main className="mn">
-          <header className="mn-head">
-            <h1 className="name">{fullName}</h1>
-            {headline && <div className="role">{headline}</div>}
-          </header>
-
-          {summary && <p className="summary">{summary}</p>}
-
-          {educations.length > 0 && (
-            <section className="sec">
-              <div className="h2">Education</div>
-              {educations.map((e, i) => (
-                <div key={i} className="edu-row">
-                  <div>
-                    <div className="edu-qual">{e.qualification}</div>
-                    <div className="edu-inst">{e.institution}{e.field ? ` · ${e.field}` : ""}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
-                  </div>
-                  {e.dateRange && <div className="dates">{e.dateRange}</div>}
-                </div>
-              ))}
-            </section>
-          )}
-
-          {experiences.length > 0 && (
-            <section className="sec">
-              <div className="h2">Experience</div>
-              {experiences.map((e, i) => (
-                <div key={i} className="exp">
-                  <div className="row">
-                    <div className="exp-title">{e.title}</div>
-                    {e.dateRange && <div className="dates">{e.dateRange}</div>}
-                  </div>
-                  <div className="exp-org">{[e.organization, e.location].filter(Boolean).join(", ")}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
-                  <Bullets text={e.description} />
-                </div>
-              ))}
-            </section>
-          )}
-
-          {referees.length > 0 && (
-            <section className="sec">
-              <div className="h2">Referees</div>
-              <div className="refs">
-                {referees.map((r, i) => (
-                  <div key={i}>
-                    <div className="ref-name">{r.name}</div>
-                    {(r.position || r.organization) && <div className="ref-role">{[r.position, r.organization].filter(Boolean).join(", ")}</div>}
-                    {(r.email || r.phone) && <div className="ref-contact">{r.email}{r.email && r.phone && <br />}{r.phone}</div>}
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-        </main>
-
         <aside className="sb">
           {photoUrl
             // eslint-disable-next-line @next/next/no-img-element
@@ -119,6 +69,61 @@ export function EditorialCV({ data }: { data: CVData; theme?: Record<string, str
             </>
           )}
         </aside>
+
+        <header className="mn-head fr">
+          <h1 className="name">{fullName}</h1>
+          {headline && <div className="role">{headline}</div>}
+        </header>
+
+        {summary && <p className="summary fr">{summary}</p>}
+
+        {experiences.length > 0 && (
+          <section className="sec">
+            <div className="h2 fr">Experience</div>
+            {experiences.map((e, i) => (
+              <div key={i} className="exp fr">
+                <div className="exp-head">
+                  <div className="row">
+                    <div className="exp-title">{e.title}</div>
+                    {e.dateRange && <div className="dates">{e.dateRange}</div>}
+                  </div>
+                  <div className="exp-org">{[e.organization, e.location].filter(Boolean).join(", ")}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
+                </div>
+                <Bullets text={e.description} />
+              </div>
+            ))}
+          </section>
+        )}
+
+        {educations.length > 0 && (
+          <section className="sec">
+            <div className="h2 fr">Education</div>
+            {educations.map((e, i) => (
+              <div key={i} className="edu-row">
+                <div>
+                  <div className="edu-qual">{e.title}</div>
+                  <div className="edu-inst">{e.institution}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
+                </div>
+                {e.dateRange && <div className="dates">{e.dateRange}</div>}
+              </div>
+            ))}
+          </section>
+        )}
+
+        {referees.length > 0 && (
+          <section className="sec">
+            <div className="h2 fr">Referees</div>
+            <div className="refs">
+              {referees.map((r, i) => (
+                <div key={i}>
+                  <div className="ref-name">{r.name}</div>
+                  {(r.position || r.organization) && <div className="ref-role">{[r.position, r.organization].filter(Boolean).join(", ")}</div>}
+                  {(r.email || r.phone) && <div className="ref-contact">{r.email}{r.email && r.phone && <br />}{r.phone}</div>}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </>
   );
@@ -137,9 +142,9 @@ function Bullets({ text }: { text: string }) {
 
 const styles = `
 @page { size: A4; margin: 14mm 0; }
-.page { min-height: 269mm; display: flex; color: ${INK.body}; font-family: ${BODY}; -webkit-font-smoothing: antialiased; }
+.page { display: flow-root; padding: 0 40px; color: ${INK.body}; font-family: ${BODY}; -webkit-font-smoothing: antialiased; }
+.fr { display: flow-root; }
 
-.mn { flex: 1; padding: 0 40px; min-width: 0; }
 .mn-head { margin-bottom: 6px; }
 .name { margin: 0; font-family: ${DISPLAY}; font-weight: 500; font-size: 45px; letter-spacing: 0.005em; color: ${INK.ink}; line-height: 1.02; }
 .role { margin-top: 6px; font-family: ${DISPLAY}; font-style: italic; font-size: 18px; color: ${INK.muted}; }
@@ -148,15 +153,17 @@ const styles = `
 .sec { margin-top: 26px; }
 .h2 { font-family: ${DISPLAY}; font-weight: 600; font-size: 17px; color: ${INK.ink}; border-bottom: 1px solid ${INK.ink}; padding-bottom: 5px; margin-bottom: 14px; break-after: avoid; page-break-after: avoid; }
 
-.exp { margin-bottom: 16px; break-inside: avoid; }
+.exp { margin-bottom: 16px; }
 .row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
 .exp-title { font-weight: 700; font-size: 14px; color: ${INK.ink}; }
 .dates { font-size: 11.5px; font-weight: 500; color: ${INK.faint}; letter-spacing: 0.03em; white-space: nowrap; flex: none; }
 .exp-org { font-family: ${DISPLAY}; font-style: italic; font-size: 13.5px; color: ${INK.muted}; margin-top: 2px; }
 .bullets { margin: 9px 0 0; padding: 0; list-style: none; }
-.bullets li { display: flex; gap: 11px; font-size: 12.5px; line-height: 1.55; color: ${INK.body}; margin-bottom: 5px; }
+/* Whole-pixel line-height and marker size so every bar in a list lands on
+   the same sub-pixel phase and renders at the same weight. */
+.bullets li { display: flex; gap: 11px; font-size: 12.5px; line-height: 20px; color: ${INK.body}; margin-bottom: 5px; }
 .bullets li:last-child { margin-bottom: 0; }
-.bar { flex: none; width: 1.5px; height: 13px; background: ${INK.ink}; margin-top: 3px; }
+.bar { flex: none; width: 2px; height: 14px; background: ${INK.ink}; margin-top: 3px; }
 .single { margin: 9px 0 0; font-size: 12.5px; line-height: 1.55; color: ${INK.body}; }
 
 .edu-row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; margin-bottom: 11px; break-inside: avoid; }
@@ -170,7 +177,7 @@ const styles = `
 .ref-role { font-family: ${DISPLAY}; font-style: italic; font-size: 12.5px; color: ${INK.muted}; }
 .ref-contact { font-size: 11.5px; color: ${INK.faint}; margin-top: 3px; }
 
-.sb { width: 230px; flex: none; border-left: 1px solid ${INK.hair}; padding: 0 30px; }
+.sb { float: right; width: 176px; padding-left: 26px; margin-left: 32px; border-left: 1px solid ${INK.hair}; padding-bottom: 4px; }
 .sb-photo { width: 100%; height: 200px; object-fit: cover; border: 1px solid #c4bfb6; margin-bottom: 26px; display: block; }
 .sb-mono { width: 100%; height: 190px; border: 1px solid #c4bfb6; display: flex; align-items: center; justify-content: center; margin-bottom: 26px; font-family: ${DISPLAY}; font-weight: 500; font-size: 44px; letter-spacing: 0.04em; color: ${INK.ink}; }
 .sb-h { font-family: ${DISPLAY}; font-weight: 600; font-size: 14.5px; color: ${INK.ink}; border-bottom: 1px solid ${INK.ink}; padding-bottom: 5px; margin-bottom: 11px; break-after: avoid; }

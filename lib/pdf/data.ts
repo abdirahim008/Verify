@@ -19,9 +19,33 @@ export interface CVEducation {
   qualification: string;
   institution: string;
   field: string;
+  /** The degree as it should lead the entry: "Master's degree in Civil
+   *  Engineering", "BSc Civil Engineering", or just "Diploma". */
+  title: string;
   dateRange: string;
   verified: boolean;
   verifiedNote: string;
+}
+
+// Words that mean the field of study already names the qualification, e.g.
+// "Bsc Civil Engineering" or "Mini Diploma in Public Health".
+const QUAL_IN_FIELD = /\b(b\.?\s?sc|m\.?\s?sc|b\.?\s?eng|m\.?\s?eng|b\.?\s?ed|m\.?\s?ed|b\.?\s?a|m\.?\s?a|phd|mba|llb|llm|bachelor|master|diploma|certificate|degree|doctorate)\b/i;
+const ABBREV: Record<string, string> = {
+  bsc: "BSc", msc: "MSc", beng: "BEng", meng: "MEng", bed: "BEd", med: "MEd",
+  ba: "BA", ma: "MA", phd: "PhD", mba: "MBA", llb: "LLB", llm: "LLM",
+};
+
+// Build the line that leads an education entry. The subject is what a
+// recruiter scans for, so it belongs in the heading, not a grey sub-line.
+export function degreeTitle(qualification: string, field: string): string {
+  const f = field.trim().replace(/[.,;:]+$/, "");
+  if (!/\p{L}/u.test(f)) return qualification;              // "", "2"
+  if (QUAL_IN_FIELD.test(f)) {
+    // Normalise a leading abbreviation's case: "Bsc Civil" → "BSc Civil".
+    return f.replace(/^([a-z.]+)(?=\s|$)/i, (w) => ABBREV[w.replace(/\./g, "").toLowerCase()] ?? w);
+  }
+  if (/^high school$/i.test(qualification)) return `${qualification} · ${f}`;
+  return `${qualification} in ${f}`;
 }
 export interface CVCertification {
   name: string; issuer: string; year: string;
@@ -94,6 +118,10 @@ export async function loadCVData(userId: string): Promise<CVData | null> {
       qualification: QUALIFICATION_LABELS[e.qualification_level as QualLevel] ?? e.qualification_level,
       institution: e.institution,
       field: e.field_of_study ?? "",
+      title: degreeTitle(
+        QUALIFICATION_LABELS[e.qualification_level as QualLevel] ?? e.qualification_level,
+        e.field_of_study ?? "",
+      ),
       dateRange: yearRange(e.start_year, e.end_year),
       verified: FEATURES.verification && !!e.verified,
       verifiedNote: e.verified_note ?? "",

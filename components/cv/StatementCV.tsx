@@ -1,6 +1,6 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
-import { INK, VerifiedMark, initials, toBullets } from "./_inkShared";
+import { INK, VerifiedMark, initials, toBullets, pageFooterCss, EXP_BREAKS } from "./_inkShared";
 
 // CV 5 — The Statement. White page, bordered masthead with photo, then
 // label/content rows. Bodoni Moda (display) + Karla (body). Ported from
@@ -16,7 +16,7 @@ export function StatementCV({ data }: { data: CVData; theme?: Record<string, str
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
+      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + pageFooterCss(fullName, BODY) }} />
       <div className="page">
         <header className="masthead">
           <div className="meta">
@@ -44,30 +44,32 @@ export function StatementCV({ data }: { data: CVData; theme?: Record<string, str
             </Row>
           )}
 
-          {educations.length > 0 && (
-            <Row label="Education" last={false}>
-              {educations.map((e, i) => (
-                <div key={i} className="edu-row">
-                  <div>
-                    <div className="edu-qual">{e.qualification}</div>
-                    <div className="edu-inst">{e.institution}{e.field ? ` · ${e.field}` : ""}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
+          {experiences.length > 0 && (
+            <Row label="Experience" last={false}>
+              {experiences.map((e, i) => (
+                <div key={i} className="exp">
+                  <div className="exp-head">
+                    <div className="row">
+                      <div className="exp-title">{e.title}</div>
+                      {e.dateRange && <div className="dates">{e.dateRange}</div>}
+                    </div>
+                    <div className="exp-org">{[e.organization, e.location].filter(Boolean).join(", ")}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
                   </div>
-                  {e.dateRange && <div className="dates">{e.dateRange}</div>}
+                  <Bullets text={e.description} />
                 </div>
               ))}
             </Row>
           )}
 
-          {experiences.length > 0 && (
-            <Row label="Experience" last={false}>
-              {experiences.map((e, i) => (
-                <div key={i} className="exp">
-                  <div className="row">
-                    <div className="exp-title">{e.title}</div>
-                    {e.dateRange && <div className="dates">{e.dateRange}</div>}
+          {educations.length > 0 && (
+            <Row label="Education" last={false}>
+              {educations.map((e, i) => (
+                <div key={i} className="edu-row">
+                  <div>
+                    <div className="edu-qual">{e.title}</div>
+                    <div className="edu-inst">{e.institution}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
                   </div>
-                  <div className="exp-org">{[e.organization, e.location].filter(Boolean).join(", ")}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
-                  <Bullets text={e.description} />
+                  {e.dateRange && <div className="dates">{e.dateRange}</div>}
                 </div>
               ))}
             </Row>
@@ -160,16 +162,17 @@ const styles = `
 .srow-content { flex: 1; min-width: 0; }
 .summary { margin: 0; font-size: 12.5px; line-height: 1.65; color: ${INK.body}; }
 
-.exp { margin-bottom: 11px; break-inside: avoid; }
+.exp { margin-bottom: 11px; }
 .exp:last-child { margin-bottom: 0; }
 .row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
 .exp-title { font-weight: 700; font-size: 14px; color: ${INK.ink}; }
 .dates { font-size: 11px; font-weight: 500; color: ${INK.faint}; letter-spacing: 0.04em; white-space: nowrap; flex: none; }
 .exp-org { font-size: 12px; color: ${INK.muted}; margin-top: 1px; }
 .bullets { margin: 8px 0 0; padding: 0; list-style: none; }
-.bullets li { display: flex; gap: 11px; font-size: 12px; line-height: 1.55; color: ${INK.body}; margin-bottom: 5px; }
+/* Whole-pixel line-height so every marker sits on the same sub-pixel. */
+.bullets li { display: flex; gap: 11px; font-size: 12px; line-height: 19px; color: ${INK.body}; margin-bottom: 5px; }
 .bullets li:last-child { margin-bottom: 0; }
-.dot { flex: none; width: 4px; height: 4px; border: 1px solid ${INK.ink}; border-radius: 50%; margin-top: 6px; }
+.dot { flex: none; width: 4px; height: 4px; border: 1px solid ${INK.ink}; border-radius: 50%; margin-top: 7px; }
 .single { margin: 8px 0 0; font-size: 12px; line-height: 1.55; color: ${INK.body}; }
 
 .edu-row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; margin-bottom: 10px; break-inside: avoid; }

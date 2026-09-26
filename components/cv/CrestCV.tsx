@@ -1,6 +1,6 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
-import { INK, VerifiedMark, initials, toBullets, splitLang } from "./_inkShared";
+import { INK, VerifiedMark, initials, toBullets, splitLang, pageFooterCss, EXP_BREAKS } from "./_inkShared";
 
 // CV 6 — The Crest. White body under an adjustable colour header band.
 // Marcellus (display) + Hanken Grotesk (body). The band's on-colour text
@@ -32,7 +32,7 @@ export function CrestCV({ data, theme }: { data: CVData; theme?: Record<string, 
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles(C) }} />
+      <style dangerouslySetInnerHTML={{ __html: styles(C) + EXP_BREAKS + pageFooterCss(fullName, BODY) }} />
       <div className="page">
         <header className="band" data-band>
           <div className="band-top">
@@ -56,32 +56,34 @@ export function CrestCV({ data, theme }: { data: CVData; theme?: Record<string, 
         <div className="body">
           {summary && <p className="summary">{summary}</p>}
 
+          {experiences.length > 0 && (
+            <section className="sec">
+              <div className="h2">Experience</div>
+              {experiences.map((e, i) => (
+                <div key={i} className="exp">
+                  <div className="exp-head">
+                    <div className="row">
+                      <div className="exp-title">{e.title}</div>
+                      {e.dateRange && <div className="dates">{e.dateRange}</div>}
+                    </div>
+                    <div className="exp-org">{[e.organization, e.location].filter(Boolean).join(" · ")}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
+                  </div>
+                  <Bullets text={e.description} />
+                </div>
+              ))}
+            </section>
+          )}
+
           {educations.length > 0 && (
             <section className="sec">
               <div className="h2">Education</div>
               {educations.map((e, i) => (
                 <div key={i} className="edu-row">
                   <div>
-                    <div className="edu-qual">{e.qualification}</div>
-                    <div className="edu-inst">{e.institution}{e.field ? ` · ${e.field}` : ""}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
+                    <div className="edu-qual">{e.title}</div>
+                    <div className="edu-inst">{e.institution}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
                   </div>
                   {e.dateRange && <div className="dates">{e.dateRange}</div>}
-                </div>
-              ))}
-            </section>
-          )}
-
-          {experiences.length > 0 && (
-            <section className="sec">
-              <div className="h2">Experience</div>
-              {experiences.map((e, i) => (
-                <div key={i} className="exp">
-                  <div className="row">
-                    <div className="exp-title">{e.title}</div>
-                    {e.dateRange && <div className="dates">{e.dateRange}</div>}
-                  </div>
-                  <div className="exp-org">{[e.organization, e.location].filter(Boolean).join(" · ")}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
-                  <Bullets text={e.description} />
                 </div>
               ))}
             </section>
@@ -186,15 +188,17 @@ const styles = (C: ReturnType<typeof bandColors>) => `
 .h2 { font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.2em; color: ${INK.ink}; border-bottom: 1px solid ${INK.ink}; padding-bottom: 6px; margin-bottom: 13px; break-after: avoid; page-break-after: avoid; }
 .refs > div { break-inside: avoid; }
 
-.exp { margin-bottom: 11px; break-inside: avoid; }
+.exp { margin-bottom: 11px; }
 .row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
 .exp-title { font-weight: 700; font-size: 14.5px; color: ${INK.ink}; }
 .dates { font-size: 11.5px; font-weight: 500; color: ${INK.faint}; letter-spacing: 0.04em; white-space: nowrap; flex: none; }
 .exp-org { font-size: 12.5px; color: ${INK.muted}; margin-top: 2px; font-weight: 500; }
 .bullets { margin: 8px 0 0; padding: 0; list-style: none; }
-.bullets li { display: flex; gap: 10px; font-size: 13px; line-height: 1.5; color: ${INK.body}; margin-bottom: 4px; }
+/* Whole-pixel line-height and marker so every dash renders at one weight
+   (1.5 × 13px lines put each dash on a different sub-pixel). */
+.bullets li { display: flex; gap: 10px; font-size: 13px; line-height: 20px; color: ${INK.body}; margin-bottom: 4px; }
 .bullets li:last-child { margin-bottom: 0; }
-.tick { flex: none; width: 8px; height: 1.5px; background: ${INK.ink}; margin-top: 9px; }
+.tick { flex: none; width: 8px; height: 2px; background: ${INK.ink}; margin-top: 9px; }
 .single { margin: 8px 0 0; font-size: 13px; line-height: 1.5; color: ${INK.body}; }
 
 .edu-row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; margin-bottom: 9px; break-inside: avoid; }
@@ -202,7 +206,7 @@ const styles = (C: ReturnType<typeof bandColors>) => `
 .edu-qual { font-weight: 700; font-size: 13.5px; color: ${INK.ink}; }
 .edu-inst { font-size: 12.5px; color: ${INK.muted}; }
 
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; margin-bottom: 16px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; margin-bottom: 16px; break-inside: avoid; }
 .sk-list { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: ${INK.body}; }
 .langs { display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; }
 .lang { display: flex; justify-content: space-between; gap: 8px; }

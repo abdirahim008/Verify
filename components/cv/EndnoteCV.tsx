@@ -1,6 +1,6 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
-import { INK, VerifiedMark, toBullets, splitLang } from "./_inkShared";
+import { INK, VerifiedMark, toBullets, splitLang, pageFooterCss, EXP_BREAKS } from "./_inkShared";
 
 // CV 7 — The Endnote. White page, single-column experience over a two-up
 // lower grid, closing with referees. Archivo (display) + Newsreader (body).
@@ -16,7 +16,7 @@ export function EndnoteCV({ data }: { data: CVData; theme?: Record<string, strin
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
+      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + pageFooterCss(fullName, BODY) }} />
       <div className="page">
         <header className="hd">
           <div className="hd-row">
@@ -34,29 +34,31 @@ export function EndnoteCV({ data }: { data: CVData; theme?: Record<string, strin
         <div className="body">
           {summary && <p className="summary">{summary}</p>}
 
-          {educations.length > 0 && (
-            <section className="sec">
-              <div className="h2">Education</div>
-              {educations.map((e, i) => (
-                <div key={i} className="edu">
-                  <div className="edu-qual">{e.qualification}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
-                  <div className="edu-inst">{[e.institution, e.field, e.dateRange].filter(Boolean).join(" · ")}</div>
-                </div>
-              ))}
-            </section>
-          )}
-
           {experiences.length > 0 && (
             <section className="sec">
               <div className="h2">Experience</div>
               {experiences.map((e, i) => (
                 <div key={i} className="exp">
-                  <div className="row">
-                    <div className="exp-title">{e.title}</div>
-                    {e.dateRange && <div className="dates">{e.dateRange}</div>}
+                  <div className="exp-head">
+                    <div className="row">
+                      <div className="exp-title">{e.title}</div>
+                      {e.dateRange && <div className="dates">{e.dateRange}</div>}
+                    </div>
+                    <div className="exp-org">{[e.organization, e.location].filter(Boolean).join(", ")}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
                   </div>
-                  <div className="exp-org">{[e.organization, e.location].filter(Boolean).join(", ")}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
                   <Bullets text={e.description} />
+                </div>
+              ))}
+            </section>
+          )}
+
+          {educations.length > 0 && (
+            <section className="sec">
+              <div className="h2">Education</div>
+              {educations.map((e, i) => (
+                <div key={i} className="edu">
+                  <div className="edu-qual">{e.title}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
+                  <div className="edu-inst">{[e.institution, e.dateRange].filter(Boolean).join(" · ")}</div>
                 </div>
               ))}
             </section>
@@ -143,18 +145,20 @@ const styles = `
 .sec { margin-bottom: 18px; }
 .h2 { font-family: ${DISPLAY}; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.2em; color: ${INK.ink}; border-bottom: 1px solid ${INK.ink}; padding-bottom: 6px; margin-bottom: 13px; break-after: avoid; page-break-after: avoid; }
 
-.exp { margin-bottom: 13px; break-inside: avoid; }
+.exp { margin-bottom: 13px; }
 .row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
 .exp-title { font-family: ${DISPLAY}; font-weight: 700; font-size: 14.5px; color: ${INK.ink}; }
 .dates { font-family: ${DISPLAY}; font-size: 11.5px; font-weight: 500; color: ${INK.faint}; letter-spacing: 0.03em; white-space: nowrap; flex: none; }
 .exp-org { font-style: italic; font-size: 13.5px; color: ${INK.muted}; margin-top: 2px; }
 .bullets { margin: 8px 0 0; padding: 0; list-style: none; }
-.bullets li { display: flex; gap: 11px; font-size: 13px; line-height: 1.5; color: ${INK.body}; margin-bottom: 4px; }
+/* Whole-pixel line-height so every marker sits on the same sub-pixel. */
+.bullets li { display: flex; gap: 11px; font-size: 13px; line-height: 20px; color: ${INK.body}; margin-bottom: 4px; }
 .bullets li:last-child { margin-bottom: 0; }
-.dot { flex: none; width: 5px; height: 5px; border: 1px solid ${INK.ink}; border-radius: 50%; margin-top: 6px; }
+.dot { flex: none; width: 5px; height: 5px; border: 1px solid ${INK.ink}; border-radius: 50%; margin-top: 7px; }
 .single { margin: 8px 0 0; font-size: 13px; line-height: 1.5; color: ${INK.body}; }
 
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; margin-bottom: 18px; }
+/* Short two-up block: keep it whole so its headings never strand at a page foot. */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; margin-bottom: 18px; break-inside: avoid; }
 .edu { margin-bottom: 9px; break-inside: avoid; }
 .edu-qual { font-family: ${DISPLAY}; font-weight: 700; font-size: 13px; color: ${INK.ink}; }
 .edu-inst { font-style: italic; font-size: 13px; color: ${INK.muted}; }

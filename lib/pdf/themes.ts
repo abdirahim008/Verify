@@ -57,7 +57,9 @@ export const CV_THEMES: Record<string, PdfTheme[]> = {
     { id: "charcoal", label: "Charcoal",  swatch: ["#262626", "#ffffff"], overrides: { accent: "#262626" } },
     { id: "forest",   label: "Forest",    swatch: ["#243d31", "#ffffff"], overrides: { accent: "#243d31" } },
     { id: "burgundy", label: "Burgundy",  swatch: ["#532330", "#ffffff"], overrides: { accent: "#532330" } },
-    { id: "sand",     label: "Sand",      swatch: ["#ece6da", "#16130f"], overrides: { accent: "#ece6da" } },
+    // No "sand": Frame draws its accent as rules and text on white, where a
+    // near-white accent would vanish. (A saved "sand" choice falls back to
+    // the default via resolveThemeOverrides.)
   ],
 };
 
