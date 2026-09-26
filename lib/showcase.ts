@@ -74,12 +74,17 @@ async function loadMembers(mode: "showcase" | "featured", limit: number): Promis
     : svc.from("profiles").select("id, account_type, showcase, created_at")
         .order("created_at", { ascending: false }).limit(300);
 
-  const [profilesRes, indRes, coRes, blockedRes] = await Promise.all([
+  const [profilesRes, indRes, coRes, blockedRes, expRes] = await Promise.all([
     profilesQuery,
     svc.from("individual_details").select("profile_id, full_name, headline, location, photo_url"),
     svc.from("company_details").select("profile_id, company_name, tagline, logo_url, country, sectors"),
     // Own query so a missing 0011 column degrades to "nobody blocked".
     svc.from("profiles").select("id").eq("blocked", true),
+    // Current roles first, then most recent — the first row seen per
+    // profile is its latest role.
+    svc.from("experiences").select("profile_id, title, organization")
+      .order("end_date", { ascending: false, nullsFirst: true })
+      .order("start_date", { ascending: false, nullsFirst: false }),
   ]);
 
   // Before the relevant migration the flag column is missing and the query
@@ -89,6 +94,16 @@ async function loadMembers(mode: "showcase" | "featured", limit: number): Promis
 
   const ind = new Map((indRes.data ?? []).map((r) => [r.profile_id, r]));
   const co = new Map((coRes.data ?? []).map((r) => [r.profile_id, r]));
+
+  // Latest role as a card line ("Title · Organisation") for members who
+  // never filled in a headline — the public profile shows their latest
+  // employer under the name in that case, so the card should too.
+  const latestRole = new Map<string, string>();
+  for (const e of expRes.data ?? []) {
+    if (latestRole.has(e.profile_id)) continue;
+    const role = [e.title, e.organization].map((s) => (s ?? "").trim()).filter(Boolean).join(" · ");
+    if (role) latestRole.set(e.profile_id, role);
+  }
 
   const all: ShowcaseMember[] = [];
   for (const p of profilesRes.data ?? []) {
@@ -107,10 +122,11 @@ async function loadMembers(mode: "showcase" | "featured", limit: number): Promis
       });
     } else {
       const d = ind.get(p.id);
-      if (!d?.full_name || !d.headline) continue;
-      if (containsLink(d.full_name) || containsLink(d.headline)) continue;
+      const line = d?.headline?.trim() || latestRole.get(p.id) || "";
+      if (!d?.full_name || !line) continue;
+      if (containsLink(d.full_name) || containsLink(line)) continue;
       all.push({
-        id: p.id, kind: "individual", name: d.full_name, line: d.headline,
+        id: p.id, kind: "individual", name: d.full_name, line,
         location: d.location ?? "", photoUrl: d.photo_url ?? "",
         initials: memberInitials(d.full_name, "individual"),
       });
