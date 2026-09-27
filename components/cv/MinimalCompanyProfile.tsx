@@ -46,7 +46,9 @@ export function MinimalCompanyProfile({ data, theme }: { data: CompanyData; them
           <div style={{ fontFamily: SERIF, fontWeight: 300, fontSize: sizePx, letterSpacing: "-0.04em", lineHeight: 0.96, color: INK }}>
             {lines.map((l, i) => (
               <span key={i}>
-                {i === lines.length - 1 ? <em style={{ fontStyle: "italic", color: A.accent, fontWeight: 400 }}>{l}.</em> : l}
+                {/* The design ends the name with a full stop; skip it when the
+                    name already ends in punctuation ("Ltd.", "Co!"). */}
+                {i === lines.length - 1 ? <em style={{ fontStyle: "italic", color: A.accent, fontWeight: 400 }}>{/[.!?]$/.test(l) ? l : `${l}.`}</em> : l}
                 <br />
               </span>
             ))}

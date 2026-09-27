@@ -4,7 +4,8 @@ import { Button } from "@/components/Button";
 import { AuthCard } from "@/components/landing/AuthCard";
 import { FeatureShowcase } from "@/components/landing/FeatureShowcase";
 import { FeaturedProfiles } from "@/components/landing/FeaturedProfiles";
-import { CV_TEMPLATES } from "@/components/templates/CvThumbnails";
+import { CV_TEMPLATES } from "@/components/templates/catalog";
+import { TemplatePreview } from "@/components/templates/TemplatePreview";
 import { loadFeaturedMembers, countMembers } from "@/lib/showcase";
 
 // Public marketing landing. Logged-out visitors (and crawlers) land here;
@@ -178,10 +179,10 @@ function Templates() {
         </div>
 
         <div className="mt-9 grid gap-5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
-          {CV_TEMPLATES.map(({ id, name, tagline, Thumb }) => (
+          {CV_TEMPLATES.map(({ id, name, tagline }) => (
             <article key={id} className="rounded-2xl border border-border bg-cream/50 overflow-hidden flex flex-col">
-              <div className="h-48 flex items-center justify-center bg-[#f1ede4]">
-                <div className="drop-shadow-[0_8px_20px_rgba(0,0,0,0.14)] scale-90 sm:scale-100"><Thumb /></div>
+              <div className="flex items-center justify-center bg-[#f1ede4] px-4 py-5 sm:px-6">
+                <TemplatePreview kind="cv" id={id} name={name} className="w-full max-w-[180px]" />
               </div>
               <div className="p-4 flex-1 flex flex-col">
                 <h3 className="font-serif text-[16.5px] tracking-tightish">{name}</h3>

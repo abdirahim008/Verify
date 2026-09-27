@@ -74,11 +74,11 @@ export function TemplateActions({ href, storageKey, templateName, themes, params
         </div>
       )}
 
-      <div className="mt-3 flex gap-2">
-        <Button kind="secondary" size="md" className="flex-1" onClick={() => setPreviewOpen(true)}>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button kind="secondary" size="md" className="flex-1 min-w-[5.5rem]" onClick={() => setPreviewOpen(true)}>
           Preview
         </Button>
-        <a href={`${href}${qs}`} download className="flex-1">
+        <a href={`${href}${qs}`} download className="flex-1 min-w-[5.5rem]">
           <Button kind="primary" size="md" className="w-full">Download</Button>
         </a>
       </div>

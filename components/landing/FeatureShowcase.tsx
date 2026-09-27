@@ -1,10 +1,9 @@
-import { ProfileThumb } from "@/components/templates/CvThumbnails";
-import { WadaniThumb } from "@/components/templates/CompanyThumbnails";
+import { TemplatePreview } from "@/components/templates/TemplatePreview";
 
-// "What you'll create" — faithful, code-drawn mocks of the three things a
-// Sahan account produces, so logged-out visitors see the payoff before they
-// sign up. The CV + company mocks reuse the SAME thumbnail components shown in
-// the in-app download chooser; the business card mock mirrors
+// "What you'll create" — the three things a Sahan account produces, so
+// logged-out visitors see the payoff before they sign up. The CV and company
+// tiles are real template renders with a demo profile (the same previews as
+// the in-app download chooser, tap to zoom); the business card mock mirrors
 // components/cv/BusinessCard.tsx (which is server-only and data-heavy, so it
 // can't render directly here).
 export function FeatureShowcase() {
@@ -21,11 +20,11 @@ export function FeatureShowcase() {
 
         <div className="mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <Tile kind="For individuals" label="An elegant CV" desc="A4, print-clean, in eight editorial templates — download in a tap.">
-            <div className="drop-shadow-[0_12px_28px_rgba(0,0,0,0.16)]"><ProfileThumb /></div>
+            <TemplatePreview kind="cv" id="profile" name="The Profile" className="h-52 w-auto" />
           </Tile>
 
           <Tile kind="For organisations" label="A company profile" desc="Bid-ready cover, mission, selected projects and team — straight into your tender pack.">
-            <div className="drop-shadow-[0_12px_28px_rgba(0,0,0,0.16)]"><WadaniThumb /></div>
+            <TemplatePreview kind="company" id="wadani" name="Wadani" className="h-52 w-auto" />
           </Tile>
 
           <Tile kind="Share anywhere" label="A digital business card" desc="A landscape card with a QR that opens your live, always-current profile.">

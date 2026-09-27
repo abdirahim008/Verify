@@ -5,14 +5,7 @@ import { trackEvent } from "@/lib/track";
 import { loadCompanyDataForPdf } from "@/lib/pdf/company-data";
 import { renderPdf } from "@/lib/pdf/render";
 import { resolveThemeOverrides } from "@/lib/pdf/themes";
-import { WadaniCompanyProfile } from "@/components/cv/WadaniCompanyProfile";
-import { AnnualCompanyProfile } from "@/components/cv/AnnualCompanyProfile";
-import { MinimalCompanyProfile } from "@/components/cv/MinimalCompanyProfile";
-import { StandardCompanyProfile } from "@/components/cv/StandardCompanyProfile";
-import { DossierCompanyProfile } from "@/components/cv/DossierCompanyProfile";
-import { BannerCompanyProfile } from "@/components/cv/BannerCompanyProfile";
-import { BroadsheetCompanyProfile } from "@/components/cv/BroadsheetCompanyProfile";
-import { BentoCompanyProfile } from "@/components/cv/BentoCompanyProfile";
+import { COMPANY_RENDER } from "@/lib/pdf/templates";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,34 +13,9 @@ export const dynamic = "force-dynamic";
 // first request. 60 is the Hobby ceiling and ample once warm.
 export const maxDuration = 60;
 
-const FONT_BASE = "https://fonts.googleapis.com/css2?";
-
-// The original three templates share the Source Serif 4 + Public Sans +
-// Plex Mono palette. Variable wght ranges so the lighter display weights
-// (Minimal's 250–280 cover) resolve exactly instead of snapping to 300.
-const PROFILE_FONTS =
-  FONT_BASE +
-  "family=Source+Serif+4:ital,opsz,wght@0,8..60,200..600;1,8..60,200..600" +
-  "&family=Public+Sans:wght@400..700" +
-  "&family=IBM+Plex+Mono:wght@400;500" +
-  "&display=swap";
-
-// Each "Company Profile System" template pairs a display + body face.
-const TEMPLATES = {
-  wadani:  { name: "Wadani",  component: WadaniCompanyProfile,  fonts: PROFILE_FONTS },
-  annual:  { name: "Annual",  component: AnnualCompanyProfile,  fonts: PROFILE_FONTS },
-  minimal: { name: "Minimal", component: MinimalCompanyProfile, fonts: PROFILE_FONTS },
-  standard: { name: "The Standard", component: StandardCompanyProfile,
-    fonts: FONT_BASE + "family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Public+Sans:wght@400;500;600;700&display=swap" },
-  dossier: { name: "The Dossier", component: DossierCompanyProfile,
-    fonts: FONT_BASE + "family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" },
-  banner: { name: "The Banner", component: BannerCompanyProfile,
-    fonts: FONT_BASE + "family=Bodoni+Moda:ital,wght@0,500;0,600;1,500&family=Karla:wght@400;500;600;700&display=swap" },
-  broadsheet: { name: "The Broadsheet", component: BroadsheetCompanyProfile,
-    fonts: FONT_BASE + "family=Archivo:wght@500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" },
-  bento: { name: "The Bento", component: BentoCompanyProfile,
-    fonts: FONT_BASE + "family=Spectral:ital,wght@0,500;0,600;1,500&family=Public+Sans:wght@400;500;600;700&display=swap" },
-} as const;
+// Components + fonts live in lib/pdf/templates.ts, shared with the
+// thumbnail generator so previews match downloads exactly.
+const TEMPLATES = COMPANY_RENDER;
 
 export async function GET(
   req: NextRequest,
