@@ -17,7 +17,12 @@ export function demoCV(): CVData {
     email: "amina.hassan@example.com",
     phone: "+252 61 555 0142",
     photoUrl: portraitWoman(),
-    languages: ["Somali (Native)", "English (Fluent; Writing: Advanced)", "Arabic (Intermediate)", "Kiswahili (Beginner)"],
+    languages: [
+      "Somali (Mother tongue; Reading: Fluent, Writing: Fluent, Speaking: Native)",
+      "English (Reading: Fluent, Writing: Fluent, Speaking: Fluent)",
+      "Arabic (Reading: Professional, Writing: Conversational, Speaking: Conversational)",
+      "Kiswahili (Speaking: Basic)",
+    ],
     skills: [
       "WASH programme design", "Borehole rehabilitation", "Hygiene promotion", "Budget management",
       "KoboToolbox", "Donor reporting", "Contractor supervision", "Community engagement",

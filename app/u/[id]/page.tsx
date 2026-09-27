@@ -5,7 +5,8 @@ import { loadPublicProfile, viewerContext } from "@/lib/public-profile";
 import { ReadMore } from "@/components/ReadMore";
 import { CollapsibleScope } from "@/components/CollapsibleScope";
 import { ZoomableImage } from "@/components/ZoomableImage";
-import { describeLanguage } from "@/lib/languages";
+import { C, SERIF } from "./palette";
+import { LanguageList } from "./LanguageList";
 
 // Public profile page — the QR / share destination, so it doubles as the
 // app's shop window. No (app) layout: reachable by logged-out viewers, with
@@ -13,13 +14,6 @@ import { describeLanguage } from "@/lib/languages";
 // Design: Sahan-Public-Profile handoff.
 export const dynamic = "force-dynamic";
 
-const C = {
-  ink: "#16130f", blue: "#1e50c7", green: "#1f8a4c", greenSoft: "#e7f4ec",
-  body: "#43403a", muted: "#6a6a64", faint: "#8a8a84", faint2: "#8d8d87", soft: "#a8a29a",
-  cardBorder: "#e6e3dc", chipBorder: "#e1ddd4", chipBg: "#faf9f6",
-  hair: "#efedea", line: "#f2f0ea", connector: "#e9e6df", dotIdle: "#cdd0d6",
-};
-const SERIF = "var(--font-serif), 'Source Serif 4', Georgia, serif";
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
   // Public profiles are shareable by link but intentionally kept OUT of search
@@ -192,20 +186,8 @@ function IndividualProfile({ p }: { p: Extract<Awaited<ReturnType<typeof loadPub
             </SectionCard>
           )}
           {p.languages.length > 0 && (
-            <SectionCard title="Languages" bodyClass="px-6 sm:px-7 py-5 flex flex-col gap-3">
-              {p.languages.map((l, i) => {
-                const { name, level, detail } = describeLanguage(l);
-                return (
-                  <div key={i}>
-                    {i > 0 && <div className="h-px -mt-1.5 mb-3" style={{ background: C.line }} />}
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-[13.5px]" style={{ color: C.ink }}>{name}</span>
-                      {level && <span className="text-[12px] shrink-0" style={{ color: C.faint }}>{level}</span>}
-                    </div>
-                    {detail && <p className="mt-0.5 text-[12px] leading-snug" style={{ color: C.faint }}>{detail}</p>}
-                  </div>
-                );
-              })}
+            <SectionCard title="Languages" bodyClass="px-6 sm:px-7 py-5">
+              <LanguageList languages={p.languages} />
             </SectionCard>
           )}
         </div>
