@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { QRCodeCanvas } from "qrcode.react";
+import { downloadFile } from "@/lib/download";
 
 // "Share" affordance for the profile builder. Shows a QR code (and a copy /
 // download / open set) for the user's PUBLIC profile (/u/[id]) — which is
@@ -47,23 +48,11 @@ export function ShareProfile({ publicHref, businessCard }: { publicHref: string;
     if (card.status === "loading") return;
     setCard({ status: "loading", format });
     try {
-      const res = await fetch(`/api/card?format=${format}`, { cache: "no-store" });
-      if (!res.ok) {
-        let msg = "Couldn't generate the card. Please try again.";
-        try { const j = await res.json(); if (j?.error) msg = j.error; } catch { /* non-JSON */ }
-        setCard({ status: "error", msg });
-        return;
-      }
-      const blob = await res.blob();
-      const href = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = href;
-      a.download = `sahan-business-card.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(href);
-      setCard({ status: "idle" });
+      const r = await downloadFile(`/api/card?format=${format}`, {
+        fallbackName: `sahan-business-card.${format}`,
+        expect: format === "pdf" ? /application\/pdf/ : /image\/png/,
+      });
+      setCard(r.ok ? { status: "idle" } : { status: "error", msg: r.message });
     } catch {
       setCard({ status: "error", msg: "Network error — please try again." });
     }

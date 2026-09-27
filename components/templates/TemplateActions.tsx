@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/Button";
 import { cn } from "@/lib/cn";
 import { PdfPreview } from "./PdfPreview";
+import { DownloadButton } from "./DownloadButton";
 import type { PdfTheme } from "@/lib/pdf/themes";
 
 interface Props {
@@ -78,9 +79,7 @@ export function TemplateActions({ href, storageKey, templateName, themes, params
         <Button kind="secondary" size="md" className="flex-1 min-w-[5.5rem]" onClick={() => setPreviewOpen(true)}>
           Preview
         </Button>
-        <a href={`${href}${qs}`} download className="flex-1 min-w-[5.5rem]">
-          <Button kind="primary" size="md" className="w-full">Download</Button>
-        </a>
+        <DownloadButton href={`${href}${qs}`} fallbackName={`${templateName}.pdf`} wrapClassName="flex-1 min-w-[5.5rem]" />
       </div>
 
       {previewOpen && (
@@ -92,9 +91,7 @@ export function TemplateActions({ href, storageKey, templateName, themes, params
                 {templateName} <span className="text-muted">· {active?.label}</span>
               </p>
               <div className="flex items-center gap-2">
-                <a href={`${href}${qs}`} download>
-                  <Button kind="sienna" size="sm">Download</Button>
-                </a>
+                <DownloadButton href={`${href}${qs}`} fallbackName={`${templateName}.pdf`} kind="sienna" size="sm" wrapClassName="relative [&>p]:absolute [&>p]:right-0 [&>p]:top-full [&>p]:w-64 [&>p]:bg-paper [&>p]:p-2 [&>p]:rounded-md [&>p]:shadow-md" />
                 <button onClick={() => setPreviewOpen(false)} aria-label="Close" className="w-8 h-8 rounded-full hover:bg-border-soft text-muted text-[18px] leading-none">×</button>
               </div>
             </header>

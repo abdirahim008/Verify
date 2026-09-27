@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { DownloadButton } from "./DownloadButton";
 
 // Renders a PDF as a stack of page images, client-side, via PDF.js.
 //
@@ -84,9 +85,13 @@ export function PdfPreview({ src }: { src: string }) {
       {state === "error" && (
         <div className="h-full flex flex-col items-center justify-center gap-3 text-center px-6">
           <p className="text-[14px] text-ink-soft">Couldn&apos;t render the preview on this device.</p>
-          <a href={src.replace(/([?&])preview=1&?/, "$1").replace(/[?&]$/, "")} download className="text-sienna font-medium text-[13.5px] hover:underline">
-            Download the PDF instead →
-          </a>
+          <DownloadButton
+            href={src.replace(/([?&])preview=1&?/, "$1").replace(/[?&]$/, "")}
+            fallbackName="document.pdf"
+            label="Download the PDF instead"
+            kind="secondary"
+            wrapClassName="w-full max-w-[260px]"
+          />
         </div>
       )}
 
