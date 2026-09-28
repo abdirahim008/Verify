@@ -5,13 +5,13 @@
 export interface TemplateMeta { id: string; name: string; tagline: string }
 
 export const CV_TEMPLATES: TemplateMeta[] = [
-  { id: "classic", name: "The Classic", tagline: "Single column · serif" },
-  { id: "profile", name: "The Profile", tagline: "Left sidebar · photo" },
-  { id: "editorial", name: "The Editorial", tagline: "Right sidebar · photo" },
-  { id: "grid", name: "The Grid", tagline: "Two column · numbered" },
+  { id: "classic", name: "The Classic", tagline: "Single column · serif · centred" },
+  { id: "profile", name: "The Profile", tagline: "Dark sidebar · photo · level bars" },
+  { id: "editorial", name: "The Editorial", tagline: "Colour band · grey sidebar · photo" },
+  { id: "grid", name: "The Grid", tagline: "Accent strip · photo block · bold" },
   { id: "statement", name: "The Statement", tagline: "Bordered masthead · photo" },
   { id: "crest", name: "The Crest", tagline: "Colour header band · photo" },
-  { id: "endnote", name: "The Endnote", tagline: "Two column · referees" },
+  { id: "endnote", name: "The Endnote", tagline: "Heavy sans · accent rule" },
   { id: "frame", name: "The Frame", tagline: "Accent masthead · serif" },
 ];
 

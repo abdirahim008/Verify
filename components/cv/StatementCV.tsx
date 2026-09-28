@@ -1,6 +1,6 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
-import { INK, VerifiedMark, initials, toBullets, splitLang, pageFooterCss, EXP_BREAKS, LANG_CSS } from "./_inkShared";
+import { INK, VerifiedMark, initials, toBullets, splitLang, pageFooterCss, EXP_BREAKS, LANG_CSS, TYPE_CSS, ContactIcon, ContactValue, contactItems } from "./_inkShared";
 
 // CV 5 — The Statement. White page, bordered masthead with photo, then
 // label/content rows. Bodoni Moda (display) + Karla (body). Ported from
@@ -9,14 +9,15 @@ import { INK, VerifiedMark, initials, toBullets, splitLang, pageFooterCss, EXP_B
 const DISPLAY = `"Bodoni Moda", Georgia, serif`;
 const BODY = `"Karla", system-ui, sans-serif`;
 
-export function StatementCV({ data }: { data: CVData; theme?: Record<string, string> }) {
+export function StatementCV({ data, theme }: { data: CVData; theme?: Record<string, string> }) {
   const { fullName, headline, summary, location, email, phone, photoUrl, languages,
           experiences, educations, certifications, skills, referees } = data;
-  const contact = [phone, email].filter(Boolean);
+  const contact = contactItems({ location: "", phone, email });
+  const A = theme?.accent ?? INK.ink;
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + LANG_CSS + pageFooterCss(fullName, BODY) }} />
+      <style dangerouslySetInnerHTML={{ __html: styles(A) + TYPE_CSS + EXP_BREAKS + LANG_CSS + pageFooterCss(fullName, BODY) }} />
       <div className="page">
         <header className="masthead">
           <div className="meta">
@@ -32,7 +33,7 @@ export function StatementCV({ data }: { data: CVData; theme?: Record<string, str
                 // eslint-disable-next-line @next/next/no-img-element
                 ? <img src={photoUrl} alt="" className="m-photo" />
                 : <div className="m-mono">{initials(fullName)}</div>}
-              {contact.length > 0 && <div className="m-contact">{contact.map((c, i) => <div key={i}>{c}</div>)}</div>}
+              {contact.length > 0 && <div className="m-contact">{contact.map((c, i) => <div key={i} className="c-item"><ContactValue {...c} /><ContactIcon kind={c.kind} size={10} color={A} /></div>)}</div>}
             </div>
           </div>
         </header>
@@ -77,7 +78,7 @@ export function StatementCV({ data }: { data: CVData; theme?: Record<string, str
 
           {skills.length > 0 && (
             <Row label="Skills" last={false}>
-              <div className="skills">{skills.join("  ·  ")}</div>
+              <ul className="skills">{skills.map((s, i) => <li key={i}>{s}</li>)}</ul>
             </Row>
           )}
 
@@ -144,26 +145,31 @@ function Bullets({ text }: { text: string }) {
   );
 }
 
-const styles = `
+const styles = (A: string) => `
 @page { size: A4; margin: 14mm 0; }
 .page { min-height: 269mm; color: ${INK.body}; font-family: ${BODY}; -webkit-font-smoothing: antialiased; }
 
-.masthead { padding: 0 56px 20px; border-bottom: 2px solid ${INK.ink}; }
+.masthead { padding: 0 56px 20px; border-bottom: 2px solid ${A}; }
 .meta { display: flex; justify-content: space-between; font-size: 10.5px; letter-spacing: 0.3em; text-transform: uppercase; color: ${INK.faint}; padding-bottom: 14px; border-bottom: 1px solid ${INK.hair}; }
 .m-row { display: flex; justify-content: space-between; align-items: center; gap: 30px; margin-top: 18px; }
-.name { margin: 0; font-family: ${DISPLAY}; font-weight: 600; font-size: 50px; line-height: 0.98; letter-spacing: 0.005em; color: ${INK.ink}; }
+.name { margin: 0; font-family: ${DISPLAY}; font-weight: 600; font-size: 46px; line-height: 1; letter-spacing: 0.005em; color: ${INK.ink}; }
 .role { margin-top: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3em; font-size: 11.5px; color: ${INK.muted}; }
 .m-right { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; flex: none; }
 .m-photo { width: 92px; height: 92px; border-radius: 50%; object-fit: cover; border: 1px solid #c4bfb6; display: block; }
 .m-mono { width: 92px; height: 92px; border-radius: 50%; border: 1px solid #c4bfb6; display: flex; align-items: center; justify-content: center; font-family: ${DISPLAY}; font-weight: 500; font-size: 32px; letter-spacing: 0.04em; color: ${INK.ink}; }
-.m-contact { text-align: right; font-size: 11px; line-height: 1.7; color: ${INK.bodySoft}; }
+.m-contact { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; font-size: 11px; line-height: 1.5; color: ${INK.bodySoft}; }
+.c-item { display: inline-flex; align-items: center; gap: 7px; }
 
 .body { padding: 4px 56px 0; }
-.srow { display: flex; gap: 30px; padding: 13px 0; border-bottom: 1px solid ${INK.hair2}; }
+/* Label floated beside plain block content, not a flex row: Chromium can
+   refuse to split a flex row across pages and push a whole long section
+   (Experience) overleaf, leaving page 1 nearly empty. Block flow always
+   fragments cleanly. */
+.srow { display: flow-root; padding: 11px 0; border-bottom: 1px solid ${INK.hair2}; }
 .srow-last { border-bottom: none; }
-.srow-label { width: 132px; flex: none; font-family: ${DISPLAY}; font-style: italic; font-size: 18px; color: ${INK.ink}; }
-.srow-content { flex: 1; min-width: 0; }
-.summary { margin: 0; font-size: 12.5px; line-height: 1.65; color: ${INK.body}; }
+.srow-label { float: left; width: 132px; font-family: ${DISPLAY}; font-style: italic; font-size: 18px; line-height: 1.3; color: ${A}; }
+.srow-content { margin-left: 162px; min-width: 0; }
+.summary { margin: 0; font-size: 12.5px; line-height: 1.55; color: ${INK.body}; }
 
 .exp { margin-bottom: 11px; }
 .exp:last-child { margin-bottom: 0; }
@@ -171,11 +177,11 @@ const styles = `
 .exp-title { font-weight: 700; font-size: 14px; color: ${INK.ink}; }
 .dates { font-size: 11px; font-weight: 500; color: ${INK.faint}; letter-spacing: 0.04em; white-space: nowrap; flex: none; }
 .exp-org { font-size: 12px; color: ${INK.muted}; margin-top: 1px; }
-.bullets { margin: 8px 0 0; padding: 0; list-style: none; }
+.bullets { margin: 5px 0 0; padding: 0; list-style: none; }
 /* Whole-pixel line-height so every marker sits on the same sub-pixel. */
-.bullets li { display: flex; gap: 11px; font-size: 12px; line-height: 19px; color: ${INK.body}; margin-bottom: 5px; }
+.bullets li { display: flex; gap: 11px; font-size: 12px; line-height: 18px; color: ${INK.body}; margin-bottom: 2px; }
 .bullets li:last-child { margin-bottom: 0; }
-.dot { flex: none; width: 4px; height: 4px; border: 1px solid ${INK.ink}; border-radius: 50%; margin-top: 7px; }
+.dot { flex: none; width: 4px; height: 4px; border: 1px solid ${A}; border-radius: 50%; margin-top: 6px; }
 .single { margin: 8px 0 0; font-size: 12px; line-height: 1.55; color: ${INK.body}; }
 
 .edu-row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; margin-bottom: 10px; break-inside: avoid; }
@@ -183,7 +189,8 @@ const styles = `
 .edu-qual { font-weight: 700; font-size: 13px; color: ${INK.ink}; }
 .edu-inst { font-size: 12px; color: ${INK.muted}; }
 
-.skills { font-size: 12.5px; line-height: 1.9; color: ${INK.body}; }
+.skills { margin: 0; padding: 0; list-style: none; columns: 3; column-gap: 20px; font-size: 12px; line-height: 1.55; color: ${INK.body}; }
+.skills li { break-inside: avoid; }
 .langs { display: flex; flex-wrap: wrap; gap: 6px 28px; font-size: 12.5px; color: ${INK.ink}; }
 .faint { color: ${INK.faint}; }
 .certs { display: flex; flex-direction: column; gap: 7px; }

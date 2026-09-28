@@ -160,3 +160,14 @@ export function describeLanguage(raw: string): { name: string; level: string; de
     .join(" · ");
   return { name: e.name, level, detail };
 }
+
+/** The summary as a 0–5 score for the CV level bars: 5 for a mother tongue,
+ *  else the same middle rated skill as languageSummary, else an older
+ *  overall word. 0 when nothing was rated (the bar is then not drawn). */
+export function languageScore(raw: string): number {
+  const e = parseLanguage(raw);
+  if (e.mother) return 5;
+  const rated = LANGUAGE_SKILLS.map((k) => e[k]).filter((n) => n > 0).sort((a, b) => a - b);
+  if (rated.length) return rated[Math.floor((rated.length - 1) / 2)];
+  return WORD_TO_LEVEL[e.note.toLowerCase()] ?? 0;
+}

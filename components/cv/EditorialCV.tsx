@@ -1,130 +1,167 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
-import { INK, VerifiedMark, initials, toBullets, splitLang, pageFooterCss, EXP_BREAKS, LANG_CSS } from "./_inkShared";
+import {
+  INK, VerifiedMark, initials, toBullets, splitLang, EXP_BREAKS,
+  TYPE_CSS, ContactIcon, ContactValue, contactItems, LevelBar,
+} from "./_inkShared";
 
-// CV 3 — The Editorial. White page, right sidebar with a tall photo panel.
-// Spectral (display) + Public Sans (body). Ported from the Claude Design
-// handoff.
+// CV 3 — The Editorial. A full-width colour header band (name, headline,
+// contact, round photo) over two columns: a soft grey sidebar (profile,
+// skills, languages, certifications) and a white main column (experience,
+// education, referees). Spectral (display) + Public Sans (body). One
+// adjustable accent (lib/pdf/themes.ts) fills the band and marks the heads.
 //
-// The sidebar is a right float, not a flex column: page 1 reads as two
-// columns, and once the sidebar's content ends the main content flows full
-// width — continuation pages no longer carry an empty column. Main blocks
-// are flow-root so they sit beside the float cleanly and widen past it.
+// Print mechanics match The Profile: zero page margin so colour bleeds to
+// the sheet edge, a position:fixed grey stripe that Chromium repeats on
+// every page, and a table whose empty <thead>/<tfoot> rows repeat to give
+// each page its top and bottom margin. The band sits above the table, so it
+// only appears on page 1.
 
 const DISPLAY = `"Spectral", Georgia, serif`;
 const BODY = `"Public Sans", system-ui, sans-serif`;
+const SB_W = 232;
+const SB_BG = "#f0efec";
 
-export function EditorialCV({ data }: { data: CVData; theme?: Record<string, string> }) {
-  const { fullName, headline, summary, location, email, phone, photoUrl, languages,
+export function EditorialCV({ data, theme }: { data: CVData; theme?: Record<string, string> }) {
+  const { fullName, headline, summary, photoUrl, languages,
           experiences, educations, certifications, skills, referees } = data;
-  const contact = [location, phone, email].filter(Boolean);
+  const contact = contactItems(data);
+  const A = theme?.accent ?? "#2a4a39";
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + LANG_CSS + pageFooterCss(fullName, BODY) }} />
-      <div className="page">
-        <aside className="sb">
-          {photoUrl
-            // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={photoUrl} alt="" className="sb-photo" />
-            : <div className="sb-mono">{initials(fullName)}</div>}
+      <style dangerouslySetInnerHTML={{ __html: styles(A) + TYPE_CSS + EXP_BREAKS }} />
+      <div className="stripe" data-band />
 
-          {contact.length > 0 && (
-            <>
-              <div className="sb-h">Contact</div>
-              <div className="sb-contact">{contact.map((c, i) => <div key={i}>{c}</div>)}</div>
-            </>
-          )}
-
-          {skills.length > 0 && (
-            <>
-              <div className="sb-h sb-h-gap">Skills</div>
-              <div className="sb-list">{skills.map((s, i) => <span key={i}>{s}</span>)}</div>
-            </>
-          )}
-
-          {languages.length > 0 && (
-            <>
-              <div className="sb-h sb-h-gap">Languages</div>
-              <div className="sb-langs">
-                {languages.map((l, i) => {
-                  const { name, level, detail } = splitLang(l);
-                  return <div key={i}><div className="sb-lang"><span style={{ color: INK.ink }}>{name}</span>{level && <span className="faint">{level}</span>}</div>{detail && <div className="lang-sub">{detail}</div>}</div>;
-                })}
-              </div>
-            </>
-          )}
-
-          {certifications.length > 0 && (
-            <>
-              <div className="sb-h sb-h-gap">Certifications</div>
-              <div className="sb-certs">
-                {certifications.map((c, i) => (
-                  <div key={i}>
-                    <div className="sb-cert-name">{c.name}{c.verified && <>&nbsp;<VerifiedMark note="" size={8} /></>}</div>
-                    {(c.issuer || c.year) && <div className="faint sb-cert-meta">{[c.issuer, c.year].filter(Boolean).join(" · ")}</div>}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </aside>
-
-        <header className="mn-head fr">
+      <header className="band" data-band>
+        <div className="band-text">
           <h1 className="name">{fullName}</h1>
           {headline && <div className="role">{headline}</div>}
-        </header>
-
-        {summary && <p className="summary fr">{summary}</p>}
-
-        {experiences.length > 0 && (
-          <section className="sec">
-            <div className="h2 fr">Experience</div>
-            {experiences.map((e, i) => (
-              <div key={i} className="exp fr">
-                <div className="exp-head">
-                  <div className="row">
-                    <div className="exp-title">{e.title}</div>
-                    {e.dateRange && <div className="dates">{e.dateRange}</div>}
-                  </div>
-                  <div className="exp-org">{[e.organization, e.location].filter(Boolean).join(", ")}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
-                </div>
-                <Bullets text={e.description} />
-              </div>
-            ))}
-          </section>
-        )}
-
-        {educations.length > 0 && (
-          <section className="sec">
-            <div className="h2 fr">Education</div>
-            {educations.map((e, i) => (
-              <div key={i} className="edu-row">
-                <div>
-                  <div className="edu-qual">{e.title}</div>
-                  <div className="edu-inst">{e.institution}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
-                </div>
-                {e.dateRange && <div className="dates">{e.dateRange}</div>}
-              </div>
-            ))}
-          </section>
-        )}
-
-        {referees.length > 0 && (
-          <section className="sec">
-            <div className="h2 fr">Referees</div>
-            <div className="refs">
-              {referees.map((r, i) => (
-                <div key={i}>
-                  <div className="ref-name">{r.name}</div>
-                  {(r.position || r.organization) && <div className="ref-role">{[r.position, r.organization].filter(Boolean).join(", ")}</div>}
-                  {(r.email || r.phone) && <div className="ref-contact">{r.email}{r.email && r.phone && <br />}{r.phone}</div>}
-                </div>
+          {contact.length > 0 && (
+            <div className="contact">
+              {contact.map((c, i) => (
+                <span key={i} className="c-item"><ContactIcon kind={c.kind} size={10} /><ContactValue {...c} /></span>
               ))}
             </div>
-          </section>
-        )}
-      </div>
+          )}
+        </div>
+        {photoUrl
+          // eslint-disable-next-line @next/next/no-img-element
+          ? <img src={photoUrl} alt="" className="photo" />
+          : <div className="photo mono">{initials(fullName)}</div>}
+      </header>
+
+      <table className="frame">
+        <thead><tr><td><div className="sp-top" /></td></tr></thead>
+        <tfoot><tr><td><div className="sp-bot" /></td></tr></tfoot>
+        <tbody><tr><td>
+          <div className="cols">
+            <aside className="sb">
+              {summary && (
+                <section className="sb-sec">
+                  <h2 className="h2">Profile</h2>
+                  <p className="summary">{summary}</p>
+                </section>
+              )}
+
+              {skills.length > 0 && (
+                <section className="sb-sec">
+                  <h2 className="h2">Skills</h2>
+                  <ul className="sk">{skills.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                </section>
+              )}
+
+              {languages.length > 0 && (
+                <section className="sb-sec">
+                  <h2 className="h2">Languages</h2>
+                  <div className="langs">
+                    {languages.map((l, i) => {
+                      const { name, level, detail } = splitLang(l);
+                      return (
+                        <div key={i} className="lang">
+                          <div className="lang-row">
+                            <span className="lang-name">{name}</span>
+                            <LevelBar lang={l} on={A} off="#d6d3cd" width={56} />
+                          </div>
+                          {(level || detail) && <div className="lang-sub">{[level, detail].filter(Boolean).join(" · ")}</div>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+
+              {certifications.length > 0 && (
+                <section className="sb-sec">
+                  <h2 className="h2">Certifications</h2>
+                  <div className="certs">
+                    {certifications.map((c, i) => (
+                      <div key={i}>
+                        <div className="cert-name">{c.name}{c.verified && <>&nbsp;<VerifiedMark note="" size={8} /></>}</div>
+                        {(c.issuer || c.year) && <div className="cert-meta">{[c.issuer, c.year].filter(Boolean).join(" · ")}</div>}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </aside>
+
+            <main className="mn">
+              {experiences.length > 0 && (
+                <section className="mn-sec">
+                  <h2 className="h2">Work Experience</h2>
+                  {experiences.map((e, i) => (
+                    <div key={i} className="exp">
+                      <div className="exp-head">
+                        <div className="exp-title">{e.title}</div>
+                        <div className="exp-meta">
+                          <span className="org">{e.organization}</span>
+                          {e.location && <span className="loc">{e.organization ? ", " : ""}{e.location}</span>}
+                          {e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}
+                        </div>
+                        {e.dateRange && <div className="dates">{e.dateRange}</div>}
+                      </div>
+                      <Bullets text={e.description} />
+                    </div>
+                  ))}
+                </section>
+              )}
+
+              {educations.length > 0 && (
+                <section className="mn-sec">
+                  <h2 className="h2">Education</h2>
+                  {educations.map((e, i) => (
+                    <div key={i} className="edu">
+                      <div className="edu-qual">{e.title}</div>
+                      <div className="exp-meta">
+                        <span className="org">{e.institution}</span>
+                        {e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}
+                      </div>
+                      {e.dateRange && <div className="dates">{e.dateRange}</div>}
+                    </div>
+                  ))}
+                </section>
+              )}
+
+              {referees.length > 0 && (
+                <section className="mn-sec">
+                  <h2 className="h2">Referees</h2>
+                  <div className="refs">
+                    {referees.map((r, i) => (
+                      <div key={i}>
+                        <div className="ref-name">{r.name}</div>
+                        {(r.position || r.organization) && <div className="ref-role">{[r.position, r.organization].filter(Boolean).join(", ")}</div>}
+                        {r.email && <div className="ref-contact">{r.email}</div>}
+                        {r.phone && <div className="ref-contact">{r.phone}</div>}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </main>
+          </div>
+        </td></tr></tbody>
+      </table>
     </>
   );
 }
@@ -135,59 +172,76 @@ function Bullets({ text }: { text: string }) {
   if (bullets.length === 1) return <p className="single">{bullets[0]}</p>;
   return (
     <ul className="bullets">
-      {bullets.map((b, i) => <li key={i}><span className="bar" /><span>{b}</span></li>)}
+      {bullets.map((b, i) => <li key={i}><span className="mk" /><span>{b}</span></li>)}
     </ul>
   );
 }
 
-const styles = `
-@page { size: A4; margin: 14mm 0; }
-.page { display: flow-root; padding: 0 40px; color: ${INK.body}; font-family: ${BODY}; -webkit-font-smoothing: antialiased; }
-.fr { display: flow-root; }
+const styles = (A: string) => `
+@page { size: A4; margin: 0; }
+[data-band] { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { color: ${INK.body}; font-family: ${BODY}; -webkit-font-smoothing: antialiased; }
+.stripe { position: fixed; top: 0; bottom: 0; left: 0; width: ${SB_W}px; background: ${SB_BG}; }
 
-.mn-head { margin-bottom: 6px; }
-.name { margin: 0; font-family: ${DISPLAY}; font-weight: 500; font-size: 45px; letter-spacing: 0.005em; color: ${INK.ink}; line-height: 1.02; }
-.role { margin-top: 6px; font-family: ${DISPLAY}; font-style: italic; font-size: 18px; color: ${INK.muted}; }
-.summary { margin: 18px 0 0; font-size: 13px; line-height: 1.62; color: ${INK.body}; }
+/* ── Band (page 1 only) ──────────────────────────────────── */
+.band { position: relative; background: ${A}; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 30px 44px 28px 36px; }
+.band-text { min-width: 0; }
+.name { margin: 0; font-family: ${DISPLAY}; font-weight: 500; font-size: 38px; line-height: 1.08; letter-spacing: 0.005em; color: #fff; }
+.role { margin-top: 6px; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; color: rgba(255,255,255,0.82); line-height: 1.45; }
+.contact { display: flex; flex-wrap: wrap; gap: 4px 22px; margin-top: 14px; padding-top: 11px; border-top: 1px solid rgba(255,255,255,0.28); font-size: 11.5px; color: rgba(255,255,255,0.86); }
+.c-item { display: inline-flex; align-items: center; gap: 6px; }
+.photo { flex: none; width: 118px; height: 118px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; display: block; }
+.mono { display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.12); font-family: ${DISPLAY}; font-size: 36px; color: #fff; border-color: rgba(255,255,255,0.7); }
 
-.sec { margin-top: 26px; }
-.h2 { font-family: ${DISPLAY}; font-weight: 600; font-size: 17px; color: ${INK.ink}; border-bottom: 1px solid ${INK.ink}; padding-bottom: 5px; margin-bottom: 14px; break-after: avoid; page-break-after: avoid; }
+/* ── Frame ───────────────────────────────────────────────── */
+.frame { width: 100%; border-collapse: collapse; position: relative; }
+.frame > thead > tr > td, .frame > tfoot > tr > td, .frame > tbody > tr > td { padding: 0; }
+.sp-top { height: 10mm; }
+.sp-bot { height: 11mm; }
+.cols { display: grid; grid-template-columns: ${SB_W}px 1fr; }
 
-.exp { margin-bottom: 16px; }
-.row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
-.exp-title { font-weight: 700; font-size: 14px; color: ${INK.ink}; }
-.dates { font-size: 11.5px; font-weight: 500; color: ${INK.faint}; letter-spacing: 0.03em; white-space: nowrap; flex: none; }
-.exp-org { font-family: ${DISPLAY}; font-style: italic; font-size: 13.5px; color: ${INK.muted}; margin-top: 2px; }
-.bullets { margin: 9px 0 0; padding: 0; list-style: none; }
-/* Whole-pixel line-height and marker size so every bar in a list lands on
-   the same sub-pixel phase and renders at the same weight. */
-.bullets li { display: flex; gap: 11px; font-size: 12.5px; line-height: 20px; color: ${INK.body}; margin-bottom: 5px; }
+.h2 { margin: 0 0 9px; padding-bottom: 5px; border-bottom: 1px solid ${INK.hair}; font-family: ${DISPLAY}; font-weight: 600; font-size: 18px; line-height: 1.2; color: ${INK.ink}; position: relative; break-after: avoid; page-break-after: avoid; }
+/* Short accent bar under the head, sitting on the hairline. */
+.h2::after { content: ""; position: absolute; left: 0; bottom: -1px; width: 34px; height: 2px; background: ${A}; }
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+.sb { padding: 0 22px 0 30px; }
+.sb-sec { margin-bottom: 18px; }
+.summary { margin: 0; font-size: 11.5px; line-height: 1.6; color: ${INK.body}; }
+.sk { margin: 0; padding: 0; list-style: none; font-size: 11.5px; line-height: 1.35; color: ${INK.body}; }
+.sk li { position: relative; padding-left: 12px; margin-bottom: 5px; break-inside: avoid; }
+.sk li::before { content: ""; position: absolute; left: 0; top: 5.5px; width: 5px; height: 5px; background: ${A}; }
+.langs { display: flex; flex-direction: column; gap: 8px; }
+.lang { break-inside: avoid; }
+.lang-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.lang-name { font-size: 12px; font-weight: 600; color: ${INK.ink}; }
+.lang-sub { font-size: 10px; line-height: 1.4; color: ${INK.muted}; margin-top: 2px; }
+.certs { display: flex; flex-direction: column; gap: 8px; }
+.certs > div { break-inside: avoid; }
+.cert-name { font-size: 11.5px; font-weight: 600; color: ${INK.ink}; line-height: 1.35; }
+.cert-meta { font-size: 10.5px; color: ${INK.muted}; margin-top: 1px; }
+
+/* ── Main ────────────────────────────────────────────────── */
+.mn { padding: 0 44px 0 30px; min-width: 0; }
+.mn-sec { margin-bottom: 16px; }
+.exp { margin-bottom: 12px; }
+.exp:last-child { margin-bottom: 0; }
+.exp-title, .edu-qual { font-weight: 700; font-size: 13px; color: ${INK.ink}; line-height: 1.35; }
+.exp-meta { font-size: 12px; line-height: 1.4; }
+.org { font-weight: 600; color: ${A}; }
+.loc { color: ${INK.muted}; }
+.dates { font-size: 11px; color: ${INK.muted}; margin-top: 1px; letter-spacing: 0.02em; }
+.bullets { margin: 5px 0 0; padding: 0; list-style: none; }
+.bullets li { display: flex; gap: 9px; font-size: 11.5px; line-height: 17px; color: ${INK.body}; margin-bottom: 2px; }
 .bullets li:last-child { margin-bottom: 0; }
-.bar { flex: none; width: 2px; height: 14px; background: ${INK.ink}; margin-top: 3px; }
-.single { margin: 9px 0 0; font-size: 12.5px; line-height: 1.55; color: ${INK.body}; }
+.mk { flex: none; width: 4px; height: 4px; border-radius: 50%; background: ${INK.faint}; margin-top: 7px; }
+.single { margin: 5px 0 0; font-size: 11.5px; line-height: 17px; color: ${INK.body}; }
+.edu { margin-bottom: 9px; break-inside: avoid; }
+.edu:last-child { margin-bottom: 0; }
 
-.edu-row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; margin-bottom: 11px; break-inside: avoid; }
-.edu-row:last-child { margin-bottom: 0; }
-.edu-qual { font-weight: 700; font-size: 13.5px; color: ${INK.ink}; }
-.edu-inst { font-family: ${DISPLAY}; font-style: italic; font-size: 13px; color: ${INK.muted}; }
-
-.refs { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.refs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 22px; }
 .refs > div { break-inside: avoid; }
-.ref-name { font-weight: 700; font-size: 13px; color: ${INK.ink}; }
-.ref-role { font-family: ${DISPLAY}; font-style: italic; font-size: 12.5px; color: ${INK.muted}; }
-.ref-contact { font-size: 11.5px; color: ${INK.faint}; margin-top: 3px; }
-
-.sb { float: right; width: 176px; padding-left: 26px; margin-left: 32px; border-left: 1px solid ${INK.hair}; padding-bottom: 4px; }
-.sb-photo { width: 100%; height: 200px; object-fit: cover; border: 1px solid #c4bfb6; margin-bottom: 26px; display: block; }
-.sb-mono { width: 100%; height: 190px; border: 1px solid #c4bfb6; display: flex; align-items: center; justify-content: center; margin-bottom: 26px; font-family: ${DISPLAY}; font-weight: 500; font-size: 44px; letter-spacing: 0.04em; color: ${INK.ink}; }
-.sb-h { font-family: ${DISPLAY}; font-weight: 600; font-size: 14.5px; color: ${INK.ink}; border-bottom: 1px solid ${INK.ink}; padding-bottom: 5px; margin-bottom: 11px; break-after: avoid; }
-.sb-h-gap { margin-top: 24px; }
-.sb-contact { display: flex; flex-direction: column; gap: 7px; font-size: 11.5px; color: ${INK.bodySoft}; line-height: 1.35; word-break: break-word; }
-.sb-list { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: ${INK.bodySoft}; }
-.sb-langs { display: flex; flex-direction: column; gap: 7px; font-size: 12px; }
-.sb-lang { display: flex; justify-content: space-between; gap: 8px; }
-.faint { color: ${INK.faint}; }
-.sb-certs { display: flex; flex-direction: column; gap: 10px; font-size: 11.5px; }
-.sb-cert-name { color: ${INK.ink}; font-weight: 600; }
-.sb-cert-meta { line-height: 1.3; margin-top: 1px; }
+.ref-name { font-weight: 700; font-size: 12px; color: ${INK.ink}; }
+.ref-role { font-size: 11px; color: ${INK.muted}; line-height: 1.4; }
+.ref-contact { font-size: 11px; color: ${INK.muted}; }
 `;
