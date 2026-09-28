@@ -1,38 +1,46 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
-import { INK, VerifiedMark, toBullets, splitLang, contactParts, pageFooterCss, EXP_BREAKS, LANG_CSS } from "./_inkShared";
+import {
+  INK, VerifiedMark, toBullets, splitLang, pageFooterCss, EXP_BREAKS, LANG_CSS,
+  TYPE_CSS, ContactIcon, ContactValue, contactItems,
+} from "./_inkShared";
 
 // CV 1 — The Classic. White page, single column, centred masthead.
-// Cormorant Garamond (display) + EB Garamond (body). Monochrome ink,
-// hairline rules. Ported from the Claude Design handoff.
+// Cormorant Garamond (display) + EB Garamond (body). Ink on white with one
+// optional accent (lib/pdf/themes.ts) carried by the section heads, the
+// masthead rule and the contact glyphs — the body text always stays ink.
 
 const DISPLAY = `"Cormorant Garamond", Georgia, serif`;
 const BODY = `"EB Garamond", Georgia, serif`;
 
-export function ClassicCV({ data }: { data: CVData; theme?: Record<string, string> }) {
-  const { fullName, headline, summary, location, email, phone, languages,
+export function ClassicCV({ data, theme }: { data: CVData; theme?: Record<string, string> }) {
+  const { fullName, headline, summary, languages,
           experiences, educations, certifications, skills, referees } = data;
-  const contact = contactParts({ location, phone, email });
+  const contact = contactItems(data);
+  const A = theme?.accent ?? INK.ink;
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + LANG_CSS + pageFooterCss(fullName, BODY) }} />
+      <style dangerouslySetInnerHTML={{ __html: styles(A) + TYPE_CSS + EXP_BREAKS + LANG_CSS + pageFooterCss(fullName, BODY) }} />
       <div className="cv">
-        <header style={{ textAlign: "center" }}>
+        <header className="mast">
           <h1 className="name">{fullName}</h1>
           {headline && <div className="role">{headline}</div>}
+          <div className="rule"><span /></div>
+          {contact.length > 0 && (
+            <div className="contact">
+              {contact.map((c, i) => (
+                <span key={i} className="c-item"><ContactIcon kind={c.kind} size={10} color={A} /><ContactValue {...c} /></span>
+              ))}
+            </div>
+          )}
         </header>
-
-        <div className="rule" />
-        {contact.length > 0 && (
-          <div className="contact">{contact.join("  ·  ")}</div>
-        )}
 
         {summary && <p className="summary">{summary}</p>}
 
         {experiences.length > 0 && (
           <section className="sec">
-            <h2 className="h2">Experience</h2>
+            <h2 className="h2">Professional Experience</h2>
             {experiences.map((e, i) => (
               <div key={i} className="exp">
                 <div className="exp-head">
@@ -41,7 +49,8 @@ export function ClassicCV({ data }: { data: CVData; theme?: Record<string, strin
                     {e.dateRange && <div className="dates">{e.dateRange}</div>}
                   </div>
                   <div className="exp-org">
-                    {[e.organization, e.location].filter(Boolean).join(" · ")}
+                    <span className="org">{e.organization}</span>
+                    {e.location && <span className="loc">{e.organization ? ", " : ""}{e.location}</span>}
                     {e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}
                   </div>
                 </div>
@@ -69,41 +78,46 @@ export function ClassicCV({ data }: { data: CVData; theme?: Record<string, strin
           </section>
         )}
 
-        {(skills.length > 0 || languages.length > 0) && (
-          <div className="twocol">
-            {skills.length > 0 && (
-              <section>
-                <h2 className="h2">Skills</h2>
-                <div className="skills">{skills.join("  ·  ")}</div>
-              </section>
-            )}
-            {languages.length > 0 && (
-              <section>
-                <h2 className="h2">Languages</h2>
-                <div className="langs">
-                  {languages.map((l, i) => {
-                    const { name, level, detail } = splitLang(l);
-                    return <div key={i}>{name}{level && <span className="faint"> ({level})</span>}{detail && <div className="lang-sub">{detail}</div>}</div>;
-                  })}
-                </div>
-              </section>
-            )}
-          </div>
-        )}
-
         {certifications.length > 0 && (
           <section className="sec">
             <h2 className="h2">Certifications</h2>
             {certifications.map((c, i) => (
               <div key={i} className="cert-row">
                 <span>
-                  <span style={{ color: INK.ink }}>{c.name}</span>
-                  {(c.issuer || c.year) && <span className="faint"> — {[c.issuer].filter(Boolean).join("")}</span>}
+                  <span className="cert-name">{c.name}</span>
+                  {c.issuer && <span className="muted">, {c.issuer}</span>}
                   {c.verified && <>&nbsp;&nbsp;<VerifiedMark note={c.verifiedNote} /></>}
                 </span>
                 {c.year && <span className="dates">{c.year}</span>}
               </div>
             ))}
+          </section>
+        )}
+
+        {skills.length > 0 && (
+          <section className="sec">
+            <h2 className="h2">Skills</h2>
+            <ul className="skills">
+              {skills.map((s, i) => <li key={i}>{s}</li>)}
+            </ul>
+          </section>
+        )}
+
+        {languages.length > 0 && (
+          <section className="sec">
+            <h2 className="h2">Languages</h2>
+            <div className="langs">
+              {languages.map((l, i) => {
+                const { name, level, detail } = splitLang(l);
+                return (
+                  <div key={i} className="lang">
+                    <span className="lang-name">{name}</span>
+                    {level && <span className="muted"> — {level}</span>}
+                    {detail && <div className="lang-sub">{detail}</div>}
+                  </div>
+                );
+              })}
+            </div>
           </section>
         )}
 
@@ -118,7 +132,7 @@ export function ClassicCV({ data }: { data: CVData; theme?: Record<string, strin
                     <div className="ref-role">{[r.position, r.organization].filter(Boolean).join(", ")}</div>
                   )}
                   {(r.email || r.phone) && (
-                    <div className="ref-contact">{[r.email, r.phone].filter(Boolean).join("  ·  ")}</div>
+                    <div className="ref-contact">{[r.email, r.phone].filter(Boolean).join("  ·  ")}</div>
                   )}
                 </div>
               ))}
@@ -139,52 +153,64 @@ function Bullets({ text }: { text: string }) {
   return (
     <ul className="bullets">
       {bullets.map((b, i) => (
-        <li key={i}><span className="dash">—</span><span>{b}</span></li>
+        <li key={i}><span className="dash">–</span><span>{b}</span></li>
       ))}
     </ul>
   );
 }
 
-const styles = `
-@page { size: A4; margin: 14mm 19mm; }
+const styles = (A: string) => `
+@page { size: A4; margin: 13mm 19mm 13mm; }
 .cv { color: ${INK.body}; font-family: ${BODY}; font-size: 13.5px; -webkit-font-smoothing: antialiased; }
-.name { margin: 0; font-family: ${DISPLAY}; font-weight: 600; font-size: 50px; letter-spacing: 0.015em; color: ${INK.ink}; line-height: 1.02; }
-.role { margin-top: 8px; font-style: italic; font-size: 16px; color: ${INK.muted2}; letter-spacing: 0.04em; }
-.rule { height: 1.5px; background: ${INK.ink}; margin: 16px 0 8px; }
-.contact { text-align: center; font-size: 12px; letter-spacing: 0.04em; color: ${INK.muted}; }
-/* Left-aligned roman: a long centred italic paragraph is hard to read. The
-   masthead above stays centred. */
-.summary { margin: 18px 0 20px; font-size: 14.5px; line-height: 1.6; color: ${INK.body}; }
 
-.sec { margin-bottom: 15px; }
-.h2 { margin: 0 0 12px; font-family: ${BODY}; font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.24em; color: ${INK.ink}; border-bottom: 1px solid ${INK.ink}; padding-bottom: 6px; break-after: avoid; page-break-after: avoid; }
-.refs > div { break-inside: avoid; }
+.mast { text-align: center; }
+.name { margin: 0; font-family: ${DISPLAY}; font-weight: 600; font-size: 42px; letter-spacing: 0.02em; color: ${INK.ink}; line-height: 1.04; }
+.role { margin-top: 6px; font-style: italic; font-size: 16px; color: ${INK.muted2}; letter-spacing: 0.03em; }
+/* Double rule: a strong line over a hairline — the classic letterpress
+   masthead finish. */
+.rule { margin: 12px 0 8px; border-top: 1.5px solid ${A}; }
+.rule span { display: block; margin-top: 2px; border-top: 0.5px solid ${A}; }
+.contact { display: flex; justify-content: center; flex-wrap: wrap; gap: 3px 22px; font-size: 12.5px; letter-spacing: 0.03em; color: ${INK.muted}; }
+.c-item { display: inline-flex; align-items: center; gap: 6px; }
 
-.exp { margin-bottom: 13px; }
+.summary { margin: 14px 0 12px; font-size: 14px; line-height: 1.45; color: ${INK.body}; }
+
+.sec { margin-bottom: 11px; }
+.h2 { margin: 0 0 8px; font-family: ${DISPLAY}; font-weight: 700; font-size: 14.5px; text-transform: uppercase; letter-spacing: 0.2em; color: ${A}; border-bottom: 0.75px solid ${A}; padding-bottom: 4px; break-after: avoid; page-break-after: avoid; }
+.refs > div, .lang, .cert-row { break-inside: avoid; }
+
+.exp { margin-bottom: 8px; }
+.exp:last-child { margin-bottom: 0; }
 .row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
-.exp-title { font-weight: 600; font-size: 15.5px; color: ${INK.ink}; }
-.dates { font-size: 12px; color: ${INK.faint}; letter-spacing: 0.05em; white-space: nowrap; flex: none; }
-.exp-org { font-style: italic; font-size: 13.5px; color: ${INK.muted}; margin-top: 1px; }
-.bullets { margin: 7px 0 0; padding: 0; list-style: none; }
-.bullets li { display: flex; gap: 10px; font-size: 13.5px; line-height: 1.5; color: ${INK.body}; margin-bottom: 4px; }
+.exp-title { font-weight: 600; font-size: 15px; color: ${INK.ink}; }
+.dates { font-size: 12.5px; color: ${INK.muted}; letter-spacing: 0.03em; white-space: nowrap; flex: none; }
+.exp-org { font-size: 14px; margin-top: 0; }
+.org { font-style: italic; color: ${INK.ink}; }
+.loc { font-style: italic; color: ${INK.muted}; }
+.bullets { margin: 4px 0 0; padding: 0; list-style: none; }
+.bullets li { display: flex; gap: 9px; font-size: 13.5px; line-height: 19px; color: ${INK.body}; margin-bottom: 1px; }
 .bullets li:last-child { margin-bottom: 0; }
-.dash { color: ${INK.faint2}; flex: none; }
-.single { margin: 6px 0 0; font-size: 13.5px; line-height: 1.5; color: ${INK.body}; }
+.dash { color: ${INK.faint}; flex: none; }
+.single { margin: 4px 0 0; font-size: 13.5px; line-height: 19px; color: ${INK.body}; }
 
-.edu-row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 8px; break-inside: avoid; }
+.edu-row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 7px; break-inside: avoid; }
 .edu-row:last-child { margin-bottom: 0; }
 .edu-qual { font-weight: 600; font-size: 14.5px; color: ${INK.ink}; }
-.edu-inst { font-style: italic; font-size: 13.5px; color: ${INK.muted}; margin-top: 1px; }
+.edu-inst { font-style: italic; font-size: 13.5px; color: ${INK.muted}; }
 
-.twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 34px; margin-bottom: 15px; break-inside: avoid; }
-.skills { font-size: 13.5px; line-height: 1.85; color: ${INK.body}; }
-.langs { font-size: 13.5px; line-height: 1.85; color: ${INK.ink}; }
-.faint { color: ${INK.faint}; }
+.cert-row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; font-size: 13.5px; margin-bottom: 3px; }
+.cert-name { color: ${INK.ink}; }
+.muted { color: ${INK.muted}; }
 
-.cert-row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; font-size: 13.5px; margin-bottom: 5px; break-inside: avoid; }
+/* Three even columns read as a tidy inventory rather than a run-on line. */
+.skills { margin: 0; padding: 0; list-style: none; columns: 3; column-gap: 24px; font-size: 13.5px; line-height: 19px; }
+.skills li { break-inside: avoid; padding-left: 12px; position: relative; }
+.skills li::before { content: ""; position: absolute; left: 0; top: 8px; width: 4px; height: 4px; border-radius: 50%; background: ${INK.faint2}; }
+.langs { display: grid; grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: 4px 18px; font-size: 13.5px; line-height: 1.45; }
+.lang-name { color: ${INK.ink}; font-weight: 500; }
 
-.refs { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 34px; }
+.refs { display: grid; grid-template-columns: repeat(${"auto-fit"}, minmax(180px, 1fr)); gap: 12px 28px; }
 .ref-name { font-weight: 600; font-size: 14px; color: ${INK.ink}; }
 .ref-role { font-style: italic; font-size: 13px; color: ${INK.muted}; }
-.ref-contact { font-size: 12.5px; color: ${INK.muted}; margin-top: 2px; }
+.ref-contact { font-size: 12.5px; color: ${INK.muted}; margin-top: 1px; }
 `;

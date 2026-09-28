@@ -20,47 +20,45 @@ export interface PdfTheme {
   overrides: Record<string, string>;
 }
 
-// White-page CV templates. Classic / Profile / Grid are strictly
-// monochrome — a single "ink" entry so the picker stays hidden. Crest has
-// an adjustable header-band accent (its only colour); the override sets
-// `accent`, and CrestCV derives on-band text from its luminance.
+// White-page CV templates. Each carries ONE adjustable accent (section
+// heads, rules, glyphs, the band on Crest); body text always stays ink so
+// every palette prints and photocopies cleanly. The override sets `accent`.
+// Crest derives on-band text from the accent's luminance.
+const CV_ACCENTS: Record<string, [string, string]> = {
+  ink:      ["Ink",       "#16130f"],
+  slate:    ["Slate",     "#2e3b4a"],
+  navy:     ["Ink Navy",  "#20304d"],
+  teal:     ["Deep Teal", "#1d4a4a"],
+  forest:   ["Forest",    "#2a4a39"],
+  burgundy: ["Burgundy",  "#6b2a36"],
+  charcoal: ["Charcoal",  "#262626"],
+  sand:     ["Sand",      "#ece6da"],
+  amber:    ["Amber",     "#f2c230"],
+};
+function cvAccents(ids: string[]): PdfTheme[] {
+  return ids.map((id) => ({
+    id, label: CV_ACCENTS[id][0],
+    swatch: [CV_ACCENTS[id][1], "#ffffff"] as [string, string],
+    overrides: { accent: CV_ACCENTS[id][1] },
+  }));
+}
+
 export const CV_THEMES: Record<string, PdfTheme[]> = {
-  classic: [
-    { id: "ink", label: "Ink", swatch: ["#16130f", "#ffffff"], overrides: {} },
+  classic:   cvAccents(["ink", "navy", "burgundy", "forest"]),
+  profile:   cvAccents(["slate", "navy", "teal", "forest", "burgundy", "charcoal"]),
+  grid:      cvAccents(["amber", "teal", "navy", "burgundy", "slate"]),
+  crest:     [
+    ...cvAccents(["navy", "teal", "charcoal", "forest", "burgundy"]),
+    // Sand is a light band with dark text; CrestCV flips the on-band colours.
+    ...cvAccents(["sand"]),
   ],
-  profile: [
-    { id: "ink", label: "Ink", swatch: ["#16130f", "#ffffff"], overrides: {} },
-  ],
-  grid: [
-    { id: "ink", label: "Ink", swatch: ["#16130f", "#ffffff"], overrides: {} },
-  ],
-  crest: [
-    { id: "navy",     label: "Ink Navy",  swatch: ["#20304d", "#ffffff"], overrides: { accent: "#20304d" } },
-    { id: "teal",     label: "Deep Teal", swatch: ["#1d3b3b", "#ffffff"], overrides: { accent: "#1d3b3b" } },
-    { id: "charcoal", label: "Charcoal",  swatch: ["#262626", "#ffffff"], overrides: { accent: "#262626" } },
-    { id: "forest",   label: "Forest",    swatch: ["#243d31", "#ffffff"], overrides: { accent: "#243d31" } },
-    { id: "burgundy", label: "Burgundy",  swatch: ["#532330", "#ffffff"], overrides: { accent: "#532330" } },
-    { id: "sand",     label: "Sand",      swatch: ["#ece6da", "#16130f"], overrides: { accent: "#ece6da" } },
-  ],
-  editorial: [
-    { id: "ink", label: "Ink", swatch: ["#16130f", "#ffffff"], overrides: {} },
-  ],
-  statement: [
-    { id: "ink", label: "Ink", swatch: ["#16130f", "#ffffff"], overrides: {} },
-  ],
-  endnote: [
-    { id: "ink", label: "Ink", swatch: ["#16130f", "#ffffff"], overrides: {} },
-  ],
-  frame: [
-    { id: "navy",     label: "Ink Navy",  swatch: ["#20304d", "#ffffff"], overrides: { accent: "#20304d" } },
-    { id: "teal",     label: "Deep Teal", swatch: ["#1d3b3b", "#ffffff"], overrides: { accent: "#1d3b3b" } },
-    { id: "charcoal", label: "Charcoal",  swatch: ["#262626", "#ffffff"], overrides: { accent: "#262626" } },
-    { id: "forest",   label: "Forest",    swatch: ["#243d31", "#ffffff"], overrides: { accent: "#243d31" } },
-    { id: "burgundy", label: "Burgundy",  swatch: ["#532330", "#ffffff"], overrides: { accent: "#532330" } },
-    // No "sand": Frame draws its accent as rules and text on white, where a
-    // near-white accent would vanish. (A saved "sand" choice falls back to
-    // the default via resolveThemeOverrides.)
-  ],
+  editorial: cvAccents(["forest", "navy", "teal", "burgundy", "slate"]),
+  statement: cvAccents(["ink", "navy", "burgundy", "teal"]),
+  endnote:   cvAccents(["forest", "ink", "navy", "teal", "burgundy"]),
+  // No "sand": Frame draws its accent as rules and text on white, where a
+  // near-white accent would vanish. (A saved "sand" choice falls back to
+  // the default via resolveThemeOverrides.)
+  frame:     cvAccents(["navy", "teal", "charcoal", "forest", "burgundy"]),
 };
 
 export const COMPANY_THEMES: Record<string, PdfTheme[]> = {

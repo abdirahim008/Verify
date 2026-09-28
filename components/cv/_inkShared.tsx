@@ -1,5 +1,5 @@
 import "server-only";
-import { describeLanguage } from "@/lib/languages";
+import { describeLanguage, languageScore } from "@/lib/languages";
 
 // Shared pieces for the white-page "ink" CV templates (Classic, Profile,
 // Grid, Crest, …) ported from the Claude Design handoff. Pure monochrome
@@ -123,3 +123,67 @@ export const EXP_BREAKS = `
 .bullets li { break-inside: avoid; }
 .bullets li:first-child { break-after: avoid; page-break-after: avoid; }
 `;
+
+// ── Shared refinements ──────────────────────────────────────────────────
+
+type ContactKind = "location" | "phone" | "email";
+
+/** Hairline contact glyphs (pin, handset, envelope) drawn on a 12px grid so
+ *  they sit on the text baseline at any size. `color` defaults to the text. */
+export function ContactIcon({ kind, size = 10, color = "currentColor" }: { kind: ContactKind; size?: number; color?: string }) {
+  const common = { fill: "none", stroke: color, strokeWidth: 1.2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12" aria-hidden className="ci" style={{ flex: "none" }}>
+      {kind === "location" && <><path d="M6 11s3.8-3.6 3.8-6.3A3.8 3.8 0 0 0 2.2 4.7C2.2 7.4 6 11 6 11z" {...common} /><circle cx="6" cy="4.7" r="1.3" {...common} /></>}
+      {kind === "phone" && <path d="M3.6 1.2h-1a1 1 0 0 0-1 1.1 9 9 0 0 0 8.1 8.1 1 1 0 0 0 1.1-1v-1.2L8.6 7.3 7.4 8.4a6.4 6.4 0 0 1-3.8-3.8l1.1-1.2L3.6 1.2z" {...common} />}
+      {kind === "email" && <><rect x="1.2" y="2.4" width="9.6" height="7.2" rx="1" {...common} /><path d="M1.6 3l4.4 3.4L10.4 3" {...common} /></>}
+    </svg>
+  );
+}
+
+/** The contact lines a member has filled in, each tagged with its glyph. */
+export function contactItems(d: { location: string; phone: string; email: string }): { kind: ContactKind; value: string }[] {
+  const out: { kind: ContactKind; value: string }[] = [];
+  if (d.location) out.push({ kind: "location", value: d.location });
+  if (d.phone) out.push({ kind: "phone", value: d.phone });
+  if (d.email) out.push({ kind: "email", value: d.email });
+  return out;
+}
+
+/** An email that may wrap only after "@" or a dot — never mid-word
+ *  ("example.co / m") — when it's too long for a narrow column. */
+export function Email({ value }: { value: string }) {
+  const parts = value.split(/(?<=[@.])/);
+  // One wrapping span, so a flex/grid parent sees a single item (no gaps
+  // opening up between the pieces).
+  return <span>{parts.map((p, i) => <span key={i}>{p}{i < parts.length - 1 && <wbr />}</span>)}</span>;
+}
+
+/** Contact value with email line-break handling. */
+export function ContactValue({ kind, value }: { kind: ContactKind; value: string }) {
+  return kind === "email" ? <Email value={value} /> : <span>{value}</span>;
+}
+
+/** Typographic polish shared by every CV: balanced display lines, no lone
+ *  last-line words in paragraphs, lining tabular figures in dates so ranges
+ *  align down the page, and no widowed/orphaned single lines. */
+export const TYPE_CSS = `
+h1, h2, h3 { text-wrap: balance; }
+p, li { text-wrap: pretty; orphans: 2; widows: 2; }
+.dates, .date, .yr { font-variant-numeric: tabular-nums lining-nums; }
+.ci { display: inline-block; vertical-align: -1px; }
+`;
+
+/** Five-segment level bar for a language (the member's own rating — never
+ *  drawn when unrated). `on`/`off` colour the filled and empty segments. */
+export function LevelBar({ lang, on, off, width = 64 }: { lang: string; on: string; off: string; width?: number }) {
+  const score = languageScore(lang);
+  if (!score) return null;
+  return (
+    <span className="lvl" style={{ display: "inline-flex", gap: "2px", width: `${width}px`, flex: "none" }} aria-label={`${score} of 5`}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <span key={n} style={{ flex: 1, height: "4px", borderRadius: "1px", background: n <= score ? on : off }} />
+      ))}
+    </span>
+  );
+}

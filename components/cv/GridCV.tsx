@@ -1,164 +1,155 @@
 import "server-only";
 import type { CVData } from "@/lib/pdf/data";
-import { INK, VerifiedMark, toBullets, splitLang, pageFooterCss, EXP_BREAKS, LANG_CSS } from "./_inkShared";
+import {
+  INK, VerifiedMark, initials, toBullets, splitLang, pageFooterCss, EXP_BREAKS,
+  TYPE_CSS, ContactIcon, ContactValue, contactItems, bandColors, LevelBar,
+} from "./_inkShared";
 
-// CV 4 — The Grid. White page under a heavy masthead rule, numbered section
-// labels. Archivo (display) + IBM Plex Sans (body). Ported from the Claude
-// Design handoff.
+// CV 4 — The Grid. A bold, modern layout: an accent strip at the top-left
+// carrying the contact lines over a photo block, a heavy Archivo name beside
+// a tinted summary panel, and section heads sitting on thick accent bars.
+// Archivo (display) + IBM Plex Sans (body). One adjustable accent
+// (lib/pdf/themes.ts); strip text flips light/dark with its luminance.
 //
-// Layout: short sections sit in two-up rows (Profile | Skills & Languages,
-// Education | Certifications); Experience runs full width, each role on its
-// own two-column grid (dates + location | title, organisation, bullets).
-// Experience used to sit in the left half-column, which ran long CVs to
-// three narrow pages with the right half of pages 2–3 empty.
+// Body layout: the left column (skills, education, certifications,
+// languages) is a float, so once it ends Experience runs full width — a
+// long CV doesn't leave an empty left column down pages 2 and 3. Each main
+// block is its own formatting context (display: flow-root) so it sits beside
+// the float cleanly and widens once it clears it.
 
 const DISPLAY = `"Archivo", system-ui, sans-serif`;
 const BODY = `"IBM Plex Sans", system-ui, sans-serif`;
+const LEFT_W = 214;
 
-export function GridCV({ data }: { data: CVData; theme?: Record<string, string> }) {
-  const { fullName, headline, summary, location, email, phone, languages,
+export function GridCV({ data, theme }: { data: CVData; theme?: Record<string, string> }) {
+  const { fullName, headline, summary, photoUrl, languages,
           experiences, educations, certifications, skills, referees } = data;
-  const contact = [location, phone, email].filter(Boolean);
-
-  // Number only the sections that actually render, in reading order.
-  let n = 0;
-  const num = () => String(++n).padStart(2, "0");
-
-  const topLeft = summary ? (
-    <div>
-      <SecHead n={num()} label="Profile" />
-      <p className="summary">{summary}</p>
-    </div>
-  ) : null;
-  const topRight = skills.length > 0 || languages.length > 0 ? (
-    <div>
-      {skills.length > 0 && (
-        <>
-          <SecHead n={num()} label="Skills" />
-          <div className="skills">{skills.join("  ·  ")}</div>
-        </>
-      )}
-      {languages.length > 0 && (
-        <>
-          <SecHead n={num()} label="Languages" spaced={skills.length > 0} />
-          <div className="langs">
-            {languages.map((l, i) => {
-              const { name, level, detail } = splitLang(l);
-              return <div key={i}><div className="lang"><span style={{ color: INK.ink }}>{name}</span>{level && <span className="faint">{level}</span>}</div>{detail && <div className="lang-sub">{detail}</div>}</div>;
-            })}
-          </div>
-        </>
-      )}
-    </div>
-  ) : null;
-
-  const experience = experiences.length > 0 ? (
-    <section className="block">
-      <SecHead n={num()} label="Experience" />
-      {experiences.map((e, i) => (
-        <div key={i} className="exp">
-          <div className="exp-meta">
-            {e.dateRange && <div className="exp-dates">{e.dateRange}</div>}
-            {e.location && <div className="exp-loc">{e.location}</div>}
-          </div>
-          <div className="exp-main">
-            <div className="exp-head">
-              <div className="exp-title">{e.title}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
-              {e.organization && <div className="exp-org">{e.organization}</div>}
-            </div>
-            <Bullets text={e.description} />
-          </div>
-        </div>
-      ))}
-    </section>
-  ) : null;
-
-  const bottomLeft = educations.length > 0 ? (
-    <div>
-      <SecHead n={num()} label="Education" />
-      {educations.map((e, i) => (
-        <div key={i} className="edu">
-          <div className="edu-qual">{e.title}{e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}</div>
-          <div className="row">
-            <span className="edu-inst">{e.institution}</span>
-            {e.dateRange && <span className="dates">{e.dateRange}</span>}
-          </div>
-        </div>
-      ))}
-    </div>
-  ) : null;
-  const bottomRight = certifications.length > 0 ? (
-    <div>
-      <SecHead n={num()} label="Certifications" />
-      <div className="certs">
-        {certifications.map((c, i) => (
-          <div key={i} className="cert-row">
-            <span style={{ color: INK.ink }}>{c.name}{c.issuer ? <span className="faint"> — {c.issuer}</span> : null}{c.verified && <>&nbsp;&nbsp;<VerifiedMark note="" /></>}</span>
-            {c.year && <span className="dates">{c.year}</span>}
-          </div>
-        ))}
-      </div>
-    </div>
-  ) : null;
-
-  const refs = referees.length > 0 ? (
-    <section className="block">
-      <SecHead n={num()} label="Referees" />
-      <div className={referees.length > 2 ? "refs refs-3" : "refs"}>
-        {referees.map((r, i) => (
-          <div key={i}>
-            <div className="ref-name">{r.name}</div>
-            {(r.position || r.organization) && <div className="ref-role">{[r.position, r.organization].filter(Boolean).join(", ")}</div>}
-            {(r.email || r.phone) && <div className="ref-contact">{[r.email, r.phone].filter(Boolean).join(" · ")}</div>}
-          </div>
-        ))}
-      </div>
-    </section>
-  ) : null;
+  const contact = contactItems(data);
+  const C = bandColors(theme?.accent ?? "#f2c230");
+  // A light accent (the default amber) reads as a highlight, not as text:
+  // on white its heads and markers use ink instead.
+  const light = C.onBand !== "#ffffff";
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles + EXP_BREAKS + LANG_CSS + pageFooterCss(fullName, BODY) }} />
+      <style dangerouslySetInnerHTML={{ __html: styles(C.accent, C.onBand, light) + TYPE_CSS + EXP_BREAKS + pageFooterCss(fullName, BODY) }} />
       <div className="page">
-        <header>
-          <div className="hd">
-            <h1 className="name">{fullName}</h1>
-            <div className="hd-right">
-              {headline && <div className="hd-role">{headline}</div>}
-              {contact.map((c, i) => <div key={i}>{c}</div>)}
+        <header className="hd">
+          <div className="hd-left">
+            <div className="strip" data-band>
+              {contact.map((c, i) => (
+                <div key={i} className="c-item"><ContactIcon kind={c.kind} size={11} color={C.onBand} /><ContactValue {...c} /></div>
+              ))}
             </div>
+            {photoUrl
+              // eslint-disable-next-line @next/next/no-img-element
+              ? <img src={photoUrl} alt="" className="photo" />
+              : <div className="photo mono">{initials(fullName)}</div>}
           </div>
-          <div className="masthead-rule" />
+          <div className="hd-right">
+            <h1 className="name">{fullName}</h1>
+            {headline && <div className="role">{headline}</div>}
+            {summary && (
+              <div className="panel" data-band>
+                <h2 className="h2">Summary</h2>
+                <p className="summary">{summary}</p>
+              </div>
+            )}
+          </div>
         </header>
 
-        <Duo left={topLeft} right={topRight} />
-        {experience}
-        <Duo left={bottomLeft} right={bottomRight} />
-        {refs}
+        <div className="body">
+          {(skills.length > 0 || educations.length > 0 || certifications.length > 0 || languages.length > 0) && (
+            <aside className="left">
+              {skills.length > 0 && (
+                <section className="l-sec">
+                  <h2 className="h2">Skills</h2>
+                  <ul className="sk">{skills.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                </section>
+              )}
+              {educations.length > 0 && (
+                <section className="l-sec">
+                  <h2 className="h2">Education</h2>
+                  {educations.map((e, i) => (
+                    <div key={i} className="edu">
+                      <div className="edu-qual">{e.title}</div>
+                      <div className="edu-inst">{e.institution}{e.dateRange ? ` · ${e.dateRange}` : ""}</div>
+                      {e.verified && <div><VerifiedMark note={e.verifiedNote} /></div>}
+                    </div>
+                  ))}
+                </section>
+              )}
+              {certifications.length > 0 && (
+                <section className="l-sec">
+                  <h2 className="h2">Certifications</h2>
+                  {certifications.map((c, i) => (
+                    <div key={i} className="edu">
+                      <div className="edu-qual">{c.name}</div>
+                      {(c.issuer || c.year) && <div className="edu-inst">{[c.issuer, c.year].filter(Boolean).join(" · ")}</div>}
+                      {c.verified && <div><VerifiedMark note={c.verifiedNote} /></div>}
+                    </div>
+                  ))}
+                </section>
+              )}
+              {languages.length > 0 && (
+                <section className="l-sec">
+                  <h2 className="h2">Languages</h2>
+                  {languages.map((l, i) => {
+                    const { name, level, detail } = splitLang(l);
+                    return (
+                      <div key={i} className="lang">
+                        <div className="lang-row">
+                          <span className="lang-name">{name}</span>
+                          <LevelBar lang={l} on={C.accent} off="#e3e1dc" width={54} />
+                        </div>
+                        {(level || detail) && <div className="lang-sub">{[level, detail].filter(Boolean).join(" · ")}</div>}
+                      </div>
+                    );
+                  })}
+                </section>
+              )}
+            </aside>
+          )}
+
+          {experiences.length > 0 && (
+            <section className="m-sec">
+              <h2 className="h2">Work History</h2>
+              {experiences.map((e, i) => (
+                <div key={i} className="exp">
+                  <div className="exp-head">
+                    <div className="exp-title">
+                      {e.title}
+                      {e.dateRange && <span className="dates"> — {e.dateRange}</span>}
+                    </div>
+                    <div className="exp-org">
+                      <span className="org">{e.organization}</span>
+                      {e.location && <span className="loc">{e.organization ? ", " : ""}{e.location}</span>}
+                      {e.verified && <>&nbsp;&nbsp;<VerifiedMark note={e.verifiedNote} /></>}
+                    </div>
+                  </div>
+                  <Bullets text={e.description} />
+                </div>
+              ))}
+            </section>
+          )}
+
+          {referees.length > 0 && (
+            <section className="m-sec">
+              <h2 className="h2">Referees</h2>
+              <div className="refs">
+                {referees.map((r, i) => (
+                  <div key={i}>
+                    <div className="ref-name">{r.name}</div>
+                    {(r.position || r.organization) && <div className="ref-role">{[r.position, r.organization].filter(Boolean).join(", ")}</div>}
+                    {(r.email || r.phone) && <div className="ref-contact">{[r.email, r.phone].filter(Boolean).join(" · ")}</div>}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
       </div>
     </>
-  );
-}
-
-// Two-up row; collapses to a single full-width column when one side is
-// empty so a lone section never sits in half the page.
-function Duo({ left, right }: { left: React.ReactNode; right: React.ReactNode }) {
-  if (!left && !right) return null;
-  if (!left || !right) return <section className="block">{left ?? right}</section>;
-  return (
-    <section className="block duo">
-      <div className="duo-l">{left}</div>
-      <div className="duo-r">{right}</div>
-    </section>
-  );
-}
-
-function SecHead({ n, label, spaced }: { n: string; label: string; spaced?: boolean }) {
-  return (
-    <div className={spaced ? "sechead sechead-gap" : "sechead"}>
-      <span className="sechead-n">{n}</span>
-      <span className="sechead-l">{label}</span>
-    </div>
   );
 }
 
@@ -168,67 +159,69 @@ function Bullets({ text }: { text: string }) {
   if (bullets.length === 1) return <p className="single">{bullets[0]}</p>;
   return (
     <ul className="bullets">
-      {bullets.map((b, i) => <li key={i}><span className="sq" /><span>{b}</span></li>)}
+      {bullets.map((b, i) => <li key={i}><span className="mk" /><span>{b}</span></li>)}
     </ul>
   );
 }
 
-const styles = `
-/* Vertical @page margins give every page real top/bottom text spacing (so
-   continuation pages don't run to the sheet edge); horizontal is handled by
-   the .page side padding. */
-@page { size: A4; margin: 14mm 0; }
-.page { padding: 0 52px; color: ${INK.body}; font-family: ${BODY}; -webkit-font-smoothing: antialiased; }
+const styles = (A: string, onA: string, light: boolean) => {
+  const mark = light ? INK.ink : A;
+  return `
+/* Page 1's strip bleeds to the top edge; later pages get a top margin. */
+@page { size: A4; margin: 14mm 0 14mm; }
+@page :first { margin: 0 0 14mm; }
+[data-band] { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.page { color: ${INK.body}; font-family: ${BODY}; -webkit-font-smoothing: antialiased; padding: 0 40px; }
 
-.hd { display: flex; justify-content: space-between; align-items: flex-end; gap: 28px; }
-.name { margin: 0; font-family: ${DISPLAY}; font-weight: 800; font-size: 50px; letter-spacing: -0.025em; line-height: 0.95; color: ${INK.ink}; }
-.hd-right { text-align: right; font-size: 11.5px; line-height: 1.85; color: ${INK.bodySoft}; padding-bottom: 3px; max-width: 300px; }
-.hd-role { font-family: ${DISPLAY}; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.18em; line-height: 1.5; color: ${INK.ink}; margin-bottom: 6px; }
-.masthead-rule { height: 2px; background: ${INK.ink}; margin-top: 26px; }
+/* ── Header ──────────────────────────────────────────────── */
+.hd { display: grid; grid-template-columns: ${LEFT_W}px 1fr; gap: 0 30px; margin-bottom: 20px; }
+.strip { background: ${A}; color: ${onA}; padding: 30px 18px 16px; display: flex; flex-direction: column; gap: 7px; font-size: 11px; line-height: 1.35; }
+.c-item { display: flex; align-items: flex-start; gap: 9px; }
+.c-item .ci { margin-top: 1px; }
+.photo { display: block; width: ${LEFT_W}px; height: 190px; object-fit: cover; }
+.mono { display: flex; align-items: center; justify-content: center; background: #efeeea; font-family: ${DISPLAY}; font-weight: 800; font-size: 54px; letter-spacing: 0.02em; color: ${INK.faint}; }
+.hd-right { padding-top: 32px; min-width: 0; display: flex; flex-direction: column; }
+.name { margin: 0; font-family: ${DISPLAY}; font-weight: 800; font-size: 38px; line-height: 1.02; letter-spacing: -0.02em; color: ${INK.ink}; }
+.role { margin-top: 8px; font-size: 13px; font-weight: 500; color: ${INK.muted2}; letter-spacing: 0.02em; }
+.panel { margin-top: 16px; background: #f1f0ed; padding: 14px 18px 16px; }
+.summary { margin: 0; font-size: 12px; line-height: 1.6; color: ${INK.body}; }
 
-.block { margin-top: 30px; }
-.duo { display: grid; grid-template-columns: 1fr 1fr; break-inside: avoid; }
-.duo-l { padding-right: 34px; min-width: 0; }
-.duo-r { padding-left: 34px; border-left: 1px solid ${INK.hair}; min-width: 0; }
+/* Section head: heavy Archivo over a thick accent bar. */
+.h2 { margin: 0 0 10px; padding-bottom: 5px; font-family: ${DISPLAY}; font-weight: 800; font-size: 17px; line-height: 1.2; color: ${INK.ink}; border-bottom: 4px solid ${A}; break-after: avoid; page-break-after: avoid; }
 
-.sechead { display: flex; align-items: baseline; gap: 9px; border-bottom: 1px solid ${INK.ink}; padding-bottom: 6px; margin-bottom: 14px; break-after: avoid; page-break-after: avoid; }
-.sechead-gap { margin-top: 24px; }
-.sechead-n { font-family: ${DISPLAY}; font-weight: 700; font-size: 11px; color: ${INK.faint2}; }
-.sechead-l { font-family: ${DISPLAY}; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.16em; color: ${INK.ink}; }
-
-.exp { display: grid; grid-template-columns: 124px 1fr; column-gap: 26px; margin-bottom: 20px; }
-.exp:last-child { margin-bottom: 0; }
-.exp-meta { padding-top: 2px; }
-.exp-dates { font-family: ${DISPLAY}; font-weight: 600; font-size: 11.5px; color: ${INK.ink}; letter-spacing: 0.02em; }
-.exp-loc { font-size: 11.5px; color: ${INK.faint}; margin-top: 3px; }
-.exp-main { min-width: 0; }
-.exp-title { font-family: ${DISPLAY}; font-weight: 700; font-size: 14px; color: ${INK.ink}; }
-.exp-org { font-size: 12.5px; color: ${INK.muted}; margin-top: 2px; }
-.row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-top: 2px; }
-.dates { font-size: 11px; font-weight: 500; color: ${INK.faint}; letter-spacing: 0.03em; white-space: nowrap; flex: none; }
-.bullets { margin: 9px 0 0; padding: 0; list-style: none; }
-.bullets li { display: flex; gap: 10px; font-size: 12px; line-height: 20px; color: ${INK.body}; margin-bottom: 4px; }
-.bullets li:last-child { margin-bottom: 0; }
-.sq { flex: none; width: 3px; height: 3px; background: ${INK.ink}; margin-top: 9px; }
-.single { margin: 9px 0 0; font-size: 12px; line-height: 1.7; color: ${INK.body}; }
-
-.edu { margin-bottom: 14px; break-inside: avoid; }
+/* ── Body ────────────────────────────────────────────────── */
+.left { float: left; width: ${LEFT_W}px; margin-right: 30px; }
+.m-sec { display: flow-root; margin-bottom: 16px; }
+.l-sec { margin-bottom: 16px; }
+.sk { margin: 0; padding: 0; list-style: none; font-size: 11.5px; line-height: 1.35; }
+.sk li { position: relative; padding-left: 13px; margin-bottom: 5px; break-inside: avoid; }
+.sk li::before { content: ""; position: absolute; left: 1px; top: 5px; width: 5px; height: 5px; border-radius: 50%; background: ${mark}; }
+.edu { margin-bottom: 9px; break-inside: avoid; }
 .edu:last-child { margin-bottom: 0; }
-.edu-qual { font-family: ${DISPLAY}; font-weight: 700; font-size: 13px; color: ${INK.ink}; }
-.edu-inst { font-size: 12px; color: ${INK.muted}; }
+.edu-qual { font-weight: 600; font-size: 12px; line-height: 1.35; color: ${INK.ink}; }
+.edu-inst { font-size: 11px; line-height: 1.4; color: ${INK.muted}; margin-top: 1px; }
+.lang { margin-bottom: 7px; break-inside: avoid; }
+.lang-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.lang-name { font-size: 12px; font-weight: 600; color: ${INK.ink}; }
+.lang-sub { font-size: 10px; line-height: 1.4; color: ${INK.muted}; margin-top: 2px; }
 
-.summary { margin: 0; font-size: 12.5px; line-height: 1.62; color: ${INK.body}; }
-.skills { font-size: 12.5px; line-height: 1.75; color: ${INK.body}; }
-.langs { display: flex; flex-direction: column; gap: 7px; font-size: 12.5px; }
-.lang { display: flex; justify-content: space-between; gap: 8px; }
-.faint { color: ${INK.faint}; }
-.certs { display: flex; flex-direction: column; gap: 9px; }
-.cert-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 12px; break-inside: avoid; }
+.exp { margin-bottom: 13px; }
+.exp:last-child { margin-bottom: 0; }
+.exp-title { font-weight: 600; font-size: 13px; line-height: 1.4; color: ${INK.ink}; }
+.dates { font-weight: 400; color: ${INK.muted}; font-size: 12px; }
+.exp-org { font-size: 12px; line-height: 1.4; }
+.org { font-weight: 700; color: ${INK.ink}; }
+.loc { color: ${INK.muted}; }
+.bullets { margin: 5px 0 0; padding: 0; list-style: none; }
+.bullets li { display: flex; gap: 10px; font-size: 11.5px; line-height: 17px; color: ${INK.body}; margin-bottom: 2px; }
+.bullets li:last-child { margin-bottom: 0; }
+.mk { flex: none; width: 5px; height: 5px; border-radius: 50%; background: ${mark}; margin-top: 6px; }
+.single { margin: 5px 0 0; font-size: 11.5px; line-height: 17px; color: ${INK.body}; }
 
-.refs { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 28px; }
-.refs-3 { grid-template-columns: 1fr 1fr 1fr; }
+.refs { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px 24px; }
 .refs > div { break-inside: avoid; }
-.ref-name { font-family: ${DISPLAY}; font-weight: 700; font-size: 12.5px; color: ${INK.ink}; }
-.ref-role { font-size: 11.5px; color: ${INK.muted}; }
-.ref-contact { font-size: 11px; color: ${INK.faint}; margin-top: 2px; word-break: break-word; }
+.ref-name { font-weight: 600; font-size: 12px; color: ${INK.ink}; }
+.ref-role { font-size: 11px; color: ${INK.muted}; line-height: 1.4; }
+.ref-contact { font-size: 11px; color: ${INK.muted}; }
 `;
+};
