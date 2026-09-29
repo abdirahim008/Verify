@@ -7,6 +7,7 @@ export interface TemplateMeta { id: string; name: string; tagline: string }
 export const CV_TEMPLATES: TemplateMeta[] = [
   { id: "classic", name: "The Classic", tagline: "Single column · serif · centred" },
   { id: "profile", name: "The Profile", tagline: "Dark sidebar · photo · level bars" },
+  { id: "beacon", name: "The Beacon", tagline: "Charcoal sidebar · gold accent · timeline" },
   { id: "editorial", name: "The Editorial", tagline: "Colour band · grey sidebar · photo" },
   { id: "grid", name: "The Grid", tagline: "Accent strip · photo block · bold" },
   { id: "statement", name: "The Statement", tagline: "Bordered masthead · photo" },
