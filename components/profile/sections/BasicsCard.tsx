@@ -89,7 +89,7 @@ export function BasicsCard({ initial }: Props) {
               <input type="email" className="field" autoComplete="email" {...register("email")} />
             </Field>
             <Field label="Phone (for CV)" error={errors.phone?.message}>
-              <input type="tel" className="field" autoComplete="tel" {...register("phone")} />
+              <input type="tel" className="field" autoComplete="tel" placeholder="+252 61 555 0142" {...register("phone")} />
             </Field>
             <input type="hidden" {...register("photo_url")} />
             <div className="sm:col-span-2">

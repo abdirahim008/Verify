@@ -11,6 +11,47 @@ import { noLinks, NO_LINKS_MSG } from "@/lib/spam";
 // actions convert at the boundary via toIntOrNull().
 
 const optTrimmed = z.string().trim().max(500).optional();
+
+// ── Contact-field rules ───────────────────────────────────────────────
+// Shared by the forms (react-hook-form) and the server actions, so the same
+// check runs on both sides.
+
+/** One phone number: an optional leading "+", then digits with the usual
+ *  spacing characters, 7–15 digits in all (the international maximum).
+ *  Letters are never allowed. */
+const ONE_PHONE = /^\+?[\d\s().-]+$/;
+const digitCount = (s: string) => (s.match(/\d/g) ?? []).length;
+/** Up to three numbers may be listed, separated by "/", "," or ";" — common
+ *  for members with a Somali and a Kenyan line. */
+export function isPhone(v: string): boolean {
+  const parts = v.split(/[/,;]/).map((p) => p.trim());
+  if (parts.length > 3 || parts.some((p) => p === "")) return false;
+  return parts.every((p) => ONE_PHONE.test(p) && digitCount(p) >= 7 && digitCount(p) <= 15);
+}
+export const PHONE_MSG = "Enter a phone number in digits, e.g. +252 61 555 0142";
+const phoneField = z.string().trim().max(60)
+  .refine((v) => v === "" || isPhone(v), PHONE_MSG)
+  .optional();
+
+/** Email: surrounding spaces are ignored (phone keyboards add them), then it
+ *  must be a real address — "12345", "hello" or "name@gmail" are rejected. */
+const emailField = z.string().trim().max(254)
+  .email("Enter a full email address, e.g. name@example.com")
+  .or(z.literal(""))
+  .optional();
+
+/** Website: a domain with an optional http(s):// and path — "example.so",
+ *  "www.example.so", "https://example.so/about". No spaces, no plain words. */
+const WEBSITE = /^(https?:\/\/)?([a-z0-9-]+\.)+[a-z]{2,}(:\d{2,5})?(\/\S*)?$/i;
+const websiteField = z.string().trim().max(200)
+  .refine((v) => v === "" || WEBSITE.test(v), "Enter a website address, e.g. example.so")
+  .optional();
+
+/** A person's name: must contain letters and no digits. Hyphens,
+ *  apostrophes, dots and titles ("Dr.", "Eng.") are fine. */
+const NAME_MSG = "Use letters only — no numbers";
+const personName = (max: number) => z.string().trim().max(max)
+  .refine((v) => v === "" || (/\p{L}/u.test(v) && !/\d/.test(v)), NAME_MSG);
 const longText = z.string().trim().max(5000).optional();
 const yearStr = z.string()
   .refine((v) => v === "" || /^\d{4}$/.test(v), "Use a 4-digit year")
@@ -20,12 +61,12 @@ const yearStr = z.string()
 export const basicsSchema = z.object({
   // Links in a name or headline are the signature of SEO-spam signups —
   // reject at save time so the profile never exists (see lib/spam.ts).
-  full_name: z.string().trim().min(1, "Required").max(120).refine(noLinks, NO_LINKS_MSG),
+  full_name: personName(120).refine((v) => v.length > 0, "Required").refine(noLinks, NO_LINKS_MSG),
   headline: optTrimmed.refine(noLinks, NO_LINKS_MSG),
   summary: longText,
   location: optTrimmed,
-  phone: optTrimmed,
-  email: z.string().email("Invalid email").or(z.literal("")).optional(),
+  phone: phoneField,
+  email: emailField,
   photo_url: z.string().url("Use a full URL").or(z.literal("")).optional(),
 });
 export type BasicsValues = z.infer<typeof basicsSchema>;
@@ -72,11 +113,11 @@ export const certificationSchema = z.object({
 export type CertificationValues = z.infer<typeof certificationSchema>;
 
 export const refereeSchema = z.object({
-  name: z.string().trim().min(1, "Required").max(120),
+  name: personName(120).refine((v) => v.length > 0, "Required"),
   position: optTrimmed,
   organization: optTrimmed,
-  phone: optTrimmed,
-  email: z.string().email("Invalid email").or(z.literal("")).optional(),
+  phone: phoneField,
+  email: emailField,
   relationship: optTrimmed,
   // "" means "no link"; the action treats blank/null as null.
   experience_id: z.string().optional().nullable(),
@@ -106,15 +147,15 @@ export const companyBasicsSchema = z.object({
   staff_count: countStr,
   countries_count: countStr,
   projects_count: countStr,
-  website: z.string().trim().max(200).optional(),
-  email: z.string().email("Invalid email").or(z.literal("")).optional(),
-  phone: optTrimmed,
+  website: websiteField,
+  email: emailField,
+  phone: phoneField,
 });
 export type CompanyBasicsValues = z.infer<typeof companyBasicsSchema>;
 
 // Message from the CEO + the organogram's top label.
 export const companyCeoSchema = z.object({
-  ceo_name: optTrimmed,
+  ceo_name: personName(500).optional(),
   ceo_title: optTrimmed,
   ceo_photo_url: z.string().url("Use a full URL").or(z.literal("")).optional(),
   ceo_quote: z.string().trim().max(600).optional(),
@@ -153,8 +194,10 @@ export const companyProjectSchema = z.object({
   project_name: z.string().trim().min(1, "Required").max(200),
   client_name: optTrimmed,
   sector: optTrimmed,
-  value_amount: z.string()
-    .refine((v) => v === "" || /^\d+(\.\d+)?$/.test(v), "Numbers only")
+  // "1200000", "1,200,000" or "1 200 000" (and decimals); separators are
+  // stripped when saved (toNumOrNull).
+  value_amount: z.string().trim()
+    .refine((v) => v === "" || /^\d{1,3}([,\s]?\d{3})*(\.\d+)?$/.test(v), "Numbers only, e.g. 1,200,000")
     .optional(),
   currency: optTrimmed,
   year_start: yearStr,
@@ -176,7 +219,7 @@ export const companyClientSchema = z.object({
 export type CompanyClientValues = z.infer<typeof companyClientSchema>;
 
 export const companyTeamSchema = z.object({
-  person_name: z.string().trim().min(1, "Required").max(120),
+  person_name: personName(120).refine((v) => v.length > 0, "Required"),
   role: optTrimmed,
   // Department/unit tags shown under each leader in the organogram.
   units: z.array(z.string().trim().min(1).max(60)).max(12),
@@ -189,7 +232,7 @@ export type CompanyCertificationValues = CertificationValues;
 
 export function toNumOrNull(v: string | undefined | null): number | null {
   if (v === undefined || v === null || v === "") return null;
-  const n = Number(v);
+  const n = Number(v.replace(/[,\s]/g, ""));
   return Number.isFinite(n) ? n : null;
 }
 

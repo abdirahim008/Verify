@@ -180,7 +180,7 @@ function ProjectForm({
           {sectorOptions.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
       </Field>
-      <Field label="Value (number)" error={errors.value_amount?.message} hint="Numbers only. Currency separate.">
+      <Field label="Value (number)" error={errors.value_amount?.message} hint="e.g. 1,200,000. Pick the currency separately.">
         <input className="field" inputMode="decimal" {...register("value_amount")} />
       </Field>
       <Field label="Currency" error={errors.currency?.message}>

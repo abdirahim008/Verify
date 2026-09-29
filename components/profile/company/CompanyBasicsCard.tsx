@@ -91,14 +91,14 @@ export function CompanyBasicsCard({ initial }: Props) {
             <input className="field" placeholder="e.g. Somalia" {...register("registration_country")} />
           </Field>
           <Field label="Website" error={errors.website?.message}>
-            <input className="field" placeholder="example.so" {...register("website")} />
+            <input type="url" inputMode="url" className="field" placeholder="example.so" {...register("website")} />
           </Field>
           <input type="hidden" {...register("logo_url")} />
           <Field label="Public email" error={errors.email?.message}>
-            <input type="email" className="field" {...register("email")} />
+            <input type="email" className="field" placeholder="info@example.so" {...register("email")} />
           </Field>
           <Field label="Public phone" error={errors.phone?.message}>
-            <input type="tel" className="field" {...register("phone")} />
+            <input type="tel" className="field" placeholder="+252 61 555 0142" {...register("phone")} />
           </Field>
 
           <div className="sm:col-span-2">

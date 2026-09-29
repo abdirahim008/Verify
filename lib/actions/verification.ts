@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { isPhone, PHONE_MSG } from "@/lib/schemas";
 import { createSupabaseRouteClient } from "@/lib/supabase/route";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import {
@@ -43,11 +44,11 @@ const createSchema = z.object({
   id: z.string().uuid(),
   target_type: z.enum(["experience", "education", "project", "certification"]),
   target_id: z.string().uuid(),
-  contact_phone: z.string().trim().min(5, "Enter a usable phone number").max(40),
+  contact_phone: z.string().trim().max(60).refine(isPhone, PHONE_MSG),
   accept_payment: z.literal(true, {
     errorMap: () => ({ message: "Tick the payment acknowledgment to continue." }),
   }),
-  contact_email: z.string().email().optional(),
+  contact_email: z.string().trim().email().optional(),
 });
 
 export async function createVerificationRequest(input: z.infer<typeof createSchema>) {
