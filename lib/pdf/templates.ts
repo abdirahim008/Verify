@@ -7,6 +7,7 @@ import { EditorialCV } from "@/components/cv/EditorialCV";
 import { StatementCV } from "@/components/cv/StatementCV";
 import { EndnoteCV } from "@/components/cv/EndnoteCV";
 import { FrameCV } from "@/components/cv/FrameCV";
+import { BeaconCV } from "@/components/cv/BeaconCV";
 import { WadaniCompanyProfile } from "@/components/cv/WadaniCompanyProfile";
 import { AnnualCompanyProfile } from "@/components/cv/AnnualCompanyProfile";
 import { MinimalCompanyProfile } from "@/components/cv/MinimalCompanyProfile";
@@ -54,6 +55,10 @@ export const CV_RENDER = {
   endnote: {
     name: "Endnote", component: EndnoteCV,
     fonts: G + "family=Archivo:wght@500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap",
+  },
+  beacon: {
+    name: "Beacon", component: BeaconCV,
+    fonts: G + "family=Montserrat:wght@600;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap",
   },
   frame: {
     name: "Frame", component: FrameCV,

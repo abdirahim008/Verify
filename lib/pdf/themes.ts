@@ -34,6 +34,12 @@ const CV_ACCENTS: Record<string, [string, string]> = {
   charcoal: ["Charcoal",  "#262626"],
   sand:     ["Sand",      "#ece6da"],
   amber:    ["Amber",     "#f2c230"],
+  // Bright accents for The Beacon's charcoal sidebar.
+  gold:     ["Gold",      "#f5b301"],
+  orange:   ["Orange",    "#f07c1e"],
+  jade:     ["Jade",      "#1fa39a"],
+  sky:      ["Sky",       "#2e8fd6"],
+  coral:    ["Coral",     "#e45b52"],
 };
 function cvAccents(ids: string[]): PdfTheme[] {
   return ids.map((id) => ({
@@ -58,6 +64,7 @@ export const CV_THEMES: Record<string, PdfTheme[]> = {
   // No "sand": Frame draws its accent as rules and text on white, where a
   // near-white accent would vanish. (A saved "sand" choice falls back to
   // the default via resolveThemeOverrides.)
+  beacon:    cvAccents(["gold", "orange", "jade", "sky", "coral"]),
   frame:     cvAccents(["navy", "teal", "charcoal", "forest", "burgundy"]),
 };
 
