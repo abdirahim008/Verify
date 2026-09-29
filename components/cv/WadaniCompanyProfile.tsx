@@ -1,10 +1,11 @@
 import "server-only";
 import type { CompanyData } from "@/lib/pdf/company-data";
-import { deriveAccent, monogram, profileLine, type AccentSet } from "./companyShared";
+import { deriveAccent, monogram, profileLine, type AccentSet, fitSize } from "./companyShared";
 import {
   INK, BODY, MUTE, FAINT, RULE, band, paragraphs, ceoVisible, orgVisible,
   CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, CompanyProjects,
   projectsVisible, galleryVisible, CompanyGallery, SHELL_CSS,
+ CompanyCredentials, credentialsVisible, SectionTitle,
 } from "./companyProfileParts";
 
 // Company Profile — "Wadani". Its signature is the full-bleed DARK cover
@@ -40,7 +41,7 @@ export function WadaniCompanyProfile({ data, theme }: { data: CompanyData; theme
           {data.logoUrl ? (
             <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 64, padding: "8px 16px", borderRadius: 10, background: "#fff", ...band }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={data.logoUrl} alt="" style={{ height: 46, maxWidth: 220, objectFit: "contain", display: "block" }} />
+              <img src={data.logoUrl} alt="" style={{ height: 58, width: "auto", maxWidth: 260, objectFit: "contain", display: "block" }} />
             </span>
           ) : (
             <div style={{ width: 60, height: 60, borderRadius: "50%", border: `1.5px solid ${COVER_LINE}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: SERIF, fontWeight: 600, fontSize: 26 }}>{mono}</div>
@@ -48,7 +49,7 @@ export function WadaniCompanyProfile({ data, theme }: { data: CompanyData; theme
           <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3em", color: "#ffffff", opacity: 0.72 }}>{profileLine(data.year)}</span>
         </div>
         <div style={{ flex: 1 }} />
-        <h1 style={{ margin: 0, fontFamily: SERIF, fontWeight: 600, fontSize: 66, letterSpacing: "-0.01em", lineHeight: 1.0 }}>{data.name}</h1>
+        <h1 style={{ margin: 0, fontFamily: SERIF, fontWeight: 600, fontSize: fitSize(data.name, 66), letterSpacing: "-0.01em", lineHeight: 1.0 }}>{data.name}</h1>
         {data.tagline && <div style={{ marginTop: 16, fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3em", color: "#ffffff", opacity: 0.72 }}>{data.tagline}</div>}
         {blurb && <p style={{ margin: "26px 0 0", maxWidth: 480, fontFamily: SERIF, fontStyle: "italic", fontSize: 21, lineHeight: 1.45 }}>{blurb}</p>}
         <div style={{ flex: 1 }} />
@@ -140,6 +141,13 @@ export function WadaniCompanyProfile({ data, theme }: { data: CompanyData; theme
             </div>
           </section>
         )}
+
+        {credentialsVisible(data) && (
+          <section style={{ marginTop: 30 }}>
+            <Label A={A}>Registration &amp; Certifications</Label>
+            <CompanyCredentials data={data} A={A} headFont={SERIF} />
+          </section>
+        )}
       </div>
 
       {/* ── PAGE: Selected Projects ── */}
@@ -192,11 +200,7 @@ export function WadaniCompanyProfile({ data, theme }: { data: CompanyData; theme
 }
 
 function Label({ A, children }: { A: AccentSet; children: React.ReactNode }) {
-  return (
-    <div style={{ marginBottom: 14 }}>
-      <span style={{ display: "inline-flex", alignItems: "center", background: A.tint, borderLeft: `3px solid ${A.accent}`, borderRadius: "0 7px 7px 0", padding: "8px 16px", fontFamily: SERIF, fontWeight: 600, fontSize: 17, letterSpacing: "0.005em", color: A.accent, ...band }}>{children}</span>
-    </div>
-  );
+  return <SectionTitle A={A} font={SERIF} weight={600} size={19}>{children}</SectionTitle>;
 }
 function MvBox({ A, label, text }: { A: AccentSet; label: string; text: string }) {
   return (

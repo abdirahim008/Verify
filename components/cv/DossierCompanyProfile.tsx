@@ -1,10 +1,11 @@
 import "server-only";
 import type { CompanyData } from "@/lib/pdf/company-data";
-import { deriveAccent, monogram, profileLine } from "./companyShared";
+import { deriveAccent, monogram, profileLine, fitSize } from "./companyShared";
 import {
   INK, BODY, MUTE, FAINT, RULE, band, paragraphs, ceoVisible, orgVisible,
   CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, CompanyProjects,
   projectsVisible, galleryVisible, CompanyGallery, SHELL_CSS,
+ CompanyCredentials, credentialsVisible, SectionTitle,
 } from "./companyProfileParts";
 
 // Company Profile — "The Dossier" (Company-2-Sidebar). Left sidebar carries
@@ -40,7 +41,7 @@ export function DossierCompanyProfile({ data, theme }: { data: CompanyData; them
               // Logo is the brand mark here — shown large; the company name is
               // already the cover's hero heading below, so no label beside it.
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={data.logoUrl} alt="" style={{ height: 92, maxWidth: 330, objectFit: "contain", objectPosition: "left center", display: "block" }} />
+              <img src={data.logoUrl} alt="" style={{ height: 92, width: "auto", maxWidth: 330, objectFit: "contain", objectPosition: "left center", display: "block" }} />
             ) : (
               <>
                 <Mono mono={mono} A={A} size={46} radius={10} font={23} />
@@ -50,7 +51,7 @@ export function DossierCompanyProfile({ data, theme }: { data: CompanyData; them
           </div>
           <div style={{ flex: 1 }} />
           <div style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3em", color: A.accent }}>{profileLine(data.year)}</div>
-          <h1 style={{ margin: "18px 0 0", fontFamily: DISP, fontWeight: 700, fontSize: 60, letterSpacing: "-0.025em", color: INK, lineHeight: 0.94 }}>{data.name}</h1>
+          <h1 style={{ margin: "18px 0 0", fontFamily: DISP, fontWeight: 700, fontSize: fitSize(data.name, 60), letterSpacing: "-0.025em", color: INK, lineHeight: 0.94 }}>{data.name}</h1>
           {data.tagline && <div style={{ marginTop: 18, fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.24em", color: A.accent }}>{data.tagline}</div>}
           {blurb && <p style={{ margin: "26px 0 0", maxWidth: 470, fontSize: 14.5, lineHeight: 1.6, color: "#52524c" }}>{blurb}</p>}
           <div style={{ flex: 1 }} />
@@ -92,7 +93,7 @@ export function DossierCompanyProfile({ data, theme }: { data: CompanyData; them
 
         <main style={{ flex: 1, padding: "50px 40px", minWidth: 0, display: "flex", flexDirection: "column" }}>
           <header style={{ borderBottom: `1.5px solid ${INK}`, paddingBottom: 18 }}>
-            <h1 style={{ margin: 0, fontFamily: DISP, fontWeight: 700, fontSize: 40, letterSpacing: "-0.02em", color: INK, lineHeight: 1.0 }}>{data.name}</h1>
+            <h1 style={{ margin: 0, fontFamily: DISP, fontWeight: 700, fontSize: fitSize(data.name, 40), letterSpacing: "-0.02em", color: INK, lineHeight: 1.0 }}>{data.name}</h1>
             {data.tagline && <div style={{ marginTop: 9, fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.26em", color: A.accent }}>{data.tagline}</div>}
             <div style={{ marginTop: 6, fontSize: 12, color: FAINT }}>{profileLine(data.year)}</div>
           </header>
@@ -172,6 +173,13 @@ export function DossierCompanyProfile({ data, theme }: { data: CompanyData; them
             </div>
           </section>
         )}
+
+        {credentialsVisible(data) && (
+          <section style={{ marginTop: 30 }}>
+            <MainLabel A={A} ruled>Registration &amp; Certifications</MainLabel>
+            <CompanyCredentials data={data} A={A} headFont={DISP} />
+          </section>
+        )}
       </div>
 
       {/* ── PAGE 3: Selected Projects ── */}
@@ -237,11 +245,7 @@ function SideLabel({ A, mt, children }: { A: ReturnType<typeof deriveAccent>; mt
   return <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.18em", color: A.accent, margin: mt ? "26px 0 13px" : "0 0 13px" }}>{children}</div>;
 }
 function MainLabel({ A, ruled, children }: { A: ReturnType<typeof deriveAccent>; ruled?: boolean; children: React.ReactNode }) {
-  return (
-    <div style={{ marginBottom: ruled ? 16 : 12 }}>
-      <span style={{ display: "inline-flex", alignItems: "center", background: A.tint, borderLeft: `3px solid ${A.accent}`, borderRadius: "0 7px 7px 0", padding: "8px 16px", fontFamily: DISP, fontWeight: 600, fontSize: 16, letterSpacing: "0.005em", color: A.accent, ...band }}>{children}</span>
-    </div>
-  );
+  return <SectionTitle A={A} font={DISP} weight={600} size={18} mb={ruled ? 16 : 13}>{children}</SectionTitle>;
 }
 function RunHead({ data, A, mono }: { data: CompanyData; A: ReturnType<typeof deriveAccent>; mono: string }) {
   return (

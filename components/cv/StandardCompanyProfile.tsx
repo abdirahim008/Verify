@@ -1,10 +1,11 @@
 import "server-only";
 import type { CompanyData } from "@/lib/pdf/company-data";
-import { deriveAccent, monogram, profileLine } from "./companyShared";
+import { deriveAccent, monogram, profileLine, fitSize } from "./companyShared";
 import {
   INK, BODY, MUTE, FAINT, RULE, band, paragraphs, ceoVisible, orgVisible,
   CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, CompanyProjects,
   projectsVisible, galleryVisible, CompanyGallery, SHELL_CSS,
+ CompanyCredentials, credentialsVisible, SectionTitle,
 } from "./companyProfileParts";
 
 // Company Profile — "The Standard" (Company-1-Classic). Classic centered
@@ -39,9 +40,9 @@ export function StandardCompanyProfile({ data, theme }: { data: CompanyData; the
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
             {data.logoUrl
               // eslint-disable-next-line @next/next/no-img-element
-              ? <img src={data.logoUrl} alt="" style={{ width: 140, height: 140, objectFit: "contain", marginBottom: 32 }} />
+              ? <img src={data.logoUrl} alt="" style={{ height: 110, width: "auto", maxWidth: 300, objectFit: "contain", marginBottom: 32 }} />
               : <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 140, height: 140, border: `1.5px solid ${A.accent}`, borderRadius: "50%", fontFamily: SERIF, fontWeight: 700, fontSize: 64, color: A.accent, marginBottom: 32 }}>{mono}</div>}
-            <h1 style={{ margin: 0, fontFamily: SERIF, fontWeight: 600, fontSize: 68, letterSpacing: "0.01em", color: INK, lineHeight: 1.0 }}>{data.name}</h1>
+            <h1 style={{ margin: 0, fontFamily: SERIF, fontWeight: 600, fontSize: fitSize(data.name, 68), letterSpacing: "0.01em", color: INK, lineHeight: 1.0 }}>{data.name}</h1>
             {data.tagline && <div style={{ marginTop: 16, fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.34em", color: A.accent }}>{data.tagline}</div>}
             {blurb && <p style={{ margin: "32px 0 0", maxWidth: 440, fontFamily: SERIF, fontStyle: "italic", fontSize: 20, lineHeight: 1.45, color: "#52524c" }}>{blurb}</p>}
           </div>
@@ -53,7 +54,7 @@ export function StandardCompanyProfile({ data, theme }: { data: CompanyData; the
       <div className="cpage" style={{ fontFamily: SANS, padding: "58px 66px", display: "flex", flexDirection: "column" }}>
         <header style={{ textAlign: "center", paddingBottom: 22, borderBottom: `1.5px solid ${INK}` }}>
           <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 54, height: 54, border: `1.5px solid ${A.accent}`, borderRadius: "50%", fontFamily: SERIF, fontWeight: 700, fontSize: 27, color: A.accent, marginBottom: 14 }}>{mono}</div>
-          <h1 style={{ margin: 0, fontFamily: SERIF, fontWeight: 600, fontSize: 50, letterSpacing: "0.01em", color: INK, lineHeight: 1.0 }}>{data.name}</h1>
+          <h1 style={{ margin: 0, fontFamily: SERIF, fontWeight: 600, fontSize: fitSize(data.name, 50), letterSpacing: "0.01em", color: INK, lineHeight: 1.0 }}>{data.name}</h1>
           {data.tagline && <div style={{ marginTop: 9, fontSize: 12.5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3em", color: A.accent }}>{data.tagline}</div>}
           <div style={{ marginTop: 7, fontSize: 12, color: FAINT, letterSpacing: "0.04em" }}>{profileLine(data.year)}</div>
         </header>
@@ -139,6 +140,13 @@ export function StandardCompanyProfile({ data, theme }: { data: CompanyData; the
             </div>
           </section>
         )}
+
+        {credentialsVisible(data) && (
+          <section style={{ marginTop: 30 }}>
+            <RuledEyebrow A={A}>Registration &amp; Certifications</RuledEyebrow>
+            <CompanyCredentials data={data} A={A} headFont={SERIF} />
+          </section>
+        )}
       </div>
 
       {/* ── PAGE 3: Selected Projects ── */}
@@ -204,11 +212,7 @@ function RuledEyebrow({ A, children }: { A: ReturnType<typeof deriveAccent>; chi
 // Elegant section header: a tinted accent tab with an accent edge, in the
 // display face — replaces the tiny uppercase eyebrows so sections stand out.
 function SectionHeader({ A, mb, children }: { A: ReturnType<typeof deriveAccent>; mb: number; children: React.ReactNode }) {
-  return (
-    <div style={{ marginBottom: mb }}>
-      <span style={{ display: "inline-flex", alignItems: "center", background: A.tint, borderLeft: `3px solid ${A.accent}`, borderRadius: "0 7px 7px 0", padding: "8px 16px", fontFamily: SERIF, fontWeight: 600, fontSize: 17, letterSpacing: "0.005em", color: A.accent, ...band }}>{children}</span>
-    </div>
-  );
+  return <SectionTitle A={A} font={SERIF} weight={600} size={19} mb={mb}>{children}</SectionTitle>;
 }
 function MvBox({ A, label, text }: { A: ReturnType<typeof deriveAccent>; label: string; text: string }) {
   return (

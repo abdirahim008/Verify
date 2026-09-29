@@ -5,6 +5,7 @@ import {
   INK, BODY, MUTE, FAINT, RULE, band, paragraphs, ceoVisible, orgVisible,
   CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, CompanyProjects,
   projectsVisible, galleryVisible, CompanyGallery, SHELL_CSS,
+ CompanyCredentials, credentialsVisible,
 } from "./companyProfileParts";
 
 // Company Profile — "Minimal". The architectural register: maximal white
@@ -26,6 +27,13 @@ export function MinimalCompanyProfile({ data, theme }: { data: CompanyData; them
   const blurb = data.coverStatement || data.mission || data.about;
   const locations = data.locations.join(" · ");
 
+  // Page numbers follow the pages actually printed (projects and gallery
+  // pages are optional), so the running head never skips a number.
+  const pg = (n: number) => String(n).padStart(2, "0");
+  const projPage = 4;
+  const galleryPage = projPage + (projectsVisible(data) ? 1 : 0);
+  const orgPage = galleryPage + (galleryVisible(data) ? 1 : 0);
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: SHELL_CSS }} />
@@ -35,7 +43,7 @@ export function MinimalCompanyProfile({ data, theme }: { data: CompanyData; them
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: MUTE, fontWeight: 600 }}>
           {data.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={data.logoUrl} alt="" style={{ height: 40, maxWidth: 180, objectFit: "contain" }} />
+            <img src={data.logoUrl} alt="" style={{ height: 56, width: "auto", maxWidth: 240, objectFit: "contain" }} />
           ) : (
             <span>{data.name}</span>
           )}
@@ -57,11 +65,11 @@ export function MinimalCompanyProfile({ data, theme }: { data: CompanyData; them
         </div>
 
         {facts.length > 0 && (
-          <div style={{ display: "grid", gridTemplateColumns: `repeat(${facts.length},1fr)`, gap: 14, paddingTop: 16, borderTop: `2px solid ${INK}`, ...band }}>
+          <div style={{ display: "grid", gridTemplateColumns: facts.map(([k]) => (k === "Web" ? "max-content" : "1fr")).join(" "), gap: 14, paddingTop: 16, borderTop: `2px solid ${INK}`, ...band }}>
             {facts.map(([k, v], i) => (
               <div key={i}>
                 <div style={{ fontSize: 9, color: MUTE, letterSpacing: "0.18em", textTransform: "uppercase", fontWeight: 700 }}>{k}</div>
-                <div style={{ fontFamily: SERIF, fontSize: 14, marginTop: 4, color: INK, wordBreak: "break-word" }}>{v}</div>
+                <div style={{ fontFamily: SERIF, fontSize: 14, marginTop: 4, color: INK, whiteSpace: k === "Web" ? "nowrap" : undefined, overflowWrap: "anywhere" }}>{v}</div>
               </div>
             ))}
           </div>
@@ -141,9 +149,9 @@ export function MinimalCompanyProfile({ data, theme }: { data: CompanyData; them
       {/* ── PAGE: Selected Projects ── */}
       {projectsVisible(data) && (
         <div className="cpage" style={{ fontFamily: SANS, padding: "60px 64px", display: "flex", flexDirection: "column" }}>
-          <RunHead name={data.name} page="04" />
+          <RunHead name={data.name} page={pg(projPage)} />
           <section style={{ marginTop: 32 }}>
-            <Head no="05">Selected Projects</Head>
+            <Head no="06">Selected Projects</Head>
             <CompanyProjects data={data} A={A} headFont={SERIF} />
           </section>
         </div>
@@ -152,9 +160,9 @@ export function MinimalCompanyProfile({ data, theme }: { data: CompanyData; them
       {/* ── PAGE: Project gallery ── */}
       {galleryVisible(data) && (
         <div className="cpage" style={{ fontFamily: SANS, padding: "60px 64px", display: "flex", flexDirection: "column" }}>
-          <RunHead name={data.name} page="05" />
+          <RunHead name={data.name} page={pg(galleryPage)} />
           <section style={{ marginTop: 32 }}>
-            <Head no="06">Project Gallery</Head>
+            <Head no="07">Project Gallery</Head>
             <CompanyGallery data={data} headFont={SERIF} />
           </section>
         </div>
@@ -162,16 +170,23 @@ export function MinimalCompanyProfile({ data, theme }: { data: CompanyData; them
 
       {/* ── PAGE: Org + Clients + close ── */}
       <div className="cpage" style={{ fontFamily: SANS, padding: "60px 64px", display: "flex", flexDirection: "column" }}>
-        <RunHead name={data.name} page="06" />
+        <RunHead name={data.name} page={pg(orgPage)} />
         {orgVisible(data) && (
           <section style={{ marginTop: 32 }}>
-            <Head no="07">Organisation</Head>
+            <Head no="08">Organisation</Head>
             <CompanyOrgChart data={data} A={A} nameFont={SERIF} unitFont={SANS} />
           </section>
         )}
+        {credentialsVisible(data) && (
+          <section style={{ marginTop: 34 }}>
+            <Head no="05">Registration &amp; Certifications</Head>
+            <CompanyCredentials data={data} A={A} headFont={SERIF} />
+          </section>
+        )}
+
         {data.clientGroups.length > 0 && (
           <section style={{ marginTop: 34 }}>
-            <Head no="08">Clients &amp; Donors</Head>
+            <Head no="09">Clients &amp; Donors</Head>
             <CompanyClientGroups data={data} A={A} variant="bordered" chipFont={SERIF} />
           </section>
         )}
@@ -213,15 +228,29 @@ function RunHead({ name, page }: { name: string; page: string }) {
 }
 
 // ── cover helpers ──
-// One word per line, capped at 4 lines (overflow words fold into the
-// penultimate line) so a long name still stacks like the prototype.
+// One word per line for short names (the prototype's stacked look). Longer
+// names are split into 4 lines of as-even length as possible, so a long
+// registered name doesn't strand single words above one very long line.
 function nameLines(name: string): string[] {
   const words = name.trim().split(/\s+/).filter(Boolean);
   if (words.length <= 4) return words.length ? words : [name];
-  const last = words[words.length - 1];
-  const head = words.slice(0, 3);
-  const mid = words.slice(3, -1).join(" ");
-  return [...head.slice(0, 2), [head[2], mid].filter(Boolean).join(" "), last];
+  const len = (a: number, b: number) => words.slice(a, b).join(" ").length;
+  // best[i][k]: smallest possible longest line splitting words[i..] into k lines.
+  const n = words.length, K = 4;
+  const best: number[][] = Array.from({ length: n + 1 }, () => Array(K + 1).fill(Infinity));
+  const cut: number[][] = Array.from({ length: n + 1 }, () => Array(K + 1).fill(n));
+  best[n][0] = 0;
+  for (let i = n - 1; i >= 0; i--) {
+    for (let k = 1; k <= K; k++) {
+      for (let j = i + 1; j <= n; j++) {
+        const v = Math.max(len(i, j), best[j][k - 1]);
+        if (v < best[i][k]) { best[i][k] = v; cut[i][k] = j; }
+      }
+    }
+  }
+  const out: string[] = [];
+  for (let i = 0, k = K; i < n && k > 0; k--) { const j = cut[i][k]; out.push(words.slice(i, j).join(" ")); i = j; }
+  return out;
 }
 // Auto-fit so the longest line fills the ~666px measure. Source Serif at
 // weight 300 averages ~0.52em per glyph.

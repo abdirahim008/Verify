@@ -1,10 +1,11 @@
 import "server-only";
 import type { CompanyData } from "@/lib/pdf/company-data";
-import { deriveAccent, monogram, profileLine } from "./companyShared";
+import { deriveAccent, monogram, profileLine, fitSize } from "./companyShared";
 import {
   INK, MUTE, FAINT, RULE, band, paragraphs, ceoVisible, orgVisible,
   CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, CompanyProjects,
   projectsVisible, galleryVisible, CompanyGallery, SHELL_CSS,
+ CompanyCredentials, credentialsVisible, SectionTitle,
 } from "./companyProfileParts";
 
 // Company Profile — "The Banner" (Company-3-Header-Footer-Band). Each page
@@ -38,7 +39,7 @@ export function BannerCompanyProfile({ data, theme }: { data: CompanyData; theme
               ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 46, padding: "5px 10px", borderRadius: 8, background: "#fff", ...band }}>
-                  <img src={data.logoUrl} alt="" style={{ height: 36, maxWidth: 110, objectFit: "contain", display: "block" }} />
+                  <img src={data.logoUrl} alt="" style={{ height: 44, width: "auto", maxWidth: 150, objectFit: "contain", display: "block" }} />
                 </span>
               )
               : <Circle mono={mono} A={A} size={46} font={23} />}
@@ -47,7 +48,7 @@ export function BannerCompanyProfile({ data, theme }: { data: CompanyData; theme
           <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.28em", color: A.onAccentMuted }}>{profileLine(data.year)}</span>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 60 }}>
-          <h1 style={{ margin: 0, fontFamily: DISP, fontWeight: 600, fontSize: 74, letterSpacing: "0.01em", color: INK, lineHeight: 1.0 }}>{data.name}</h1>
+          <h1 style={{ margin: 0, fontFamily: DISP, fontWeight: 600, fontSize: fitSize(data.name, 74), letterSpacing: "0.01em", color: INK, lineHeight: 1.0 }}>{data.name}</h1>
           <div style={{ width: 62, height: 2, background: A.accent, margin: "26px 0", ...band }} />
           {data.tagline && <div style={{ fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.34em", color: A.accent }}>{data.tagline}</div>}
           {blurb && <p style={{ margin: "30px 0 0", maxWidth: 460, fontFamily: DISP, fontStyle: "italic", fontSize: 21, lineHeight: 1.45, color: "#52524c" }}>{blurb}</p>}
@@ -64,7 +65,7 @@ export function BannerCompanyProfile({ data, theme }: { data: CompanyData; theme
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
               <Circle mono={mono} A={A} size={52} font={26} />
               <div>
-                <h1 style={{ margin: 0, fontFamily: DISP, fontWeight: 600, fontSize: 36, color: A.onAccent, lineHeight: 1.0 }}>{data.name}</h1>
+                <h1 style={{ margin: 0, fontFamily: DISP, fontWeight: 600, fontSize: fitSize(data.name, 36), color: A.onAccent, lineHeight: 1.0 }}>{data.name}</h1>
                 {data.tagline && <div style={{ marginTop: 6, fontSize: 11.5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.28em", color: A.onAccentMuted }}>{data.tagline}</div>}
               </div>
             </div>
@@ -159,6 +160,13 @@ export function BannerCompanyProfile({ data, theme }: { data: CompanyData; theme
               </div>
             </section>
           )}
+
+          {credentialsVisible(data) && (
+            <section style={{ marginTop: 30 }}>
+              <Label A={A} ruled>Registration &amp; Certifications</Label>
+              <CompanyCredentials data={data} A={A} headFont={DISP} />
+            </section>
+          )}
         </div>
         <FootBand A={A}>{data.name}</FootBand>
       </div>
@@ -229,11 +237,7 @@ function Circle({ mono, A, size, font }: { mono: string; A: ReturnType<typeof de
   return <div style={{ width: size, height: size, flex: "none", border: `1px solid ${A.accentLine}`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISP, fontWeight: 600, fontSize: font, color: A.onAccent }}>{mono}</div>;
 }
 function Label({ A, ruled, children }: { A: ReturnType<typeof deriveAccent>; ruled?: boolean; children: React.ReactNode }) {
-  return (
-    <div style={{ marginBottom: ruled ? 16 : 12 }}>
-      <span style={{ display: "inline-flex", alignItems: "center", background: A.tint, borderLeft: `3px solid ${A.accent}`, borderRadius: "0 7px 7px 0", padding: "8px 16px", fontFamily: DISP, fontWeight: 600, fontSize: 17, letterSpacing: "0.005em", color: A.accent, ...band }}>{children}</span>
-    </div>
-  );
+  return <SectionTitle A={A} font={DISP} weight={600} size={19} mb={ruled ? 16 : 13}>{children}</SectionTitle>;
 }
 function MvCol({ A, label, text }: { A: ReturnType<typeof deriveAccent>; label: string; text: string }) {
   return (

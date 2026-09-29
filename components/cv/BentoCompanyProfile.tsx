@@ -1,10 +1,11 @@
 import "server-only";
 import type { CompanyData } from "@/lib/pdf/company-data";
-import { deriveAccent, monogram, profileLine } from "./companyShared";
+import { deriveAccent, monogram, profileLine, fitSize } from "./companyShared";
 import {
   INK, MUTE, band, paragraphs, ceoVisible, orgVisible,
   CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, CompanyProjects,
   projectsVisible, galleryVisible, CompanyGallery, SHELL_CSS,
+ CompanyCredentials, credentialsVisible, SectionTitle,
 } from "./companyProfileParts";
 
 // Company Profile — "The Bento" (Company-5-Modular). Modular rounded cards
@@ -36,7 +37,7 @@ export function BentoCompanyProfile({ data, theme }: { data: CompanyData; theme?
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {data.logoUrl
               // eslint-disable-next-line @next/next/no-img-element
-              ? <img src={data.logoUrl} alt="" style={{ height: 42, maxWidth: 120, objectFit: "contain" }} />
+              ? <img src={data.logoUrl} alt="" style={{ height: 54, width: "auto", maxWidth: 180, objectFit: "contain" }} />
               : <Mono mono={mono} A={A} size={42} radius={9} font={21} />}
             <span style={{ fontFamily: DISP, fontWeight: 600, fontSize: 15, color: INK }}>{data.name}</span>
           </div>
@@ -44,7 +45,7 @@ export function BentoCompanyProfile({ data, theme }: { data: CompanyData; theme?
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16, marginTop: 16 }}>
           <div style={{ flex: 1, background: A.accent, borderRadius: 14, color: A.onAccent, padding: 48, display: "flex", flexDirection: "column", justifyContent: "center", ...band }}>
-            <h1 style={{ margin: 0, fontFamily: DISP, fontWeight: 600, fontSize: 74, lineHeight: 0.98 }}>{data.name}</h1>
+            <h1 style={{ margin: 0, fontFamily: DISP, fontWeight: 600, fontSize: fitSize(data.name, 74), lineHeight: 0.98 }}>{data.name}</h1>
             {data.tagline && <div style={{ marginTop: 18, fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.26em", color: A.onAccentMuted }}>{data.tagline}</div>}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16 }}>
@@ -65,7 +66,7 @@ export function BentoCompanyProfile({ data, theme }: { data: CompanyData; theme?
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <Mono mono={mono} A={A} size={46} radius={10} font={24} />
             <div>
-              <h1 style={{ margin: 0, fontFamily: DISP, fontWeight: 600, fontSize: 32, color: INK, lineHeight: 1.0 }}>{data.name}</h1>
+              <h1 style={{ margin: 0, fontFamily: DISP, fontWeight: 600, fontSize: fitSize(data.name, 32), color: INK, lineHeight: 1.0 }}>{data.name}</h1>
               {data.tagline && <div style={{ marginTop: 4, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.26em", color: A.accent }}>{data.tagline}</div>}
             </div>
           </div>
@@ -160,6 +161,13 @@ export function BentoCompanyProfile({ data, theme }: { data: CompanyData; theme?
             </div>
           </div>
         )}
+
+        {credentialsVisible(data) && (
+          <div style={{ background: "#fff", border: `1px solid ${CARD}`, borderRadius: 10, padding: "22px 24px", marginTop: 15 }}>
+            <CardLabel A={A}>Registration &amp; Certifications</CardLabel>
+            <CompanyCredentials data={data} A={A} headFont={DISP} />
+          </div>
+        )}
       </div>
 
       {/* ── PAGE 3: Selected Projects ── */}
@@ -218,11 +226,7 @@ function Mono({ mono, A, size, radius, font }: { mono: string; A: ReturnType<typ
   return <div style={{ width: size, height: size, flex: "none", borderRadius: radius, background: A.accent, color: A.onAccent, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISP, fontWeight: 600, fontSize: font, ...band }}>{mono}</div>;
 }
 function CardLabel({ A, children }: { A: ReturnType<typeof deriveAccent>; children: React.ReactNode }) {
-  return (
-    <div style={{ marginBottom: 14 }}>
-      <span style={{ display: "inline-flex", alignItems: "center", background: A.tint, borderLeft: `3px solid ${A.accent}`, borderRadius: "0 7px 7px 0", padding: "7px 15px", fontFamily: DISP, fontWeight: 600, fontSize: 16, letterSpacing: "0.005em", color: A.accent, ...band }}>{children}</span>
-    </div>
-  );
+  return <SectionTitle A={A} font={DISP} weight={600} size={18}>{children}</SectionTitle>;
 }
 function TintCard({ A, label, text }: { A: ReturnType<typeof deriveAccent>; label: string; text: string }) {
   return (
