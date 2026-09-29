@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/Button";
 import { createVerificationRequest } from "@/lib/actions/verification";
+import { isPhone, PHONE_MSG } from "@/lib/schemas";
 import {
   PRICING_BY_TARGET, type TargetType, TARGET_LABELS,
 } from "@/lib/verification";
@@ -43,7 +44,7 @@ export function RequestVerificationModal({ open, onClose, target }: Props) {
     setError(null);
 
     const trimmed = phone.trim();
-    if (trimmed.length < 5) { setError("Enter a contact number we can reach you on."); return; }
+    if (!isPhone(trimmed)) { setError(PHONE_MSG); return; }
     if (!ack) { setError("Tick the payment acknowledgment to continue."); return; }
 
     startTransition(async () => {

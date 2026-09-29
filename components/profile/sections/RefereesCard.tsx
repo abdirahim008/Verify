@@ -194,7 +194,7 @@ function RefereeForm({
         <input type="email" className="field" {...register("email")} />
       </Field>
       <Field label="Phone (private)" error={errors.phone?.message}>
-        <input type="tel" className="field" {...register("phone")} />
+        <input type="tel" className="field" placeholder="+252 61 555 0142" {...register("phone")} />
       </Field>
       <div className="sm:col-span-2">
         <Field label="Vouches for which experience? (optional)" error={errors.experience_id?.message as string | undefined}>
