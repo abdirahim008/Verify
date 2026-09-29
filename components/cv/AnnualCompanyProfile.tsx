@@ -1,10 +1,11 @@
 import "server-only";
 import type { CompanyData } from "@/lib/pdf/company-data";
-import { deriveAccent, monogram, type AccentSet } from "./companyShared";
+import { deriveAccent, monogram, type AccentSet, fitSize } from "./companyShared";
 import {
   INK, BODY, MUTE, FAINT, RULE, band, paragraphs, ceoVisible, orgVisible,
   CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, CompanyProjects,
   projectsVisible, galleryVisible, CompanyGallery, SHELL_CSS,
+ CompanyCredentials, credentialsVisible,
 } from "./companyProfileParts";
 
 // Company Profile — "Annual". The report register: a light, left-aligned
@@ -24,6 +25,13 @@ export function AnnualCompanyProfile({ data, theme }: { data: CompanyData; theme
   const stats = computeStats(data);
   const locations = data.locations.join(" · ");
 
+  // Page numbers follow the pages actually printed (projects and gallery
+  // pages are optional), so the running head never skips a number.
+  const pg = (n: number) => String(n).padStart(2, "0");
+  const projPage = 4;
+  const galleryPage = projPage + (projectsVisible(data) ? 1 : 0);
+  const orgPage = galleryPage + (galleryVisible(data) ? 1 : 0);
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: SHELL_CSS }} />
@@ -34,14 +42,14 @@ export function AnnualCompanyProfile({ data, theme }: { data: CompanyData; theme
           <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: A.accent }}>Company Profile / {data.year}</span>
           {data.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={data.logoUrl} alt="" style={{ height: 48, maxWidth: 200, objectFit: "contain" }} />
+            <img src={data.logoUrl} alt="" style={{ height: 64, width: "auto", maxWidth: 260, objectFit: "contain" }} />
           ) : (
             <span style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 26, color: A.accent }}>{monogram(data.name)}</span>
           )}
         </div>
 
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <h1 style={{ margin: 0, fontFamily: SERIF, fontWeight: 600, fontSize: 60, letterSpacing: "-0.015em", lineHeight: 1.02, color: INK }}>{data.name}</h1>
+          <h1 style={{ margin: 0, fontFamily: SERIF, fontWeight: 600, fontSize: fitSize(data.name, 60), letterSpacing: "-0.015em", lineHeight: 1.02, color: INK }}>{data.name}</h1>
           {data.tagline && <div style={{ marginTop: 14, fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.26em", color: A.accent }}>{data.tagline}</div>}
           {blurb && <p style={{ margin: "22px 0 0", maxWidth: 460, fontFamily: SERIF, fontSize: 19, lineHeight: 1.5, color: BODY }}>{firstSentence(blurb)}</p>}
         </div>
@@ -129,14 +137,21 @@ export function AnnualCompanyProfile({ data, theme }: { data: CompanyData; theme
             </div>
           </section>
         )}
+
+        {credentialsVisible(data) && (
+          <section style={{ marginTop: 30 }}>
+            <Head A={A} no="05">Registration &amp; Certifications</Head>
+            <CompanyCredentials data={data} A={A} headFont={SERIF} />
+          </section>
+        )}
       </div>
 
       {/* ── PAGE: Selected Projects ── */}
       {projectsVisible(data) && (
         <div className="cpage" style={{ fontFamily: SANS, padding: "54px 60px", display: "flex", flexDirection: "column" }}>
-          <RunHead name={data.name} page="04" A={A} />
+          <RunHead name={data.name} page={pg(projPage)} A={A} />
           <section style={{ marginTop: 26 }}>
-            <Head A={A} no="05">Delivery Record</Head>
+            <Head A={A} no="06">Delivery Record</Head>
             <CompanyProjects data={data} A={A} headFont={SERIF} />
           </section>
         </div>
@@ -145,9 +160,9 @@ export function AnnualCompanyProfile({ data, theme }: { data: CompanyData; theme
       {/* ── PAGE: Project gallery ── */}
       {galleryVisible(data) && (
         <div className="cpage" style={{ fontFamily: SANS, padding: "54px 60px", display: "flex", flexDirection: "column" }}>
-          <RunHead name={data.name} page="05" A={A} />
+          <RunHead name={data.name} page={pg(galleryPage)} A={A} />
           <section style={{ marginTop: 26 }}>
-            <Head A={A} no="06">Project Gallery</Head>
+            <Head A={A} no="07">Project Gallery</Head>
             <CompanyGallery data={data} headFont={SERIF} />
           </section>
         </div>
@@ -155,16 +170,16 @@ export function AnnualCompanyProfile({ data, theme }: { data: CompanyData; theme
 
       {/* ── PAGE: Org + Clients + CTA ── */}
       <div className="cpage" style={{ fontFamily: SANS, padding: "54px 60px", display: "flex", flexDirection: "column" }}>
-        <RunHead name={data.name} page="06" A={A} />
+        <RunHead name={data.name} page={pg(orgPage)} A={A} />
         {orgVisible(data) && (
           <section style={{ marginTop: 26 }}>
-            <Head A={A} no="07">Organisation</Head>
+            <Head A={A} no="08">Organisation</Head>
             <CompanyOrgChart data={data} A={A} nameFont={SERIF} unitFont={SANS} />
           </section>
         )}
         {data.clientGroups.length > 0 && (
           <section style={{ marginTop: 30 }}>
-            <Head A={A} no="08">Clients &amp; Donors</Head>
+            <Head A={A} no="09">Clients &amp; Donors</Head>
             <CompanyClientGroups data={data} A={A} variant="bordered" chipFont={SERIF} />
           </section>
         )}

@@ -44,3 +44,13 @@ export function ceoInitials(name: string): string {
 export function profileLine(year: number): string {
   return `Company Profile · ${year}`;
 }
+
+// Display size for the company name: the design size for names up to ~34
+// characters, easing down (by the square root of the overflow, so it never
+// lurches) for long registered names like "Horn Africa Integrated Water,
+// Sanitation & Infrastructure Development Company Ltd.", never below 64%.
+export function fitSize(name: string, base: number, fits = 34): number {
+  const n = name.trim().length;
+  if (n <= fits) return base;
+  return Math.round(Math.max(base * 0.64, base * Math.sqrt(fits / n)));
+}

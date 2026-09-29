@@ -1,10 +1,11 @@
 import "server-only";
 import type { CompanyData } from "@/lib/pdf/company-data";
-import { deriveAccent, monogram, profileLine } from "./companyShared";
+import { deriveAccent, monogram, profileLine, fitSize } from "./companyShared";
 import {
   INK, MUTE, FAINT, RULE, band, paragraphs, ceoVisible, orgVisible,
   CeoAvatar, ContactBlock, CompanyOrgChart, CompanyClientGroups, CompanyProjects,
   projectsVisible, galleryVisible, CompanyGallery, SHELL_CSS,
+ CompanyCredentials, credentialsVisible, SectionTitle,
 } from "./companyProfileParts";
 
 // Company Profile — "The Broadsheet" (Company-4-Two-Column). Editorial
@@ -36,13 +37,13 @@ export function BroadsheetCompanyProfile({ data, theme }: { data: CompanyData; t
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           {data.logoUrl
             // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={data.logoUrl} alt="" style={{ height: 34, maxWidth: 150, objectFit: "contain", display: "block" }} />
+            ? <img src={data.logoUrl} alt="" style={{ height: 48, width: "auto", maxWidth: 220, objectFit: "contain", display: "block" }} />
             : <span style={{ fontFamily: DISP, fontWeight: 700, fontSize: 14, letterSpacing: "-0.01em", color: INK }}>{data.name}</span>}
           <span style={{ fontFamily: DISP, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.26em", color: A.accent }}>{profileLine(data.year)}</span>
         </div>
         <div style={{ height: 2.5, background: A.accent, marginTop: 16, ...band }} />
         <div style={{ flex: 1 }} />
-        <h1 style={{ margin: 0, fontFamily: DISP, fontWeight: 800, fontSize: 84, letterSpacing: "-0.03em", color: INK, lineHeight: 0.9 }}>{data.name}</h1>
+        <h1 style={{ margin: 0, fontFamily: DISP, fontWeight: 800, fontSize: fitSize(data.name, 84), letterSpacing: "-0.03em", color: INK, lineHeight: 0.9 }}>{data.name}</h1>
         {data.tagline && <div style={{ marginTop: 22, fontFamily: DISP, fontWeight: 600, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.24em", color: A.accent }}>{data.tagline}</div>}
         {blurb && <p style={{ margin: "26px 0 0", maxWidth: 520, fontSize: 17, lineHeight: 1.55, color: "#52524c" }}>{blurb}</p>}
         <div style={{ flex: 1 }} />
@@ -57,7 +58,7 @@ export function BroadsheetCompanyProfile({ data, theme }: { data: CompanyData; t
         <header>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 24 }}>
             <div>
-              <h1 style={{ margin: 0, fontFamily: DISP, fontWeight: 800, fontSize: 42, letterSpacing: "-0.025em", color: INK, lineHeight: 0.96 }}>{data.name}</h1>
+              <h1 style={{ margin: 0, fontFamily: DISP, fontWeight: 800, fontSize: fitSize(data.name, 42), letterSpacing: "-0.025em", color: INK, lineHeight: 0.96 }}>{data.name}</h1>
               {data.tagline && <div style={{ marginTop: 9, fontFamily: DISP, fontWeight: 600, fontSize: 11.5, textTransform: "uppercase", letterSpacing: "0.26em", color: A.accent }}>{data.tagline}</div>}
             </div>
             <div style={{ textAlign: "right", fontFamily: DISP, fontSize: 11, lineHeight: 1.7, color: MUTE, whiteSpace: "nowrap" }}>{profileLine(data.year)}{locations && <><br />{locations}</>}</div>
@@ -148,6 +149,13 @@ export function BroadsheetCompanyProfile({ data, theme }: { data: CompanyData; t
             </div>
           </section>
         )}
+
+        {credentialsVisible(data) && (
+          <section style={{ marginTop: 30 }}>
+            <Label A={A} ruled>Registration &amp; Certifications</Label>
+            <CompanyCredentials data={data} A={A} headFont={DISP} />
+          </section>
+        )}
       </div>
 
       {/* ── PAGE 3: Selected Projects ── */}
@@ -204,8 +212,8 @@ export function BroadsheetCompanyProfile({ data, theme }: { data: CompanyData; t
 
 function Label({ A, ruled, mt, children }: { A: ReturnType<typeof deriveAccent>; ruled?: boolean; mt?: boolean; children: React.ReactNode }) {
   return (
-    <div style={{ marginBottom: ruled ? 16 : 18, marginTop: mt ? 22 : undefined }}>
-      <span style={{ display: "inline-flex", alignItems: "center", background: A.tint, borderLeft: `3px solid ${A.accent}`, borderRadius: "0 7px 7px 0", padding: "8px 16px", fontFamily: DISP, fontWeight: 700, fontSize: 15, letterSpacing: "0.01em", color: A.accent, ...band }}>{children}</span>
+    <div style={{ marginTop: mt ? 22 : undefined }}>
+      <SectionTitle A={A} font={DISP} weight={700} size={17} mb={ruled ? 16 : 18}>{children}</SectionTitle>
     </div>
   );
 }

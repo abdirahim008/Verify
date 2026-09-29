@@ -20,16 +20,24 @@ export const band = { WebkitPrintColorAdjust: "exact", printColorAdjust: "exact"
 
 // Per-page A4 sheet. 794×1123px == 210×297mm at 96dpi; `break-after: page`
 // puts each .cpage on its own sheet. min-height (not fixed) lets a page with
-// heavier real-world content grow rather than clip.
+// heavier real-world content grow rather than clip — and when it does run
+// onto a second sheet, box-decoration-break: clone repeats the page's own
+// padding on that sheet, so the overflow keeps its margins instead of
+// printing flush against the paper edge (the sheet has no @page margin, so
+// covers can bleed).
 export const SHELL_CSS = `
 @page { size: A4; margin: 0; }
 .cpage {
   width: 794px; min-height: 1123px; background: #ffffff;
-  box-sizing: border-box; color: #3a352f; overflow: hidden;
+  box-sizing: border-box; color: #3a352f;
+  box-decoration-break: clone; -webkit-box-decoration-break: clone;
   break-after: page; page-break-after: always;
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
 .cpage:last-child { break-after: auto; page-break-after: auto; }
+/* The cover (first sheet) is exactly one page: its flexible spacing absorbs
+   any excess instead of spilling a stray footer onto a blank second sheet. */
+.cpage:first-of-type { height: 1123px; overflow: hidden; }
 `;
 
 // ── content guards ──
@@ -139,31 +147,30 @@ export function projectsVisible(data: CompanyData): boolean {
   return data.projects.length > 0;
 }
 
+// The first photo of each project sits in its row on the projects page, so
+// the gallery only carries the extra ones — and is skipped entirely (no
+// half-empty page) when no project has more than one photo.
 export function galleryVisible(data: CompanyData): boolean {
-  return data.projects.some((p) => p.media.length > 0);
+  return data.projects.some((p) => p.media.length > 1);
 }
 
-// Project gallery — photos grouped per project with captions. Rendered as a
-// final page in the company templates when any project has photos.
+// Project gallery — the extra photos, two to a row, each captioned with its
+// project so it reads on its own.
 export function CompanyGallery({ data, headFont }: { data: CompanyData; headFont: string }) {
-  const withPhotos = data.projects.filter((p) => p.media.length > 0);
+  const photos = data.projects.flatMap((p) => p.media.slice(1).map((m) => ({ ...m, project: p.name })));
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-      {withPhotos.map((p, i) => (
-        <div key={i}>
-          <div style={{ fontFamily: headFont, fontWeight: 600, fontSize: 14, color: INK, marginBottom: 8 }}>{p.name}</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            {p.media.map((m, j) => (
-              <figure key={j} style={{ margin: 0 }}>
-                <div style={{ borderRadius: 8, overflow: "hidden", border: `1px solid ${RULE}`, ...band }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={m.url} alt="" style={{ width: "100%", height: 156, objectFit: "cover", display: "block" }} />
-                </div>
-                {m.caption && <figcaption style={{ fontSize: 10.5, color: MUTE, marginTop: 4, lineHeight: 1.4 }}>{m.caption}</figcaption>}
-              </figure>
-            ))}
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px 18px" }}>
+      {photos.map((m, i) => (
+        <figure key={i} style={{ margin: 0, breakInside: "avoid" }}>
+          <div style={{ borderRadius: 6, overflow: "hidden", border: `1px solid ${RULE}`, ...band }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={m.url} alt="" style={{ width: "100%", height: 190, objectFit: "cover", display: "block" }} />
           </div>
-        </div>
+          <figcaption style={{ marginTop: 7, lineHeight: 1.4 }}>
+            <div style={{ fontFamily: headFont, fontWeight: 600, fontSize: 12.5, color: INK }}>{m.project}</div>
+            {m.caption && <div style={{ fontSize: 11, color: MUTE }}>{m.caption}</div>}
+          </figcaption>
+        </figure>
       ))}
     </div>
   );
@@ -205,6 +212,12 @@ function ScopeBullets({ text, A }: { text: string; A: AccentSet }) {
   );
 }
 
+// Each project row: number, name (+ verified), a meta line (sector tag ·
+// client · years), the scope, the contract value on the right, and — when
+// the project has a photo — that photo as a thumbnail, so a bid reviewer
+// sees the work beside the claim. The sector used to sit under the number in
+// a 58px column, where long sectors ("Roads & infrastructure") ran into the
+// client line; it's now a tag on the meta line.
 export function CompanyProjects({ data, A, headFont }: {
   data: CompanyData; A: AccentSet; headFont: string;
 }) {
@@ -212,24 +225,35 @@ export function CompanyProjects({ data, A, headFont }: {
     <div style={{ display: "flex", flexDirection: "column" }}>
       {data.projects.map((p, i) => {
         const last = i === data.projects.length - 1;
+        const photo = p.media[0];
         return (
-          <article key={i} style={{ display: "flex", gap: 16, padding: "13px 0", borderBottom: last ? "none" : `1px solid ${RULE}` }}>
-            <div style={{ width: 58, flex: "none" }}>
-              <div style={{ fontFamily: headFont, fontWeight: 600, fontSize: 18, color: A.accent, lineHeight: 1 }}>{String(i + 1).padStart(2, "0")}</div>
-              {p.sector && <div style={{ fontSize: 9.5, textTransform: "uppercase", letterSpacing: "0.1em", color: FAINT, marginTop: 4 }}>{p.sector}</div>}
+          <article key={i} style={{ display: "flex", gap: 16, padding: "14px 0", borderBottom: last ? "none" : `1px solid ${RULE}`, breakInside: "avoid" }}>
+            <div style={{ width: 30, flex: "none", fontFamily: headFont, fontWeight: 600, fontSize: 18, color: A.accent, lineHeight: 1.15 }}>
+              {String(i + 1).padStart(2, "0")}
             </div>
+            {photo && (
+              <div style={{ width: 132, height: 92, flex: "none", borderRadius: 5, overflow: "hidden", border: `1px solid ${RULE}`, ...band }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photo.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              </div>
+            )}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <span style={{ fontFamily: headFont, fontWeight: 600, fontSize: 14.5, color: INK }}>{p.name}</span>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+                <span style={{ fontFamily: headFont, fontWeight: 600, fontSize: 14.5, color: INK, lineHeight: 1.3 }}>{p.name}</span>
                 {p.verified && <PartVerified />}
               </div>
-              {(p.client || p.yearRange) && (
-                <div style={{ fontSize: 11.5, color: A.accent, marginTop: 2 }}>{[p.client, p.yearRange].filter(Boolean).join(" · ")}</div>
+              {(p.sector || p.client || p.yearRange) && (
+                <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px 8px", fontSize: 11.5, marginTop: 4 }}>
+                  {p.sector && (
+                    <span style={{ fontSize: 9.5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: A.accent, background: A.tint, border: `1px solid ${A.tintBorder}`, borderRadius: 3, padding: "2px 6px", whiteSpace: "nowrap", ...band }}>{p.sector}</span>
+                  )}
+                  {(p.client || p.yearRange) && <span style={{ color: MUTE }}>{[p.client, p.yearRange].filter(Boolean).join(" · ")}</span>}
+                </div>
               )}
               {p.scope && <ScopeBullets text={p.scope} A={A} />}
             </div>
             {p.value && (
-              <div style={{ width: 86, flex: "none", textAlign: "right" }}>
+              <div style={{ width: 74, flex: "none", textAlign: "right" }}>
                 <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.12em", color: FAINT }}>Value</div>
                 <div style={{ fontFamily: headFont, fontWeight: 600, fontSize: 15, color: INK, marginTop: 2 }}>{p.value}</div>
               </div>
@@ -241,27 +265,88 @@ export function CompanyProjects({ data, A, headFont }: {
   );
 }
 
-// ── client list — all logos/names in one horizontal wrapping row (no
-// category grouping; clients aren't categorised) ──
+// ── client list — an even wall of equal cards, logo (or name) centred ──
+// Logos are sized by height with width auto: an uploaded SVG without its
+// own pixel size used to collapse to zero width in a shrink-wrapped chip,
+// printing an empty box.
 export function CompanyClientGroups({ data, A, variant = "bordered", chipFont }: {
   data: CompanyData; A: AccentSet; variant?: "bordered" | "tinted"; chipFont?: string;
 }) {
-  const chip = variant === "tinted"
+  const card = variant === "tinted"
     ? { background: A.tint, border: `1px solid ${A.tintBorder}`, ...band }
-    : { border: `1px solid ${RULE}` };
+    : { background: "#fff", border: `1px solid ${RULE}` };
   const clients = data.clientGroups.flatMap((g) => g.clients);
+  // Fill rows evenly: 3 across unless 4 across leaves fewer gaps.
+  const n = clients.length;
+  const cols = n % 3 === 0 ? 3 : n % 4 === 0 || n >= 9 ? 4 : 3;
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 11 }}>
+    <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 10 }}>
       {clients.map((c, i) => (
-        c.logoUrl ? (
-          <span key={i} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 84, padding: "11px 20px", borderRadius: 6, background: "#fff", border: `1px solid ${RULE}` }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={c.logoUrl} alt={c.name} style={{ maxHeight: 60, maxWidth: 190, objectFit: "contain", display: "block" }} />
-          </span>
-        ) : (
-          <span key={i} style={{ display: "inline-flex", alignItems: "center", height: 84, borderRadius: 6, padding: "0 20px", fontFamily: chipFont, fontSize: 13, color: BODY, whiteSpace: "nowrap", ...chip }}>{c.name}</span>
-        )
+        <div key={i} style={{ height: 74, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", padding: "10px 14px", breakInside: "avoid", ...card }}>
+          {c.logoUrl
+            // eslint-disable-next-line @next/next/no-img-element
+            ? <img src={c.logoUrl} alt={c.name} style={{ height: 40, width: "auto", maxWidth: "100%", objectFit: "contain", display: "block" }} />
+            : <span style={{ fontFamily: chipFont, fontSize: 12.5, fontWeight: 600, color: BODY, textAlign: "center", lineHeight: 1.3 }}>{c.name}</span>}
+        </div>
       ))}
+    </div>
+  );
+}
+
+// ── Registration & certifications — the compliance facts a tender
+// evaluator looks for first: registration number and country, year
+// founded, and each certificate / licence with issuer, year and (when
+// admin-checked) the verified mark. ──
+export function credentialsVisible(data: CompanyData): boolean {
+  return Boolean(data.registrationNumber || data.certifications.length > 0);
+}
+
+export function CompanyCredentials({ data, A, headFont }: { data: CompanyData; A: AccentSet; headFont: string }) {
+  const facts = [
+    ["Registration No.", data.registrationNumber],
+    ["Registered in", data.country],
+    ["Founded", data.foundedYear],
+  ].filter(([, v]) => v) as [string, string][];
+  return (
+    <div>
+      {facts.length > 0 && (
+        <div style={{ display: "grid", gridTemplateColumns: `repeat(${facts.length}, 1fr)`, border: `1px solid ${RULE}`, borderRadius: 6, marginBottom: data.certifications.length ? 12 : 0 }}>
+          {facts.map(([k, v], i) => (
+            <div key={i} style={{ padding: "10px 14px", borderLeft: i ? `1px solid ${RULE}` : "none" }}>
+              <div style={{ fontSize: 9.5, textTransform: "uppercase", letterSpacing: "0.12em", color: FAINT }}>{k}</div>
+              <div style={{ fontFamily: headFont, fontWeight: 600, fontSize: 13.5, color: INK, marginTop: 2 }}>{v}</div>
+            </div>
+          ))}
+        </div>
+      )}
+      {data.certifications.map((c, i) => (
+        <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 2px", borderBottom: i < data.certifications.length - 1 ? `1px solid ${RULE}` : "none", breakInside: "avoid" }}>
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden style={{ flex: "none" }}>
+            <circle cx="8" cy="6.5" r="4.5" fill="none" stroke={A.accent} strokeWidth="1.4" />
+            <path d="M5.6 10l-1 4.5L8 13l3.4 1.5-1-4.5" fill="none" stroke={A.accent} strokeWidth="1.4" strokeLinejoin="round" />
+          </svg>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ fontFamily: headFont, fontWeight: 600, fontSize: 13, color: INK }}>{c.name}</span>
+            {c.issuer && <span style={{ fontSize: 11.5, color: MUTE }}>{"  ·  "}{c.issuer}</span>}
+            {c.verified && <>&nbsp;&nbsp;<PartVerified /></>}
+          </div>
+          {c.year && <div style={{ fontSize: 11.5, fontWeight: 600, color: MUTE, fontVariantNumeric: "tabular-nums" }}>{c.year}</div>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Section heading shared by the six templates that used a tinted tab:
+// the title in the display face, ink, over a hairline with a short accent
+// bar sitting on it. Reads as a designed document rather than a form label.
+export function SectionTitle({ A, font, weight = 600, size = 19, mb = 14, children }: {
+  A: AccentSet; font: string; weight?: number; size?: number; mb?: number; children: React.ReactNode;
+}) {
+  return (
+    <div style={{ position: "relative", marginBottom: mb, paddingBottom: 7, borderBottom: `1px solid ${RULE}`, breakAfter: "avoid" }}>
+      <span style={{ fontFamily: font, fontWeight: weight, fontSize: size, lineHeight: 1.2, color: INK, letterSpacing: "0.005em" }}>{children}</span>
+      <span style={{ position: "absolute", left: 0, bottom: -1.5, width: 38, height: 3, background: A.accent, ...band }} />
     </div>
   );
 }
