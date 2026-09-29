@@ -4,9 +4,10 @@
 
 export const SITE = {
   name: "Sahan",
-  // Production domain. Set NEXT_PUBLIC_SITE_URL in the Vercel project to
-  // the real domain on deploy; this fallback keeps dev + previews sane.
-  url: (process.env.NEXT_PUBLIC_SITE_URL || "https://sahan.so").replace(/\/$/, ""),
+  // Production domain. NEXT_PUBLIC_SITE_URL overrides it (e.g. localhost in
+  // dev); without it, canonical links, the sitemap, social cards and email
+  // links all point at the live site.
+  url: (process.env.NEXT_PUBLIC_SITE_URL || "https://sahanprofiles.com").replace(/\/$/, ""),
   tagline: "Verified professional profiles & elegant CVs for the Horn of Africa",
   // One-paragraph positioning used as the default meta description.
   description:
