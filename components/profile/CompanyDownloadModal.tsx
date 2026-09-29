@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { COMPANY_TEMPLATES } from "@/components/templates/catalog";
-import { TemplatePreview } from "@/components/templates/TemplatePreview";
+import { TemplateGrid } from "@/components/templates/TemplateGrid";
 import { TemplateActions } from "@/components/templates/TemplateActions";
 import { COMPANY_THEMES } from "@/lib/pdf/themes";
 
@@ -10,6 +10,7 @@ import { COMPANY_THEMES } from "@/lib/pdf/themes";
 // from the profile rail. Each card shows a thumbnail, a curated colour-
 // theme picker, a live on-screen PDF preview, and the themed download.
 // An optional year filter limits which projects appear in the PDF.
+// Starred templates become the default view (TemplateGrid).
 const NOW = new Date().getFullYear();
 const YEARS = Array.from({ length: NOW + 1 - 2005 + 1 }, (_, i) => NOW + 1 - i);
 
@@ -28,7 +29,7 @@ export function CompanyDownloadModal({ open, onClose }: { open: boolean; onClose
             <div>
               <p className="section-eyebrow text-sienna">Download your profile</p>
               <h2 className="font-serif text-[22px] tracking-tightish mt-1">Pick a template</h2>
-              <p className="text-[12.5px] text-muted mt-1">Eight templates, one set of details. Tap a page to see it larger, pick a colour, then download.</p>
+              <p className="text-[12.5px] text-muted mt-1">{COMPANY_TEMPLATES.length} templates, one set of details. Tap a page to see it larger, pick a colour, then download.</p>
             </div>
             <button onClick={onClose} aria-label="Close" className="w-8 h-8 rounded-full hover:bg-border-soft text-muted text-[18px] leading-none shrink-0">×</button>
           </div>
@@ -51,23 +52,13 @@ export function CompanyDownloadModal({ open, onClose }: { open: boolean; onClose
           </div>
         </header>
 
-        <div className="px-4 sm:px-6 py-5 grid gap-4 sm:gap-5 sm:grid-cols-3">
-          {COMPANY_TEMPLATES.map(({ id, name, tagline }) => (
-            // Phones: preview left, details right. Tablet up: preview on top.
-            <div key={id} className="rounded-[12px] border border-border bg-cream/40 overflow-hidden flex sm:flex-col">
-              <div className="shrink-0 w-[112px] sm:w-auto flex items-start sm:items-center justify-center bg-[#ece8df] p-3 sm:py-5">
-                <TemplatePreview kind="company" id={id} name={name} className="w-full sm:w-[150px]" />
-              </div>
-              <div className="p-3 flex-1 min-w-0 flex flex-col">
-                <h3 className="font-serif text-[16px] tracking-tightish">{name}</h3>
-                <p className="text-[11.5px] text-muted mt-0.5">{tagline}</p>
-                <div className="mt-3">
-                  <TemplateActions href={`/api/company/${id}`} storageKey={`company:${id}`} templateName={name} themes={COMPANY_THEMES[id]} params={params} />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <TemplateGrid
+          kind="company"
+          templates={COMPANY_TEMPLATES}
+          renderActions={({ id, name }) => (
+            <TemplateActions href={`/api/company/${id}`} storageKey={`company:${id}`} templateName={name} themes={COMPANY_THEMES[id]} params={params} />
+          )}
+        />
       </div>
     </div>
   );
