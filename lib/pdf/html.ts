@@ -16,7 +16,15 @@ body {
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
   text-rendering: optimizeLegibility;
   font-kerning: normal;
-  font-variant-ligatures: common-ligatures;
+}
+/* Default glyphs only. The Chromium build on Vercel (Sparticuz 131) maps
+   ligatures (fi, ff, ffi…) and alternate digits (tabular / lining nums) to
+   nothing in the PDF's text layer, so "officer" read as "o?cer" and dates
+   lost their years when copied, parsed by an employer's ATS or imported by
+   our own CV upload. */
+*, *::before, *::after {
+  font-variant-ligatures: none !important;
+  font-variant-numeric: normal !important;
 }
 @page { size: A4; margin: 0; }
 `;
