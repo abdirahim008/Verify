@@ -29,6 +29,8 @@ import { CompanyTeamCard } from "@/components/profile/company/CompanyTeamCard";
 import { CompanyCertificationsCard } from "@/components/profile/company/CompanyCertificationsCard";
 import { CompanyCompletenessRail } from "@/components/profile/CompanyCompletenessRail";
 import { StarterSteps } from "@/components/profile/StarterSteps";
+import { QuickStart } from "@/components/profile/ai/QuickStart";
+import { aiConfigured } from "@/lib/ai/deepseek";
 import { individualProgress, companyProgress, type OnboardingProgress } from "@/lib/onboarding";
 
 export const metadata = { title: "My profile" };
@@ -70,6 +72,19 @@ function starter(p: OnboardingProgress, welcome: boolean, displayName: string | 
     ? `Welcome to Sahan${first ? `, ${first}` : ""}. Let's build your ${p.noun}.`
     : `Unlock your ${p.noun}`;
   return <StarterSteps heading={heading} noun={p.noun} steps={p.steps.filter((s) => s.required)} />;
+}
+
+// Individuals also get the AI quick start (free text or CV upload → a
+// reviewed draft) until the CV unlocks: fully open for a brand-new member,
+// collapsed to a one-line offer once they've started by hand.
+function individualIntro(p: OnboardingProgress, welcome: boolean, displayName: string | null | undefined) {
+  const checklist = starter(p, welcome, displayName);
+  if (p.minCore || !aiConfigured()) return checklist;
+  const first = (displayName ?? "").trim().split(/\s+/)[0];
+  const heading = welcome || !p.started
+    ? `Welcome to Sahan${first ? `, ${first}` : ""}. Let's create your CV.`
+    : "Finish your CV faster";
+  return <QuickStart heading={heading} compact={p.started} fallback={checklist} />;
 }
 
 async function IndividualBuilder({ userId, ctx }: { userId: string; ctx: BuilderCtx }) {
@@ -155,7 +170,7 @@ async function IndividualBuilder({ userId, ctx }: { userId: string; ctx: Builder
     <ProfileWorkspace
       eyebrow="Your profile"
       title="Profile builder"
-      intro={starter(individualProgress(data), ctx.welcome, data.profile?.display_name)}
+      intro={individualIntro(individualProgress(data), ctx.welcome, data.profile?.display_name)}
       publicHref={`/u/${userId}`}
       businessCard
       sections={sections}
