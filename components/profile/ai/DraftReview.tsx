@@ -140,7 +140,7 @@ export function DraftReview({ draft: initial, source, onCancel, onSaved }: {
   );
 }
 
-function Group({ title, children }: { title: string; children: ReactNode }) {
+export function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="mt-5">
       <h3 className="section-eyebrow text-ink-soft mb-2">{title}</h3>
@@ -149,7 +149,7 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function Entry({ children, onRemove }: { children: ReactNode; onRemove: () => void }) {
+export function Entry({ children, onRemove }: { children: ReactNode; onRemove: () => void }) {
   return (
     <div className="relative rounded-lg border border-border bg-cream/30 p-4">
       <button type="button" onClick={onRemove} className="absolute right-3 top-3 text-[12.5px] font-medium text-muted hover:text-red-700">Remove</button>
@@ -158,7 +158,7 @@ function Entry({ children, onRemove }: { children: ReactNode; onRemove: () => vo
   );
 }
 
-function Chips({ label, items, onRemove }: { label: string; items: string[]; onRemove: (i: number) => void }) {
+export function Chips({ label, items, onRemove }: { label: string; items: string[]; onRemove: (i: number) => void }) {
   if (!items.length) return null;
   return (
     <div>

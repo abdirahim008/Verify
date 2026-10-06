@@ -50,15 +50,15 @@ export const EMPTY_DRAFT: ProfileDraft = {
   experiences: [], educations: [], skills: [], languages: [], certifications: [], referees: [], missing: [],
 };
 
-// ── coercion helpers ────────────────────────────────────────────────────
-const str = (v: unknown, max: number): string =>
+// ── coercion helpers (also used by lib/ai/company-draft.ts) ─────────────
+export const str = (v: unknown, max: number): string =>
   typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : typeof v === "number" ? String(v).slice(0, max) : "";
-const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
-const obj = (v: unknown): Record<string, unknown> => (v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : {});
-const EMAIL = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
-const hasLetters = (s: string) => /\p{L}/u.test(s);
-const personName = (s: string) => (hasLetters(s) && !/\d/.test(s) ? s : "");
-const year = (v: unknown): string => {
+export const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
+export const obj = (v: unknown): Record<string, unknown> => (v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : {});
+export const EMAIL = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
+export const hasLetters = (s: string) => /\p{L}/u.test(s);
+export const personName = (s: string) => (hasLetters(s) && !/\d/.test(s) ? s : "");
+export const year = (v: unknown): string => {
   const m = /\b(19[5-9]\d|20[0-4]\d)\b/.exec(str(v, 20));
   return m ? m[1] : "";
 };
@@ -108,7 +108,7 @@ function language(v: unknown): string {
   return formatLanguage(e);
 }
 
-function bullets(v: unknown): string {
+export function bullets(v: unknown): string {
   const list = Array.isArray(v) ? v : typeof v === "string" ? v.split(/\n|•/) : [];
   return list.map((b) => str(b, 300).replace(/^[-–•*\s]+/, "")).filter(Boolean).slice(0, 8).join("\n");
 }
