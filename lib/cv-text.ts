@@ -1,13 +1,16 @@
 import "server-only";
 import { inflateRawSync } from "node:zlib";
+import { itemsToText, tidyText } from "@/lib/pdf-lines";
 
-// Plain text out of an uploaded CV, for the AI profile import. PDF via
+// Plain text out of an uploaded CV or company profile, for the AI import. PDF via
 // pdfjs-dist (already a dependency, for the template previews); DOCX by
 // reading word/document.xml straight out of the zip, so no new dependency.
 // Scanned / image-only PDFs have no text layer and come back near-empty —
 // the caller tells the member to paste their details instead.
 
-export const MAX_CV_BYTES = 5 * 1024 * 1024;
+// Vercel rejects request bodies over 4.5 MB, so bigger PDFs are read in the
+// browser (lib/pdf-text-browser.ts) and only their text is sent.
+export const MAX_CV_BYTES = 4 * 1024 * 1024;
 
 export type CvKind = "pdf" | "docx";
 
@@ -17,12 +20,12 @@ export function cvKind(name: string, type: string, head: Uint8Array): CvKind | n
   return null;
 }
 
-export async function extractCvText(bytes: Uint8Array, kind: CvKind): Promise<string> {
-  const raw = kind === "pdf" ? await pdfText(bytes) : docxText(bytes);
-  return raw.replace(/[ \t ]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+/** maxPages: CVs are short; company profiles can run to 30 pages. */
+export async function extractCvText(bytes: Uint8Array, kind: CvKind, maxPages = 8): Promise<string> {
+  return tidyText(kind === "pdf" ? await pdfText(bytes, maxPages) : docxText(bytes));
 }
 
-async function pdfText(bytes: Uint8Array): Promise<string> {
+async function pdfText(bytes: Uint8Array, maxPages: number): Promise<string> {
   // The legacy build runs in Node without a DOM. pdf.js would otherwise load
   // its worker from a path computed at runtime, which Vercel's file tracing
   // can't see; importing it here bundles it and lets pdf.js run it in-process.
@@ -37,23 +40,9 @@ async function pdfText(bytes: Uint8Array): Promise<string> {
   const task = pdfjs.getDocument({ data: bytes, useSystemFonts: false });
   const doc = await task.promise;
   const pages: string[] = [];
-  for (let n = 1; n <= Math.min(doc.numPages, 8); n++) {
+  for (let n = 1; n <= Math.min(doc.numPages, maxPages); n++) {
     const page = await doc.getPage(n);
-    const content = await page.getTextContent();
-    let line = "", lastY: number | null = null, lastEnd = 0; const lines: string[] = [];
-    for (const item of content.items) {
-      if (!("str" in item)) continue;
-      const [sa, sb, , , x, y] = item.transform;
-      if (lastY !== null && Math.abs(y - lastY) > 2) { lines.push(line); line = ""; }
-      // Space only where there's a visible gap: PDFs often split one word or
-      // an email address into several pieces that touch.
-      const gap = x - lastEnd > 0.2 * (Math.hypot(sa, sb) || 10);
-      line += (line && gap && !line.endsWith(" ") && !item.str.startsWith(" ") ? " " : "") + item.str;
-      lastY = y; lastEnd = x + item.width;
-      if (item.hasEOL) { lines.push(line); line = ""; lastY = null; }
-    }
-    if (line) lines.push(line);
-    pages.push(lines.join("\n"));
+    pages.push(itemsToText((await page.getTextContent()).items));
   }
   await task.destroy();
   return pages.join("\n\n");
