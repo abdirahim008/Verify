@@ -22,8 +22,11 @@ type Kind = "individual" | "company";
 
 // Files up to this size go to the server; bigger PDFs are read here in the
 // browser (Vercel caps request bodies at 4.5 MB) and only the text is sent.
+// What the AI costs depends on the text, not the file: `pages` and `chars`
+// match the route's limits (app/api/ai/profile-draft), and 20 MB covers a
+// designed company profile while keeping phones from choking on huge files.
 const SERVER_MAX = 4 * 1024 * 1024;
-const BROWSER_MAX = 40 * 1024 * 1024;
+const BROWSER_MAX = 20 * 1024 * 1024;
 
 const COPY = {
   individual: {
@@ -35,7 +38,7 @@ const COPY = {
     helper: "Include job titles, organisations and years.",
     tooShort: "Tell us a little more — your jobs, studies and skills.",
     choose: "Choose your CV file · Dooro faylka CV-ga",
-    reading: "Reading your CV…", writing: "Writing your profile…", pages: 8,
+    reading: "Reading your CV…", writing: "Writing your profile…", pages: 8, chars: 15000,
     shortOnTime: "Let our AI fill your profile from your CV or a few sentences.",
     shortOnTimeSo: "Waqti yar? AI-gu ha ka buuxiyo CV-gaaga ama dhowr weedh.",
     example:
@@ -52,7 +55,7 @@ const COPY = {
     helper: "Include project names, clients, years and values where you can.",
     tooShort: "Tell us a little more — what your company does, your projects and clients.",
     choose: "Choose your company profile · Dooro faylka profile-ka",
-    reading: "Reading your company profile…", writing: "Writing your company profile…", pages: 30,
+    reading: "Reading your company profile…", writing: "Writing your company profile…", pages: 20, chars: 20000,
     shortOnTime: "Let our AI fill your company page from your existing profile or a few sentences.",
     shortOnTimeSo: "Waqti yar? AI-gu ha ka buuxiyo profile-kaaga ama dhowr weedh.",
     example:
@@ -101,10 +104,10 @@ export function QuickStart({ heading, compact, fallback, kind = "individual" }: 
     }
     const isPdf = /\.pdf$/i.test(file.name) || file.type === "application/pdf";
     if (!isPdf) { setError("That Word file is too big. Save it as a PDF and upload that instead."); return; }
-    if (file.size > BROWSER_MAX) { setError("That file is over 40 MB. Please upload a smaller PDF."); return; }
+    if (file.size > BROWSER_MAX) { setError("That file is over 20 MB. Please upload a smaller PDF — for example, save it again with compressed images."); return; }
     setError(null); setSource("cv"); setMode("working");
     try {
-      f.set("text", await pdfTextInBrowser(file, copy.pages)); f.set("from", "file");
+      f.set("text", (await pdfTextInBrowser(file, copy.pages)).slice(0, copy.chars)); f.set("from", "file");
     } catch {
       setError("We couldn't read that file. Try another PDF, or type your details instead."); setMode("upload"); return;
     }
@@ -183,7 +186,7 @@ export function QuickStart({ heading, compact, fallback, kind = "individual" }: 
           <button type="button" onClick={() => fileRef.current?.click()}
             className="w-full rounded-lg border-2 border-dashed border-sienna/40 bg-paper px-4 py-8 text-center hover:border-sienna">
             <span className="block text-[15px] font-semibold text-sienna">{copy.choose}</span>
-            <span className="block text-[12.5px] text-muted mt-1">PDF (up to 40 MB) or Word (.docx, up to 4 MB). Photos and scans can&rsquo;t be read yet — type your details instead.</span>
+            <span className="block text-[12.5px] text-muted mt-1">PDF (up to 20 MB) or Word (.docx, up to 4 MB). Photos and scans can&rsquo;t be read yet — type your details instead.</span>
           </button>
         </div>
       )}

@@ -23,10 +23,12 @@ export const maxDuration = 60;
 
 const DAILY_LIMIT = 6;
 const MIN_TEXT = 40;
-// Company profiles are longer documents than CVs.
+// Company profiles are longer documents than CVs. These caps are what keep
+// the AI cost down: 20,000 characters is about 5,000 tokens. The browser
+// applies the same caps to large PDFs it reads (components/profile/ai/QuickStart).
 const LIMITS = {
   individual: { pages: 8, chars: 15000 },
-  company: { pages: 30, chars: 30000 },
+  company: { pages: 20, chars: 20000 },
 } as const;
 
 const fail = (error: string, status = 400) => NextResponse.json({ error }, { status });

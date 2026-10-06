@@ -20,7 +20,7 @@ export function cvKind(name: string, type: string, head: Uint8Array): CvKind | n
   return null;
 }
 
-/** maxPages: CVs are short; company profiles can run to 30 pages. */
+/** maxPages: 8 for a CV, 20 for a company profile. */
 export async function extractCvText(bytes: Uint8Array, kind: CvKind, maxPages = 8): Promise<string> {
   return tidyText(kind === "pdf" ? await pdfText(bytes, maxPages) : docxText(bytes));
 }

@@ -1,6 +1,6 @@
 // Text out of a PDF in the member's browser, for files too big to upload
 // to the server (Vercel caps request bodies at 4.5 MB; designed company
-// profiles are often 5–30 MB of images). Only the text is then sent to
+// profiles are often 5–20 MB of images). Only the text is then sent to
 // /api/ai/profile-draft. Same pdf.js setup as the template previews.
 
 import { itemsToText, tidyText } from "@/lib/pdf-lines";
