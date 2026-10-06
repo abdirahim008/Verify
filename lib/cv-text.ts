@@ -26,8 +26,13 @@ async function pdfText(bytes: Uint8Array): Promise<string> {
   // The legacy build runs in Node without a DOM. pdf.js would otherwise load
   // its worker from a path computed at runtime, which Vercel's file tracing
   // can't see; importing it here bundles it and lets pdf.js run it in-process.
+  const g = globalThis as { pdfjsWorker?: unknown; DOMMatrix?: unknown };
+  // pdf.js creates a DOMMatrix when it loads. In Node it borrows one from the
+  // optional native @napi-rs/canvas, which Vercel doesn't deploy, so loading
+  // failed there ("DOMMatrix is not defined"). Text extraction never draws,
+  // so a plain 2D matrix is all it needs.
+  g.DOMMatrix ??= Matrix2D;
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  const g = globalThis as { pdfjsWorker?: unknown };
   g.pdfjsWorker ??= await import("pdfjs-dist/legacy/build/pdf.worker.mjs");
   const task = pdfjs.getDocument({ data: bytes, useSystemFonts: false });
   const doc = await task.promise;
@@ -49,6 +54,38 @@ async function pdfText(bytes: Uint8Array): Promise<string> {
   }
   await task.destroy();
   return pages.join("\n\n");
+}
+
+// The 2D affine subset of DOMMatrix ([a b c d e f]) that pdf.js touches.
+class Matrix2D {
+  a = 1; b = 0; c = 0; d = 1; e = 0; f = 0;
+  constructor(init?: ArrayLike<number>) {
+    if (init && init.length >= 6) [this.a, this.b, this.c, this.d, this.e, this.f] = Array.from(init);
+  }
+  private set(m: number[]) { [this.a, this.b, this.c, this.d, this.e, this.f] = m; return this; }
+  private static mul(p: Matrix2D, q: { a: number; b: number; c: number; d: number; e: number; f: number }) {
+    return [
+      p.a * q.a + p.c * q.b, p.b * q.a + p.d * q.b,
+      p.a * q.c + p.c * q.d, p.b * q.c + p.d * q.d,
+      p.a * q.e + p.c * q.f + p.e, p.b * q.e + p.d * q.f + p.f,
+    ];
+  }
+  multiplySelf(o: Matrix2D) { return this.set(Matrix2D.mul(this, o)); }
+  preMultiplySelf(o: Matrix2D) { return this.set(Matrix2D.mul(o, this)); }
+  translateSelf(x = 0, y = 0) { return this.multiplySelf(new Matrix2D([1, 0, 0, 1, x, y])); }
+  scaleSelf(sx = 1, sy = sx) { return this.multiplySelf(new Matrix2D([sx, 0, 0, sy, 0, 0])); }
+  invertSelf() {
+    const det = this.a * this.d - this.b * this.c;
+    if (!det) return this.set([NaN, NaN, NaN, NaN, NaN, NaN]);
+    return this.set([
+      this.d / det, -this.b / det, -this.c / det, this.a / det,
+      (this.c * this.f - this.d * this.e) / det, (this.b * this.e - this.a * this.f) / det,
+    ]);
+  }
+  multiply(o: Matrix2D) { return new Matrix2D([this.a, this.b, this.c, this.d, this.e, this.f]).multiplySelf(o); }
+  translate(x?: number, y?: number) { return new Matrix2D([this.a, this.b, this.c, this.d, this.e, this.f]).translateSelf(x, y); }
+  scale(sx?: number, sy?: number) { return new Matrix2D([this.a, this.b, this.c, this.d, this.e, this.f]).scaleSelf(sx, sy); }
+  inverse() { return new Matrix2D([this.a, this.b, this.c, this.d, this.e, this.f]).invertSelf(); }
 }
 
 // Minimal zip reader: find word/document.xml via the central directory and
