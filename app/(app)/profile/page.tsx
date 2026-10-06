@@ -87,6 +87,18 @@ function individualIntro(p: OnboardingProgress, welcome: boolean, displayName: s
   return <QuickStart heading={heading} compact={p.started} fallback={checklist} />;
 }
 
+// Companies get the same quick start: describe the company or upload an
+// existing company profile (PDF/Word) → a reviewed draft.
+function companyIntro(p: OnboardingProgress, welcome: boolean, displayName: string | null | undefined) {
+  const checklist = starter(p, welcome, displayName);
+  if (p.minCore || !aiConfigured()) return checklist;
+  const name = (displayName ?? "").trim();
+  const heading = welcome || !p.started
+    ? `Welcome to Sahan${name ? `, ${name}` : ""}. Let's create your company profile.`
+    : "Finish your company profile faster";
+  return <QuickStart kind="company" heading={heading} compact={p.started} fallback={checklist} />;
+}
+
 async function IndividualBuilder({ userId, ctx }: { userId: string; ctx: BuilderCtx }) {
   const [data, pendingSet] = await Promise.all([
     loadIndividualProfile(userId),
@@ -291,7 +303,7 @@ async function CompanyBuilder({ userId, ctx }: { userId: string; ctx: BuilderCtx
     <ProfileWorkspace
       eyebrow="Your company"
       title="Company profile"
-      intro={starter(companyProgress(data), ctx.welcome, data.profile?.display_name)}
+      intro={companyIntro(companyProgress(data), ctx.welcome, data.profile?.display_name)}
       publicHref={`/u/${userId}`}
       businessCard
       sections={sections}

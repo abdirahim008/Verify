@@ -43,6 +43,7 @@ const emailField = z.string().trim().max(254)
 /** Website: a domain with an optional http(s):// and path — "example.so",
  *  "www.example.so", "https://example.so/about". No spaces, no plain words. */
 const WEBSITE = /^(https?:\/\/)?([a-z0-9-]+\.)+[a-z]{2,}(:\d{2,5})?(\/\S*)?$/i;
+export const isWebsite = (v: string) => WEBSITE.test(v);
 const websiteField = z.string().trim().max(200)
   .refine((v) => v === "" || WEBSITE.test(v), "Enter a website address, e.g. example.so")
   .optional();
