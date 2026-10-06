@@ -40,13 +40,16 @@ async function pdfText(bytes: Uint8Array): Promise<string> {
   for (let n = 1; n <= Math.min(doc.numPages, 8); n++) {
     const page = await doc.getPage(n);
     const content = await page.getTextContent();
-    let line = "", lastY: number | null = null; const lines: string[] = [];
+    let line = "", lastY: number | null = null, lastEnd = 0; const lines: string[] = [];
     for (const item of content.items) {
       if (!("str" in item)) continue;
-      const y = item.transform[5];
+      const [sa, sb, , , x, y] = item.transform;
       if (lastY !== null && Math.abs(y - lastY) > 2) { lines.push(line); line = ""; }
-      line += (line && !line.endsWith(" ") && !item.str.startsWith(" ") ? " " : "") + item.str;
-      lastY = y;
+      // Space only where there's a visible gap: PDFs often split one word or
+      // an email address into several pieces that touch.
+      const gap = x - lastEnd > 0.2 * (Math.hypot(sa, sb) || 10);
+      line += (line && gap && !line.endsWith(" ") && !item.str.startsWith(" ") ? " " : "") + item.str;
+      lastY = y; lastEnd = x + item.width;
       if (item.hasEOL) { lines.push(line); line = ""; lastY = null; }
     }
     if (line) lines.push(line);
