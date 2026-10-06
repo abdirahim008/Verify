@@ -67,7 +67,13 @@ tables for them "to be ready." Keep the codebase lean.
 - ❌ Public search/browse of all profiles
 - ❌ Live payment processor integration (stub the payment intent only)
 - ❌ Mobile native apps
-- ❌ AI/LLM features
+- ❌ AI/LLM features — **one approved exception:** the AI profile import (owner-approved
+  2026-10): a new individual member can describe themselves in free text (Somali or
+  English) or upload a CV (PDF/DOCX), and DeepSeek drafts their profile. Rules: the
+  member reviews and edits the draft before anything is saved; the AI may polish and
+  translate but must not invent facts; AI-filled entries are never marked verified;
+  the member's text/file is not stored; requests are rate-limited per member. Any other
+  AI feature still needs explicit approval first.
 - ❌ **Scraping / crawling / reposting third-party web content or images** for the homepage
   feed or anywhere else. The homepage feed uses ONLY legitimate syndicated sources
   (RSS/official APIs) with attribution, or admin-curated posts. See §11.
