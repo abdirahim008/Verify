@@ -1,4 +1,4 @@
-import { loadAdminMetrics, type AdminUserRow } from "@/lib/admin-metrics";
+import { loadAdminMetrics, type AdminUserRow, type TemplateStat } from "@/lib/admin-metrics";
 import { FeatureToggle } from "@/components/admin/FeatureToggle";
 import { BlockToggle } from "@/components/admin/BlockToggle";
 
@@ -62,20 +62,21 @@ export default async function MetricsPage() {
             ))}
           </div>
 
-          {m.templates.length > 0 && (
-            <div className="mt-4">
-              <p className="text-[11px] uppercase tracking-[0.14em] text-muted font-semibold">By template</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {m.templates.map((t) => (
-                  <span key={`${t.kind}:${t.template}`} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-paper px-3 py-1 text-[12.5px]">
-                    <span className="text-[10.5px] uppercase tracking-[0.1em] text-muted">{t.kind}</span>
-                    <span className="font-medium">{t.template}</span>
-                    <span className="text-sienna font-semibold">{t.count}</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+        </section>
+      )}
+
+      {/* Template popularity */}
+      {m.eventsAvailable && (
+        <section className="mt-8">
+          <h2 className="font-serif text-[22px] tracking-tightish">Most downloaded templates</h2>
+          <p className="mt-1 text-[12.5px] text-muted max-w-xl leading-relaxed">
+            Real downloads per template, most popular first. Previews are people opening a template
+            without downloading it.
+          </p>
+          <div className="mt-3 grid gap-3 lg:grid-cols-2">
+            <TemplateRanking title="CV templates" stats={m.templates.cv} />
+            <TemplateRanking title="Company profile templates" stats={m.templates.company} />
+          </div>
         </section>
       )}
 
@@ -136,6 +137,43 @@ export default async function MetricsPage() {
           Previews aren&rsquo;t counted as downloads.
         </p>
       </section>
+    </div>
+  );
+}
+
+function TemplateRanking({ title, stats }: { title: string; stats: TemplateStat[] }) {
+  const total = stats.reduce((s, t) => s + t.downloads, 0);
+  return (
+    <div className="rounded-[12px] border border-border bg-paper p-4">
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="text-[11px] uppercase tracking-[0.14em] text-muted font-semibold">{title}</p>
+        <span className="text-[11.5px] text-muted">{total} download{total === 1 ? "" : "s"}</span>
+      </div>
+      <ol className="mt-3 grid gap-3">
+        {stats.map((t, i) => {
+          const share = total ? Math.round((t.downloads / total) * 100) : 0;
+          return (
+            <li key={t.id} className={t.downloads === 0 ? "opacity-60" : ""}>
+              <div className="flex items-baseline justify-between gap-3 text-[13px]">
+                <span className="min-w-0 truncate">
+                  <span className="text-muted tabular-nums mr-2">{i + 1}.</span>
+                  <span className="font-medium">{t.name}</span>
+                </span>
+                <span className="whitespace-nowrap">
+                  <span className="font-semibold tabular-nums">{t.downloads}</span>
+                  <span className="ml-1.5 text-[11.5px] text-muted tabular-nums">{share}%</span>
+                </span>
+              </div>
+              <div className="mt-1.5 h-1.5 rounded-full bg-cream overflow-hidden">
+                <div className="h-full rounded-full bg-sienna" style={{ width: `${share}%` }} />
+              </div>
+              <p className="mt-1 text-[11.5px] text-muted">
+                {t.users} member{t.users === 1 ? "" : "s"} &middot; {t.last30} in last 30 days &middot; {t.previews} preview{t.previews === 1 ? "" : "s"}
+              </p>
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }

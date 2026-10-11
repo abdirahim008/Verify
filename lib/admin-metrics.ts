@@ -1,5 +1,6 @@
 import "server-only";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { CV_TEMPLATES, COMPANY_TEMPLATES, type TemplateMeta } from "@/components/templates/catalog";
 
 // Data for /admin/metrics. Service-role client: the dashboard aggregates
 // across every user, which RLS (correctly) forbids for the anon key. The
@@ -44,8 +45,9 @@ export interface AdminMetrics {
     blocked: number;
   };
   downloads: { cv: number; company: number; card: number; previews: number };
-  /** Real downloads per template, most popular first. */
-  templates: Array<{ kind: "cv" | "company"; template: string; count: number }>;
+  /** Every template (catalog + any retired ids seen in events), most
+   *  downloaded first. Zero-download templates are kept on purpose. */
+  templates: { cv: TemplateStat[]; company: TemplateStat[] };
   users: AdminUserRow[];
   /** False until migration 0007 (usage_events) is applied. */
   eventsAvailable: boolean;
@@ -56,6 +58,23 @@ export interface AdminMetrics {
     items: Array<{ name: string; rating: number | null; comment: string; created_at: string }>;
   };
 }
+
+export interface TemplateStat {
+  id: string;
+  name: string;
+  /** Real downloads, previews excluded. */
+  downloads: number;
+  /** Distinct members who downloaded it. */
+  users: number;
+  /** Real downloads in the last 30 days. */
+  last30: number;
+  /** Inline previews from the templates page — interest, not a download. */
+  previews: number;
+}
+
+// usage_events also logs non-download actions (ai_draft, ai_import_saved);
+// only these count towards download totals.
+const DOWNLOAD_EVENTS = new Set(["cv_download", "company_download", "card_download"]);
 
 interface EventRow {
   profile_id: string;
@@ -106,10 +125,15 @@ export async function loadAdminMetrics(): Promise<AdminMetrics | null> {
     }
   }
 
+  const now = Date.now();
+  const DAY = 86_400_000;
+
   const downloadsByProfile = new Map<string, { real: number; previews: number; last: string | null }>();
-  const templateCounts = new Map<string, number>();
+  const cvStats = seedTemplateStats(CV_TEMPLATES);
+  const companyStats = seedTemplateStats(COMPANY_TEMPLATES);
   let cv = 0, company = 0, card = 0, previews = 0;
   for (const e of events) {
+    if (!DOWNLOAD_EVENTS.has(e.event)) continue;
     const isPreview = e.meta?.preview === true;
     const entry = downloadsByProfile.get(e.profile_id) ?? { real: 0, previews: 0, last: null };
     if (isPreview) { previews++; entry.previews++; }
@@ -119,13 +143,21 @@ export async function loadAdminMetrics(): Promise<AdminMetrics | null> {
       if (e.event === "cv_download") cv++;
       else if (e.event === "company_download") company++;
       else if (e.event === "card_download") card++;
-      const tpl = typeof e.meta?.template === "string" ? e.meta.template : null;
-      if (tpl && (e.event === "cv_download" || e.event === "company_download")) {
-        const key = `${e.event === "cv_download" ? "cv" : "company"}:${tpl}`;
-        templateCounts.set(key, (templateCounts.get(key) ?? 0) + 1);
-      }
     }
     downloadsByProfile.set(e.profile_id, entry);
+
+    const tpl = typeof e.meta?.template === "string" ? e.meta.template : null;
+    const stats = e.event === "cv_download" ? cvStats : e.event === "company_download" ? companyStats : null;
+    if (tpl && stats) {
+      const s = stats.get(tpl) ?? { id: tpl, name: tpl, downloads: 0, users: new Set<string>(), last30: 0, previews: 0 };
+      if (isPreview) s.previews++;
+      else {
+        s.downloads++;
+        s.users.add(e.profile_id);
+        if (now - +new Date(e.created_at) <= 30 * DAY) s.last30++;
+      }
+      stats.set(tpl, s);
+    }
   }
 
   // Ratings + comments (null-safe before migration 0008 is applied).
@@ -153,8 +185,6 @@ export async function loadAdminMetrics(): Promise<AdminMetrics | null> {
     : new Map((blockedRes.data as Array<{ id: string; blocked: boolean; blocked_reason: string | null }> | null ?? [])
         .map((r) => [r.id, { blocked: !!r.blocked, reason: r.blocked_reason ?? "" }]));
 
-  const now = Date.now();
-  const DAY = 86_400_000;
   const users: AdminUserRow[] = profiles
     .map((p) => {
       const auth = authById.get(p.id);
@@ -190,14 +220,26 @@ export async function loadAdminMetrics(): Promise<AdminMetrics | null> {
       blocked: users.filter((u) => u.blocked).length,
     },
     downloads: { cv, company, card, previews },
-    templates: [...templateCounts.entries()]
-      .map(([key, count]) => {
-        const [kind, template] = key.split(":") as ["cv" | "company", string];
-        return { kind, template, count };
-      })
-      .sort((a, b) => b.count - a.count),
+    templates: { cv: rankTemplateStats(cvStats), company: rankTemplateStats(companyStats) },
     users,
     eventsAvailable,
     feedback,
   };
+}
+
+type TemplateAccumulator = Omit<TemplateStat, "users"> & { users: Set<string> };
+
+// Start every catalog template at zero so unused templates still show up.
+function seedTemplateStats(catalog: TemplateMeta[]): Map<string, TemplateAccumulator> {
+  return new Map(catalog.map((t) => [
+    t.id,
+    { id: t.id, name: t.name, downloads: 0, users: new Set<string>(), last30: 0, previews: 0 },
+  ]));
+}
+
+// Most downloaded first; ties broken by previews, then catalog order (stable sort).
+function rankTemplateStats(stats: Map<string, TemplateAccumulator>): TemplateStat[] {
+  return [...stats.values()]
+    .map((s) => ({ ...s, users: s.users.size }))
+    .sort((a, b) => b.downloads - a.downloads || b.previews - a.previews);
 }
