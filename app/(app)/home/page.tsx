@@ -105,7 +105,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-6">
       {/* ── Masthead: the curated-opportunity slideshow ────────────── */}
-      <HeroJobsSlider jobs={slides} eyebrow={slideEyebrow} />
+      <HeroJobsSlider jobs={slides} eyebrow={slideEyebrow} letterLinks={!isCompany} />
 
       {/* Companies see tenders only, so an empty feed would otherwise drop
           the masthead with no explanation. */}

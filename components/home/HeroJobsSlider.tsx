@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface SlideJob {
@@ -23,7 +24,11 @@ export interface SlideJob {
 // Above this many pages the dot row stops being scannable and we show a
 // "3 / 12" counter instead.
 const MAX_DOTS = 6;
-export function HeroJobsSlider({ jobs, eyebrow }: { jobs: SlideJob[]; eyebrow: string }) {
+export function HeroJobsSlider({ jobs, eyebrow, letterLinks = false }: {
+  jobs: SlideJob[]; eyebrow: string;
+  /** Individuals get a "Write a cover letter" link on each role. */
+  letterLinks?: boolean;
+}) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(0);
   const [pages, setPages] = useState(1);
@@ -126,12 +131,12 @@ export function HeroJobsSlider({ jobs, eyebrow }: { jobs: SlideJob[]; eyebrow: s
         className="mt-3 flex gap-3.5 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-1"
       >
         {jobs.map((j) => (
-          <a
+          // The whole card opens the job: the title link is stretched over it
+          // (after:inset-0). The cover-letter link sits above that layer, since
+          // a link can't be nested inside another link.
+          <article
             key={j.link}
-            href={j.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group snap-start shrink-0 w-full sm:w-[calc((100%-14px)/2)] lg:w-[calc((100%-28px)/3)]
+            className="group relative snap-start shrink-0 w-full sm:w-[calc((100%-14px)/2)] lg:w-[calc((100%-28px)/3)]
               rounded-[14px] border border-border bg-paper p-5 flex flex-col transition
               hover:border-muted/60 hover:shadow-card hover:-translate-y-0.5"
           >
@@ -149,7 +154,9 @@ export function HeroJobsSlider({ jobs, eyebrow }: { jobs: SlideJob[]; eyebrow: s
             </div>
 
             <h3 className="mt-2.5 font-serif text-[17px] tracking-tightish leading-snug text-ink group-hover:text-sienna transition-colors line-clamp-2">
-              {j.title}
+              <a href={j.link} target="_blank" rel="noopener noreferrer" className="after:absolute after:inset-0 after:rounded-[14px] focus:outline-none focus-visible:after:ring-2 focus-visible:after:ring-sienna/40">
+                {j.title}
+              </a>
             </h3>
 
             {j.org && (
@@ -159,13 +166,23 @@ export function HeroJobsSlider({ jobs, eyebrow }: { jobs: SlideJob[]; eyebrow: s
               </p>
             )}
 
-            {j.location && (
-              <p className="mt-auto pt-2.5 inline-flex items-center gap-1.5 text-[12px] text-muted">
-                <PinIcon />
-                <span className="line-clamp-1">{j.location}</span>
-              </p>
-            )}
-          </a>
+            <div className="mt-auto pt-2.5 flex items-center justify-between gap-3">
+              {j.location ? (
+                <p className="min-w-0 inline-flex items-center gap-1.5 text-[12px] text-muted">
+                  <PinIcon />
+                  <span className="line-clamp-1">{j.location}</span>
+                </p>
+              ) : <span />}
+              {letterLinks && j.tag !== "Tender" && (
+                <Link
+                  href={`/cover-letter?job=${encodeURIComponent(j.link)}`}
+                  className="relative z-[1] shrink-0 -my-2 py-2 text-[12.5px] font-medium text-sienna whitespace-nowrap hover:underline"
+                >
+                  Write cover letter →
+                </Link>
+              )}
+            </div>
+          </article>
         ))}
       </div>
     </section>

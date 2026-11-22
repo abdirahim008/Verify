@@ -16,13 +16,18 @@ interface Props {
 }
 
 // "Verification" is only in the nav when the feature is enabled (lib/flags.ts).
-const ITEMS: Array<{ href: string; label: string }> = [
-  { href: "/home", label: "Home" },
-  { href: "/profile", label: "My profile" },
-  ...(FEATURES.verification ? [{ href: "/verification", label: "Verification" }] : []),
-];
+// "Cover letter" is for individuals: it is written from a personal profile.
+function navItems(accountType: AccountType | null): Array<{ href: string; label: string }> {
+  return [
+    { href: "/home", label: "Home" },
+    { href: "/profile", label: "My profile" },
+    ...(accountType === "individual" ? [{ href: "/cover-letter", label: "Cover letter" }] : []),
+    ...(FEATURES.verification ? [{ href: "/verification", label: "Verification" }] : []),
+  ];
+}
 
 export function TopNav({ accountType, displayName, isAdmin }: Props) {
+  const ITEMS = navItems(accountType);
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);

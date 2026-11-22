@@ -10,11 +10,13 @@ export type DownloadResult = { ok: true } | { ok: false; message: string };
 
 export async function downloadFile(
   url: string,
-  opts: { fallbackName: string; expect: RegExp },
+  // `init` is for routes that take the file's content in the request (the
+  // cover letter, which isn't stored): method, headers and body.
+  opts: { fallbackName: string; expect: RegExp; init?: RequestInit },
 ): Promise<DownloadResult> {
   let res: Response;
   try {
-    res = await fetch(url, { cache: "no-store", credentials: "same-origin" });
+    res = await fetch(url, { ...opts.init, cache: "no-store", credentials: "same-origin" });
   } catch {
     return { ok: false, message: "Network problem. Check your connection and try again." };
   }
