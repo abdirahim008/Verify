@@ -75,8 +75,18 @@ tables for them "to be ready." Keep the codebase lean.
   edits the draft before anything is saved; the AI may polish and translate but must not
   invent facts (no invented clients, projects, values, dates or staff); AI-filled entries
   are never marked verified; AI-added clients stay hidden publicly by default; the
-  member's text/file is not stored; requests are rate-limited per member. Any other AI
-  feature still needs explicit approval first.
+  member's text/file is not stored; requests are rate-limited per member.
+  **Second approved exception:** the AI cover letter (owner-approved 2026-11), for
+  individual accounts. The member pastes a job link or the advert text; the server reads
+  that one page, and DeepSeek drafts a letter from the advert plus the member's profile
+  (`/cover-letter`). Rules: the letter uses only facts in the profile (nothing invented;
+  unmet requirements are shown to the member as "gaps", not claimed); the member edits it
+  before downloading; the member's name, phone, email and referees are not sent to the
+  AI; neither the advert nor the letter is stored; requests are rate-limited per member.
+  Reading the single page a member points to, for their own private letter, is not the
+  scraping banned below: it is never stored, shown to others or republished. This is a
+  document, not a job application flow: no applications are submitted or tracked.
+  Any other AI feature still needs explicit approval first.
 - ❌ **Scraping / crawling / reposting third-party web content or images** for the homepage
   feed or anywhere else. The homepage feed uses ONLY legitimate syndicated sources
   (RSS/official APIs) with attribution, or admin-curated posts. See §11.

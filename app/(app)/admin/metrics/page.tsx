@@ -18,7 +18,7 @@ export default async function MetricsPage() {
       `${m.totals.individuals} individual · ${m.totals.companies} company${m.totals.blocked ? ` · ${m.totals.blocked} blocked as spam` : ""}`],
     ["New this week", m.totals.new7, `${m.totals.new30} in the last 30 days`],
     ["Activated", m.totals.activated, "added at least one profile item"],
-    ["Downloaded", m.eventsAvailable ? m.totals.downloaded : "—", "got a CV, profile or card"],
+    ["Downloaded", m.eventsAvailable ? m.totals.downloaded : "—", "got a CV, profile, card or letter"],
   ];
 
   return (
@@ -53,8 +53,8 @@ export default async function MetricsPage() {
       {m.eventsAvailable && (
         <section className="mt-8">
           <h2 className="font-serif text-[22px] tracking-tightish">Downloads</h2>
-          <div className="mt-3 grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {([["CVs", m.downloads.cv], ["Company profiles", m.downloads.company], ["Business cards", m.downloads.card], ["Previews", m.downloads.previews]] as const).map(([label, n]) => (
+          <div className="mt-3 grid grid-cols-2 lg:grid-cols-5 gap-3">
+            {([["CVs", m.downloads.cv], ["Company profiles", m.downloads.company], ["Business cards", m.downloads.card], [`Cover letters (${m.lettersDrafted} drafted)`, m.downloads.letter], ["Previews", m.downloads.previews]] as const).map(([label, n]) => (
               <div key={label} className="rounded-[10px] border border-border bg-cream/50 px-4 py-3">
                 <span className="font-serif text-[22px]">{n}</span>
                 <span className="ml-2 text-[12.5px] text-muted">{label}</span>

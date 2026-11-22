@@ -44,7 +44,9 @@ export interface AdminMetrics {
     /** Hidden as spam. */
     blocked: number;
   };
-  downloads: { cv: number; company: number; card: number; previews: number };
+  downloads: { cv: number; company: number; card: number; letter: number; previews: number };
+  /** Cover letters the AI drafted (downloaded or not). */
+  lettersDrafted: number;
   /** Every template (catalog + any retired ids seen in events), most
    *  downloaded first. Zero-download templates are kept on purpose. */
   templates: { cv: TemplateStat[]; company: TemplateStat[] };
@@ -74,7 +76,7 @@ export interface TemplateStat {
 
 // usage_events also logs non-download actions (ai_draft, ai_import_saved);
 // only these count towards download totals.
-const DOWNLOAD_EVENTS = new Set(["cv_download", "company_download", "card_download"]);
+const DOWNLOAD_EVENTS = new Set(["cv_download", "company_download", "card_download", "cover_letter_download"]);
 
 interface EventRow {
   profile_id: string;
@@ -131,8 +133,9 @@ export async function loadAdminMetrics(): Promise<AdminMetrics | null> {
   const downloadsByProfile = new Map<string, { real: number; previews: number; last: string | null }>();
   const cvStats = seedTemplateStats(CV_TEMPLATES);
   const companyStats = seedTemplateStats(COMPANY_TEMPLATES);
-  let cv = 0, company = 0, card = 0, previews = 0;
+  let cv = 0, company = 0, card = 0, letter = 0, previews = 0, lettersDrafted = 0;
   for (const e of events) {
+    if (e.event === "ai_cover_letter") lettersDrafted++;
     if (!DOWNLOAD_EVENTS.has(e.event)) continue;
     const isPreview = e.meta?.preview === true;
     const entry = downloadsByProfile.get(e.profile_id) ?? { real: 0, previews: 0, last: null };
@@ -143,6 +146,7 @@ export async function loadAdminMetrics(): Promise<AdminMetrics | null> {
       if (e.event === "cv_download") cv++;
       else if (e.event === "company_download") company++;
       else if (e.event === "card_download") card++;
+      else if (e.event === "cover_letter_download") letter++;
     }
     downloadsByProfile.set(e.profile_id, entry);
 
@@ -219,7 +223,8 @@ export async function loadAdminMetrics(): Promise<AdminMetrics | null> {
       downloaded: users.filter((u) => u.downloads > 0).length,
       blocked: users.filter((u) => u.blocked).length,
     },
-    downloads: { cv, company, card, previews },
+    downloads: { cv, company, card, letter, previews },
+    lettersDrafted,
     templates: { cv: rankTemplateStats(cvStats), company: rankTemplateStats(companyStats) },
     users,
     eventsAvailable,
