@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SahanMark } from "@/components/SahanMark";
 import { LoginForm } from "./LoginForm";
+import { safeNextPath } from "@/lib/safe-next";
 
 export const metadata = { title: "Sign in" };
 
@@ -28,7 +29,7 @@ export default function LoginPage({ searchParams }: { searchParams: { next?: str
           <Link href="/" className="lg:hidden inline-block mb-8"><SahanMark /></Link>
           <h1 className="font-serif text-[32px] tracking-[-0.02em]">Sign in</h1>
           <p className="text-[14px] text-muted mt-1">Welcome back. Use your email and password, or get a magic link.</p>
-          <LoginForm nextPath={searchParams.next} initialError={searchParams.error} />
+          <LoginForm nextPath={safeNextPath(searchParams.next)} initialError={searchParams.error} />
           <p className="mt-6 text-[13px] text-muted">
             New here? <Link href="/signup" className="text-sienna font-medium hover:underline">Create an account</Link>
           </p>

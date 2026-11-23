@@ -33,7 +33,10 @@ export async function middleware(request: NextRequest) {
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("next", path);
+    // Keep the query: links in emails and on job cards carry it
+    // (/cover-letter?job=…), and it has to survive signing in.
+    url.search = "";
+    url.searchParams.set("next", path + request.nextUrl.search);
     return NextResponse.redirect(url);
   }
   // Logged-in users hitting the marketing landing or auth pages bounce to
