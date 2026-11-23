@@ -1,6 +1,9 @@
 import { loadAdminMetrics, type AdminUserRow, type TemplateStat } from "@/lib/admin-metrics";
 import { FeatureToggle } from "@/components/admin/FeatureToggle";
 import { BlockToggle } from "@/components/admin/BlockToggle";
+import { JobAlertTest } from "@/components/admin/JobAlertTest";
+import { loadJobAlertStats } from "@/lib/job-alerts";
+import { emailsConfigured } from "@/lib/onboarding-emails";
 
 export const metadata = { title: "Metrics" };
 export const dynamic = "force-dynamic";
@@ -8,7 +11,8 @@ export const dynamic = "force-dynamic";
 // Admin usage dashboard: signups, activation (added content), and download
 // activity per user + per template. Gated by the /admin layout (is_admin).
 export default async function MetricsPage() {
-  const m = await loadAdminMetrics();
+  const [m, alerts] = await Promise.all([loadAdminMetrics(), loadJobAlertStats().catch(() => null)]);
+  const emails = emailsConfigured();
   if (!m) {
     return <p className="text-[13.5px] text-muted">Service-role key not configured — set SUPABASE_SERVICE_ROLE_KEY.</p>;
   }
@@ -79,6 +83,25 @@ export default async function MetricsPage() {
           </div>
         </section>
       )}
+
+      {/* Weekly job alert */}
+      <section className="mt-8">
+        <h2 className="font-serif text-[22px] tracking-tightish">Weekly job alert</h2>
+        <p className="mt-1 text-[12.5px] text-muted max-w-xl leading-relaxed">
+          Every Sunday at 8am East Africa time, individual members who signed in within the last 90 days get the
+          week&rsquo;s new jobs, matched to their career interests, each with a cover-letter link.
+          {alerts
+            ? <> Last run: <span className="font-semibold text-ink">{alerts.lastCount} email{alerts.lastCount === 1 ? "" : "s"}</span> in the week of {fmtDate(alerts.lastWeek)}.</>
+            : " No run recorded yet."}
+        </p>
+        {emails.ok
+          ? <JobAlertTest />
+          : (
+            <p className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-800">
+              Member emails are off: {emails.reason}. Nothing is sent until this is set in Vercel.
+            </p>
+          )}
+      </section>
 
       {/* Feedback */}
       {m.feedback.items.length > 0 && (

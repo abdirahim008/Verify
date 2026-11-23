@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { INDIVIDUAL_SECTIONS, COMPANY_SECTIONS, defaultVisibility, type VisibilityLevel } from "@/lib/visibility";
 import { VisibilityForm } from "@/components/settings/VisibilityForm";
 import { ShowcaseToggle } from "@/components/settings/ShowcaseToggle";
+import { EmailToggle } from "@/components/settings/EmailToggle";
 import { FEATURES } from "@/lib/flags";
 
 export const metadata = { title: "Settings" };
@@ -19,6 +20,10 @@ export default async function SettingsPage() {
   // failing must not take the visibility form down with it.
   const { data: showcaseRow } = await supabase
     .from("profiles").select("showcase").eq("id", user.id).maybeSingle();
+
+  // Same reason: email_opt_out arrives with migration 0012.
+  const { data: emailRow } = await supabase
+    .from("profiles").select("email_opt_out").eq("id", user.id).maybeSingle();
 
   const sections = profile?.account_type === "company" ? COMPANY_SECTIONS : INDIVIDUAL_SECTIONS;
   const raw = (profile?.section_visibility ?? {}) as Record<string, VisibilityLevel>;
@@ -47,6 +52,8 @@ export default async function SettingsPage() {
       </div>
 
       <ShowcaseToggle initial={showcaseRow?.showcase ?? true} />
+
+      {emailRow && <EmailToggle initial={!emailRow.email_opt_out} individual={profile?.account_type !== "company"} />}
 
       <div className="mt-6"><VisibilityForm sections={sections} initial={current} /></div>
     </div>

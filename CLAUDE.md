@@ -316,6 +316,14 @@ copyright/scraping risk and WITHOUT undermining the platform's trust/credibility
    - Prefer an **admin-curated/approved** layer over fully automatic posting, so a human
      prevents anything inaccurate, outdated, or insensitive landing on the front page.
 
+3. **Weekly job alert email** (owner-approved 2026-11): every Sunday (Monday catches up
+   anyone a cut-short run missed), individual members
+   get the week's new jobs from the SomKenJobs feed (title + link back, same as Home),
+   matched to their career interests, each with a link into the cover-letter helper.
+   Only members who signed in within the last 90 days, never in their first week, at
+   most one per week, with one-click unsubscribe and a Settings switch
+   (`lib/job-alerts.ts`).
+
 ### DO NOT build
 - ❌ No web scrapers/crawlers that copy third-party content or images and repost them.
 - ❌ No auto-posting of unverified/unattributed content.

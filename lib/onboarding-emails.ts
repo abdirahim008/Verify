@@ -20,6 +20,11 @@ const KEY = process.env.RESEND_API_KEY || "";
 const FROM = process.env.SAHAN_MEMBERS_FROM_EMAIL || process.env.SAHAN_FROM_EMAIL || "";
 const REPLY_TO = process.env.SAHAN_REPLY_TO_EMAIL || "";
 
+/** Sender settings for member emails, shared with lib/job-alerts.ts. */
+export function memberEmailEnv() {
+  return { key: KEY, from: FROM, replyTo: REPLY_TO };
+}
+
 export function emailsConfigured(): { ok: true } | { ok: false; reason: string } {
   if (!KEY) return { ok: false, reason: "RESEND_API_KEY is not set" };
   // Resend's shared test sender only delivers to the account owner.
@@ -42,7 +47,7 @@ export function verifyUnsubscribeToken(profileId: string, token: string) {
   const b = Buffer.from(token);
   return a.length === b.length && timingSafeEqual(a, b);
 }
-function unsubscribeUrl(profileId: string) {
+export function unsubscribeUrl(profileId: string) {
   return `${SITE.url}/api/email/unsubscribe?u=${profileId}&t=${unsubscribeToken(profileId)}`;
 }
 

@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   const action = `/api/email/unsubscribe?u=${encodeURIComponent(u)}&t=${encodeURIComponent(t)}`;
   return page(
     "Stop Sahan emails?",
-    `<p>You'll no longer get reminders about finishing your profile. Your account stays as it is.</p>
+    `<p>You'll no longer get the weekly job alert or reminders about finishing your profile. Your account stays as it is, and you can turn emails back on in Settings.</p>
      <form method="post" action="${action}"><button type="submit">Unsubscribe</button></form>`,
   );
 }
